@@ -1,7 +1,15 @@
 {
   "permissions": {
     "allow": [
-      "Bash(.specify/scripts/bash/create-new-feature.sh:*)"
+      "Bash(.specify/scripts/bash/create-new-feature.sh:*)",
+      "Bash(npm install:*)",
+      "Bash(mkdir:*)",
+      "Bash(npm init:*)",
+      "Bash(cargo check:*)",
+      "Read(//Users/kdm/projects/digital-ext/**)",
+      "Bash(npm run build:*)",
+      "Bash(npm test)",
+      "Bash(cargo test:*)"
     ],
     "deny": [],
     "ask": []
