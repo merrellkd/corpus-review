@@ -9,7 +9,9 @@
       "Read(//Users/kdm/projects/digital-ext/**)",
       "Bash(npm run build:*)",
       "Bash(npm test)",
-      "Bash(cargo test:*)"
+      "Bash(cargo test:*)",
+      "Bash(npx tsc:*)",
+      "Bash(node_modules/.bin/tsc:*)"
     ],
     "deny": [],
     "ask": []

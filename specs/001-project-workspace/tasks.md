@@ -5,8 +5,8 @@
 
 ## 🚀 Progress Summary
 - ✅ **Setup Phase (T001-T005)**: Complete - Tauri + React project structure with full dev environment
-- 🔄 **TDD Tests Phase (T006-T013)**: In Progress - 2/8 contract tests complete, all failing as expected
-- ⏳ **Domain Layer (T014-T019)**: Pending - Awaiting test completion
+- ✅ **TDD Tests Phase (T006-T013)**: Complete - All 8 tests implemented and failing as expected for TDD
+- 🔄 **Domain Layer (T014-T019)**: Ready to Start - All contract tests are failing, ready for implementation
 - ⏳ **Application Layer (T020-T021)**: Pending
 - ⏳ **Infrastructure Layer (T022-T024)**: Pending
 - ⏳ **UI Layer (T025-T026)**: Pending
@@ -49,16 +49,16 @@
 - [x] T004 [P] Configure TypeScript strict mode and Vitest in frontend/vite.config.ts
 - [x] T005 [P] Setup SQLX database and migrations in src-tauri/migrations/
 
-## Phase 3.2: Tests First (TDD) ⚠️ MUST COMPLETE BEFORE 3.3 - 🔄 IN PROGRESS
+## Phase 3.2: Tests First (TDD) ✅ COMPLETE - All tests failing as expected
 **CRITICAL: These tests MUST be written and MUST FAIL before ANY implementation**
 - [x] T006 [P] Contract test get_workspace_layout command in src-tauri/tests/test_workspace_layout.rs ✅ FAILING (2/4 tests fail as expected)
 - [x] T007 [P] Contract test save_workspace_layout command in src-tauri/tests/test_save_layout.rs ✅ FAILING (5/5 tests fail as expected)
-- [ ] T008 [P] Contract test list_folder_contents command in src-tauri/tests/test_folder_contents.rs
-- [ ] T009 [P] Contract test update_panel_visibility command in src-tauri/tests/test_panel_visibility.rs
-- [ ] T010 [P] Contract test create_document_caddy command in src-tauri/tests/test_document_caddy.rs
-- [ ] T011 [P] Integration test workspace load scenario in frontend/tests/integration/workspace-load.test.tsx
-- [ ] T012 [P] Integration test panel resize scenario in frontend/tests/integration/panel-resize.test.tsx
-- [ ] T013 [P] Integration test file explorer scenario in frontend/tests/integration/file-explorer.test.tsx
+- [x] T008 [P] Contract test list_folder_contents command in src-tauri/tests/test_folder_contents.rs ✅ FAILING (1/5 tests fail as expected)
+- [x] T009 [P] Contract test update_panel_visibility command in src-tauri/tests/test_panel_visibility.rs ✅ FAILING (3/6 tests fail as expected)
+- [x] T010 [P] Contract test create_document_caddy command in src-tauri/tests/test_document_caddy.rs ✅ FAILING (5/7 tests fail as expected)
+- [x] T011 [P] Integration test workspace load scenario in frontend/tests/integration/workspace-load.test.tsx ✅ FAILING (API calls not made - no implementation)
+- [x] T012 [P] Integration test panel resize scenario in frontend/tests/integration/panel-resize.test.tsx ✅ FAILING (API calls not made - no implementation)
+- [x] T013 [P] Integration test file explorer scenario in frontend/tests/integration/file-explorer.test.tsx ✅ FAILING (API calls not made - no implementation)
 
 ## Phase 3.3: Domain Layer (ONLY after tests are failing)
 - [ ] T014 [P] WorkspaceLayout entity in src-tauri/src/domain/workspace/entities/workspace_layout.rs
