@@ -1,14 +1,7 @@
-// Workspace domain module
-// Domain entities and business logic will be implemented here
+pub mod entities;
+pub mod value_objects;
+pub mod repositories;
 
-pub mod entities {
-    // TODO: Implement entities in T014-T017
-}
-
-pub mod value_objects {
-    // TODO: Implement value objects in T018
-}
-
-pub mod repositories {
-    // TODO: Implement repository interfaces in T019
-}
+pub use entities::*;
+pub use value_objects::*;
+pub use repositories::*;
