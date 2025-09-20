@@ -20,14 +20,17 @@ fn main() {
 
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
-            commands::workspace_commands::get_workspace_layout,
-            commands::workspace_commands::save_workspace_layout,
-            commands::workspace_commands::list_folder_contents,
-            commands::workspace_commands::update_panel_visibility,
-            commands::workspace_commands::update_panel_sizes,
-            commands::workspace_commands::create_document_caddy,
-            commands::workspace_commands::update_document_caddy,
-            commands::workspace_commands::get_project_details
+            commands::get_workspace_layout,
+            commands::save_workspace_layout,
+            commands::update_panel_visibility,
+            commands::update_panel_sizes,
+            commands::create_document_caddy,
+            commands::update_document_caddy,
+            commands::get_project_details,
+            commands::list_folder_contents,
+            commands::search_files_recursive,
+            commands::get_file_info,
+            commands::is_path_accessible
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

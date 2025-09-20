@@ -38,6 +38,14 @@ impl Project {
         Ok(())
     }
 
+    pub fn source_folder(&self) -> &FilePath {
+        &self.source_folder_path
+    }
+
+    pub fn reports_folder(&self) -> &FilePath {
+        &self.reports_folder_path
+    }
+
     pub fn update_source_folder(&mut self, source_folder_path: FilePath) -> Result<(), String> {
         Self::validate_folder_path(&source_folder_path, "Source")?;
 

@@ -1,4 +1,5 @@
-// Repository implementations will be added here in later tasks
+pub mod workspace_layout_repository;
+pub mod file_system_repository;
 
-// TODO: Implement WorkspaceLayoutRepository in T022
-// TODO: Implement FileSystemRepository in T023
+pub use workspace_layout_repository::SqlxWorkspaceLayoutRepository;
+pub use file_system_repository::TauriFileSystemRepository;

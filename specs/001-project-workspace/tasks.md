@@ -7,9 +7,9 @@
 - ✅ **Setup Phase (T001-T005)**: Complete - Tauri + React project structure with full dev environment
 - ✅ **TDD Tests Phase (T006-T013)**: Complete - All 8 tests implemented and failing as expected for TDD
 - ✅ **Domain Layer (T014-T019)**: Complete - All domain entities, value objects, and repository interfaces implemented with 37 passing tests
-- 🔄 **Application Layer (T020-T021)**: Ready to Start - Domain layer provides all needed entities
-- ⏳ **Infrastructure Layer (T022-T024)**: Pending
-- ⏳ **UI Layer (T025-T026)**: Pending
+- ✅ **Application Layer (T020-T021)**: Complete - WorkspaceService and FileSystemService with full DTO conversion and error handling
+- ✅ **Infrastructure Layer (T022-T024)**: Complete - SQLX repositories, Tauri file system access, and all 11 Tauri commands implemented
+- ⏳ **UI Layer (T025-T026)**: Ready to Start - Complete backend infrastructure provides API foundation
 
 ## Execution Flow (main)
 ```
@@ -68,14 +68,14 @@
 - [x] T018 [P] Value objects (IDs, FilePath, etc.) in src-tauri/src/domain/workspace/value_objects.rs ✅ WITH TESTS
 - [x] T019 Repository interfaces in src-tauri/src/domain/workspace/repositories.rs ✅ WITH TESTS
 
-## Phase 3.4: Application Layer
-- [ ] T020 WorkspaceService in src-tauri/src/application/workspace_service.rs
-- [ ] T021 FileSystemService in src-tauri/src/application/file_system_service.rs
+## Phase 3.4: Application Layer ✅ COMPLETE
+- [x] T020 WorkspaceService in src-tauri/src/application/workspace_service.rs ✅ WITH TESTS
+- [x] T021 FileSystemService in src-tauri/src/application/file_system_service.rs ✅ WITH TESTS
 
-## Phase 3.5: Infrastructure Layer
-- [ ] T022 SQLX WorkspaceLayoutRepository implementation in src-tauri/src/infrastructure/repositories/workspace_layout_repository.rs
-- [ ] T023 Tauri FileSystemRepository implementation in src-tauri/src/infrastructure/repositories/file_system_repository.rs
-- [ ] T024 Tauri commands (8 commands) in src-tauri/src/commands/workspace_commands.rs
+## Phase 3.5: Infrastructure Layer ✅ COMPLETE
+- [x] T022 SQLX WorkspaceLayoutRepository implementation in src-tauri/src/infrastructure/repositories/workspace_layout_repository.rs ✅ COMPILED
+- [x] T023 Tauri FileSystemRepository implementation in src-tauri/src/infrastructure/repositories/file_system_repository.rs ✅ COMPILED
+- [x] T024 Tauri commands (11 commands total) in src-tauri/src/commands/ ✅ COMPILED
 
 ## Phase 3.6: UI Layer
 - [ ] T025 Zustand workspace store in frontend/src/stores/workspaceStore.ts
@@ -129,10 +129,20 @@ Task: "Contract test list_folder_contents command in src-tauri/tests/commands/te
 - Handle business workflows like panel resizing, layout persistence
 - Use Result<T, E> for error handling
 
-### T022-T024: Infrastructure Layer
-- SQLX repository implementations with proper SQL schema
-- Tauri command handlers with snake_case naming
-- File system operations with proper error handling
+### T020-T021: Application Services ✅ COMPLETE
+- WorkspaceService orchestrates workspace layout operations, panel visibility/sizing, document caddy management
+- FileSystemService handles file operations, recursive search, path validation within project boundaries
+- Complete DTO conversion layer with unified data transfer objects
+- Comprehensive error handling with typed service errors
+
+### T022-T024: Infrastructure Layer ✅ COMPLETE
+- T022: SQLX WorkspaceLayoutRepository with complete CRUD operations and entity mapping to flat SQLite schema
+- T023: TauriFileSystemRepository with native file system access, metadata extraction, and security validation
+- T024: 11 Tauri commands implemented with dependency injection:
+  * get_workspace_layout, save_workspace_layout, update_panel_visibility, update_panel_sizes
+  * create_document_caddy, update_document_caddy, get_project_details
+  * list_folder_contents, search_files_recursive, get_file_info, is_path_accessible
+- Main codebase compiles successfully with proper error handling and DTO integration
 
 ### T025-T026: UI Components
 - Zustand store with TypeScript interfaces

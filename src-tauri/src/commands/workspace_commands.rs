@@ -1,55 +1,89 @@
-// Workspace Tauri commands
-// These will be implemented in later tasks
+use tauri::State;
+use crate::application::{
+    workspace_service::{WorkspaceService, WorkspaceServiceError},
+    dtos::{WorkspaceLayoutDto, DocumentCaddyDto, ProjectDto},
+};
 
 #[tauri::command]
-pub async fn get_workspace_layout(project_id: String) -> Result<String, String> {
-    // TODO: Implement in T024
-    Ok("{}".to_string())
+pub async fn get_workspace_layout(
+    project_id: String,
+    workspace_service: State<'_, WorkspaceService>,
+) -> Result<WorkspaceLayoutDto, String> {
+    workspace_service
+        .get_workspace_layout(&project_id)
+        .await
+        .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
-pub async fn save_workspace_layout(layout: String) -> Result<String, String> {
-    // TODO: Implement in T024
-    Ok("{}".to_string())
+pub async fn save_workspace_layout(
+    layout: WorkspaceLayoutDto,
+    workspace_service: State<'_, WorkspaceService>,
+) -> Result<(), String> {
+    workspace_service
+        .save_workspace_layout(layout)
+        .await
+        .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
-pub async fn list_folder_contents(folder_path: String) -> Result<String, String> {
-    // TODO: Implement in T024
-    // Placeholder response that will make tests fail until proper implementation
-    Ok(r#"{"items": []}"#.to_string())
+pub async fn update_panel_visibility(
+    project_id: String,
+    panel_type: String,
+    visible: bool,
+    workspace_service: State<'_, WorkspaceService>,
+) -> Result<WorkspaceLayoutDto, String> {
+    workspace_service
+        .update_panel_visibility(&project_id, &panel_type, visible)
+        .await
+        .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
-pub async fn update_panel_visibility(_project_id: String, _panel_type: String, _visible: bool) -> Result<String, String> {
-    // TODO: Implement in T024
-    // Placeholder response that will make tests fail until proper implementation
-    // Returns success: true but incomplete new_layout to make structure tests fail
-    Ok(r#"{"success": true, "new_layout": {"id": "temp"}}"#.to_string())
+pub async fn update_panel_sizes(
+    project_id: String,
+    panel_type: String,
+    width: u32,
+    height: Option<u32>,
+    workspace_service: State<'_, WorkspaceService>,
+) -> Result<WorkspaceLayoutDto, String> {
+    workspace_service
+        .update_panel_sizes(&project_id, &panel_type, width, height)
+        .await
+        .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
-pub async fn update_panel_sizes(project_id: String, dimensions: String) -> Result<String, String> {
-    // TODO: Implement in T024
-    Ok("{}".to_string())
+pub async fn create_document_caddy(
+    file_path: String,
+    workspace_service: State<'_, WorkspaceService>,
+) -> Result<DocumentCaddyDto, String> {
+    workspace_service
+        .create_document_caddy(&file_path)
+        .await
+        .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
-pub async fn create_document_caddy(_file_path: String, _workspace_id: String) -> Result<String, String> {
-    // TODO: Implement in T024
-    // Placeholder response that will make tests fail until proper implementation
-    // Returns incomplete caddy structure to make structure tests fail
-    Ok(r#"{"caddy": {"id": "doc_temp", "title": "placeholder"}}"#.to_string())
+pub async fn update_document_caddy(
+    caddy_id: String,
+    position_x: Option<u32>,
+    position_y: Option<u32>,
+    workspace_service: State<'_, WorkspaceService>,
+) -> Result<DocumentCaddyDto, String> {
+    workspace_service
+        .update_document_caddy(&caddy_id, position_x, position_y)
+        .await
+        .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
-pub async fn update_document_caddy(caddy_id: String, position: Option<String>) -> Result<String, String> {
-    // TODO: Implement in T024
-    Ok("{}".to_string())
-}
-
-#[tauri::command]
-pub async fn get_project_details(project_id: String) -> Result<String, String> {
-    // TODO: Implement in T024
-    Ok("{}".to_string())
+pub async fn get_project_details(
+    project_id: String,
+    workspace_service: State<'_, WorkspaceService>,
+) -> Result<ProjectDto, String> {
+    workspace_service
+        .get_project_details(&project_id)
+        .await
+        .map_err(|e| e.to_string())
 }
