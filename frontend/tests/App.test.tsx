@@ -5,11 +5,12 @@ import App from '../src/App'
 describe('App', () => {
   it('renders without crashing', () => {
     render(<App />)
-    expect(screen.getByText('Corpus Review')).toBeInTheDocument()
+    expect(screen.getByTestId('workspace-container')).toBeInTheDocument()
   })
 
-  it('shows coming soon message', () => {
+  it('shows loading state initially', () => {
     render(<App />)
-    expect(screen.getByText('Project Workspace coming soon...')).toBeInTheDocument()
+    // The workspace starts in loading state since useEffect hasn't run
+    expect(screen.getByText('Loading workspace')).toBeInTheDocument()
   })
 })

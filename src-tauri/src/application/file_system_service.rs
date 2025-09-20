@@ -438,7 +438,7 @@ mod tests {
             Ok(true)
         }
 
-        async fn update_workspace_layout(&self, _project_id: &ProjectId, _layout: &WorkspaceLayout) -> Result<(), RepositoryError> {
+        async fn update_workspace_layout(&self, _project_id: &ProjectId, _layout: &crate::domain::workspace::WorkspaceLayout) -> Result<(), RepositoryError> {
             Ok(())
         }
     }

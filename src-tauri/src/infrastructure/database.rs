@@ -52,6 +52,30 @@ impl Database {
     }
 }
 
+use crate::domain::workspace::repositories::*;
+use crate::infrastructure::repositories::workspace_layout_repository::SqlxWorkspaceLayoutRepository;
+use crate::infrastructure::repositories::file_system_repository::TauriFileSystemRepository;
+
+impl RepositoryFactory for Database {
+    fn workspace_layout_repository(&self) -> Box<dyn WorkspaceLayoutRepository> {
+        Box::new(SqlxWorkspaceLayoutRepository::new(self.pool.clone()))
+    }
+
+    fn file_system_repository(&self) -> Box<dyn FileSystemRepository> {
+        Box::new(TauriFileSystemRepository)
+    }
+
+    fn document_caddy_repository(&self) -> Box<dyn DocumentCaddyRepository> {
+        // TODO: Implement proper document caddy repository
+        panic!("DocumentCaddyRepository not yet implemented")
+    }
+
+    fn project_repository(&self) -> Box<dyn ProjectRepository> {
+        // TODO: Implement proper project repository
+        panic!("ProjectRepository not yet implemented")
+    }
+}
+
 pub async fn initialize_database() -> Result<Database> {
     // Use application data directory for database
     let app_data_dir = tauri::api::path::app_data_dir(&tauri::Config::default())

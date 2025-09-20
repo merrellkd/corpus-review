@@ -4,7 +4,7 @@ import { configure } from '@testing-library/react'
 
 // Configure Testing Library to reduce DOM output
 configure({
-  getElementError: (message, container) => {
+  getElementError: (message, _container) => {
     const error = new Error(message || 'TestingLibraryElementError')
     error.name = 'TestingLibraryElementError'
     error.stack = ''
