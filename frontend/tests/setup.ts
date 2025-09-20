@@ -1,5 +1,19 @@
 import '@testing-library/jest-dom'
 import { vi } from 'vitest'
+import { configure } from '@testing-library/react'
+
+// Configure Testing Library to reduce DOM output
+configure({
+  getElementError: (message, container) => {
+    const error = new Error(message || 'TestingLibraryElementError')
+    error.name = 'TestingLibraryElementError'
+    error.stack = ''
+    return error
+  }
+})
+
+// Suppress DOM dumps during TDD phase
+process.env.DEBUG_PRINT_LIMIT = '0'
 
 // Mock Tauri API for tests
 global.window = Object.create(window)

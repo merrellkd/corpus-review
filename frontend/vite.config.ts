@@ -19,6 +19,10 @@ export default defineConfig({
     globals: true,
     environment: 'jsdom',
     setupFiles: ['./tests/setup.ts'],
+    // Suppress HTML dumps in test output
+    onConsoleLog: () => false,
+    silent: false,
+    reporter: ['basic'],
   },
 
   resolve: {
