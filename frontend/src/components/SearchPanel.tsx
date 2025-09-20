@@ -23,7 +23,7 @@ export const SearchPanel: React.FC = () => {
   }
 
   return (
-    <div className="h-full flex flex-col" data-testid="search-panel">
+    <div className="h-full flex flex-col border-2 border-purple-300 bg-white" data-testid="search-panel">
       {/* Header */}
       <div className="p-3 border-b border-gray-200">
         <h3 className="text-sm font-medium text-gray-700 mb-2">Search</h3>

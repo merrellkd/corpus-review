@@ -37,6 +37,34 @@ const mockFiles: FileSystemItemDto[] = [
     formatted_size: '',
     modified_at: '2024-01-15T10:30:00Z',
   },
+  {
+    name: 'readme.md',
+    path: '/Users/demo/Documents/Research/Source/readme.md',
+    item_type: 'file',
+    formatted_size: '1.0 KB',
+    modified_at: '2024-01-15T10:30:00Z',
+  },
+  {
+    name: 'report1.pdf',
+    path: '/Users/demo/Documents/Research/Source/report1.pdf',
+    item_type: 'file',
+    formatted_size: '2.0 KB',
+    modified_at: '2024-01-15T10:30:00Z',
+  },
+  {
+    name: 'analysis',
+    path: '/Users/demo/Documents/Research/Source/analysis',
+    item_type: 'directory',
+    formatted_size: '',
+    modified_at: '2024-01-15T10:30:00Z',
+  },
+  {
+    name: 'nested.txt',
+    path: '/Users/demo/Documents/Research/Source/nested.txt',
+    item_type: 'file',
+    formatted_size: '512 B',
+    modified_at: '2024-01-15T10:30:00Z',
+  },
 ]
 
 // Development mode detection
@@ -291,6 +319,28 @@ export const useWorkspaceStore = create<WorkspaceState>()(
       createDocumentCaddy: async (filePath: string) => {
         try {
           set({ isLoading: true, error: null })
+
+          if (isDevelopment) {
+            // Mock implementation for development
+            console.log('Mock: createDocumentCaddy', filePath)
+            const mockCaddy: DocumentCaddyDto = {
+              id: `caddy_${Date.now()}`,
+              title: filePath.split('/').pop() || 'Document',
+              file_path: filePath,
+              position_x: 50 + (Math.random() * 100),
+              position_y: 50 + (Math.random() * 100),
+              width: 400,
+              height: 300,
+              z_index: 1,
+              is_active: true,
+            }
+            set(state => ({
+              documentCaddies: [...state.documentCaddies, mockCaddy],
+              activeDocumentId: mockCaddy.id,
+              isLoading: false
+            }))
+            return
+          }
 
           const caddy = await invoke<DocumentCaddyDto>('create_document_caddy', { filePath })
 

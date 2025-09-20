@@ -61,9 +61,9 @@ export const DocumentCaddy: React.FC<DocumentCaddyProps> = ({ caddy }) => {
   return (
     <div
       ref={caddyRef}
-      className={`absolute bg-white border border-gray-300 rounded-lg shadow-lg ${
-        isDragging ? 'shadow-xl' : ''
-      } ${caddy.is_active ? 'ring-2 ring-blue-500' : ''}`}
+      className={`absolute bg-white border-2 border-dashed border-gray-400 rounded-lg shadow-lg ${
+        isDragging ? 'shadow-xl border-blue-500' : ''
+      } ${caddy.is_active ? 'border-blue-500' : ''}`}
       style={{
         left: `${caddy.position_x}px`,
         top: `${caddy.position_y}px`,
@@ -95,16 +95,10 @@ export const DocumentCaddy: React.FC<DocumentCaddyProps> = ({ caddy }) => {
       </div>
 
       {/* Content area */}
-      <div className="p-3 h-[calc(100%-41px)] overflow-auto">
-        <div className="text-xs text-gray-600 mb-2">
-          {caddy.file_path}
-        </div>
-        <div className="text-sm text-gray-900">
-          {/* Placeholder content - in a real implementation, this would load and display the file */}
-          <p>Document content for {caddy.title} would be displayed here.</p>
-          <p className="mt-2 text-xs text-gray-500">
-            File: {caddy.file_path}
-          </p>
+      <div className="p-4 h-[calc(100%-41px)] overflow-auto bg-gray-50 flex items-center justify-center">
+        <div className="text-center text-gray-600">
+          <div className="text-lg mb-2">📄</div>
+          <div className="text-sm font-medium">{caddy.title}</div>
         </div>
       </div>
     </div>

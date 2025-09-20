@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels'
 import { useWorkspaceStore } from '@/stores/workspaceStore'
 
@@ -12,7 +12,10 @@ export interface ProjectWorkspaceProps {
   projectId: string
 }
 
+type TabType = 'file-explorer' | 'category-explorer' | 'search'
+
 export const ProjectWorkspace: React.FC<ProjectWorkspaceProps> = ({ projectId }) => {
+  const [activeTab, setActiveTab] = useState<TabType>('file-explorer')
   const {
     currentProject,
     workspaceLayout,
@@ -76,12 +79,20 @@ export const ProjectWorkspace: React.FC<ProjectWorkspaceProps> = ({ projectId })
 
   return (
     <div className="h-screen bg-gray-100" data-testid="workspace-container">
-      {/* Project Header */}
-      <div className="bg-white border-b border-gray-200 px-4 py-3">
-        <h1 className="text-lg font-semibold text-gray-900">{currentProject.name}</h1>
-        <p className="text-sm text-gray-600">
-          Source: {currentProject.source_folder} | Reports: {currentProject.reports_folder}
-        </p>
+      {/* Top Navigation Bar */}
+      <div className="bg-white border-b border-gray-200 px-4 py-2 flex items-center justify-between">
+        <button className="flex items-center space-x-2 text-blue-600 hover:text-blue-800">
+          <span className="text-sm">←</span>
+          <span className="text-sm font-medium">Return to Project List</span>
+        </button>
+
+        <div className="text-center flex-1">
+          <h1 className="text-lg font-semibold text-gray-900">{currentProject.name}</h1>
+        </div>
+
+        <button className="text-gray-400 hover:text-gray-600">
+          <span className="text-lg">⚙️</span>
+        </button>
       </div>
 
       {/* Main workspace area */}
@@ -97,27 +108,40 @@ export const ProjectWorkspace: React.FC<ProjectWorkspaceProps> = ({ projectId })
               defaultSize={workspaceLayout.explorer_width}
               minSize={15}
               maxSize={70}
-              className="bg-white border-r border-gray-200"
+              className="bg-white border-r border-gray-200 border-8 border-blue-500 bg-blue-50"
             >
               <div className="h-full flex flex-col">
-                {/* Explorer tabs */}
-                <div className="flex border-b border-gray-200 bg-gray-50">
-                  {workspaceLayout.file_explorer_visible && (
-                    <ExplorerTab title="Files" isActive={true} />
-                  )}
-                  {workspaceLayout.category_explorer_visible && (
-                    <ExplorerTab title="Categories" isActive={false} />
-                  )}
-                  {workspaceLayout.search_panel_visible && (
-                    <ExplorerTab title="Search" isActive={false} />
-                  )}
+                {/* Explorer content */}
+                <div
+                  className="flex-1 overflow-hidden"
+className={`${
+                    activeTab === 'file-explorer' ? 'border-6 border-green-500 bg-green-50' :
+                    activeTab === 'category-explorer' ? 'border-6 border-orange-500 bg-orange-50' :
+                    'border-6 border-purple-500 bg-purple-50'
+                  }`}
+                >
+                  {activeTab === 'file-explorer' && <FileExplorer />}
+                  {activeTab === 'category-explorer' && <CategoryExplorer />}
+                  {activeTab === 'search' && <SearchPanel />}
                 </div>
 
-                {/* Explorer content */}
-                <div className="flex-1 overflow-hidden">
-                  {workspaceLayout.file_explorer_visible && <FileExplorer />}
-                  {workspaceLayout.category_explorer_visible && <CategoryExplorer />}
-                  {workspaceLayout.search_panel_visible && <SearchPanel />}
+                {/* Explorer tabs at bottom */}
+                <div className="flex border-t border-gray-200 bg-gray-50">
+                  <ExplorerTab
+                    title="File Explorer"
+                    isActive={activeTab === 'file-explorer'}
+                    onClick={() => setActiveTab('file-explorer')}
+                  />
+                  <ExplorerTab
+                    title="Category Explorer"
+                    isActive={activeTab === 'category-explorer'}
+                    onClick={() => setActiveTab('category-explorer')}
+                  />
+                  <ExplorerTab
+                    title="Search"
+                    isActive={activeTab === 'search'}
+                    onClick={() => setActiveTab('search')}
+                  />
                 </div>
               </div>
             </Panel>
@@ -129,6 +153,7 @@ export const ProjectWorkspace: React.FC<ProjectWorkspaceProps> = ({ projectId })
               id="workspace"
               defaultSize={workspaceLayout.workspace_width}
               minSize={30}
+className="border-8 border-red-500 bg-red-50"
             >
               <DocumentWorkspace />
             </Panel>
