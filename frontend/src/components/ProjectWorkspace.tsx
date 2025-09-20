@@ -113,8 +113,7 @@ export const ProjectWorkspace: React.FC<ProjectWorkspaceProps> = ({ projectId })
               <div className="h-full flex flex-col">
                 {/* Explorer content */}
                 <div
-                  className="flex-1 overflow-hidden"
-className={`${
+                  className={`flex-1 overflow-hidden ${
                     activeTab === 'file-explorer' ? 'border-6 border-green-500 bg-green-50' :
                     activeTab === 'category-explorer' ? 'border-6 border-orange-500 bg-orange-50' :
                     'border-6 border-purple-500 bg-purple-50'

@@ -2,6 +2,9 @@ import { create } from 'zustand'
 import { devtools } from 'zustand/middleware'
 import { invoke } from '@tauri-apps/api/tauri'
 
+// Development mode detection - always use mock data in dev mode
+const isDevelopment = import.meta.env.DEV
+
 // Mock data for development
 const mockProject: ProjectDto = {
   id: 'project_550e8400-e29b-41d4-a716-446655440000',
@@ -66,9 +69,6 @@ const mockFiles: FileSystemItemDto[] = [
     modified_at: '2024-01-15T10:30:00Z',
   },
 ]
-
-// Development mode detection
-const isDevelopment = import.meta.env.DEV && !window.__TAURI__
 
 // Types matching the backend DTOs
 export interface WorkspaceLayoutDto {

@@ -72,21 +72,28 @@ impl RepositoryFactory for Database {
 
     fn project_repository(&self) -> Box<dyn ProjectRepository> {
         // TODO: Implement proper project repository
-        panic!("ProjectRepository not yet implemented")
+        // Temporary mock to prevent panic during development
+        use crate::infrastructure::repositories::mock_project_repository::MockProjectRepository;
+        Box::new(MockProjectRepository)
     }
 }
 
 pub async fn initialize_database() -> Result<Database> {
-    // Use application data directory for database
-    let app_data_dir = tauri::api::path::app_data_dir(&tauri::Config::default())
-        .ok_or_else(|| anyhow::anyhow!("Could not determine app data directory"))?;
+    // In development, use a temporary directory outside the source tree
+    let database_path = if cfg!(debug_assertions) {
+        // Development mode - use temp directory
+        let temp_dir = std::env::temp_dir().join("corpus_review_dev");
+        std::fs::create_dir_all(&temp_dir)?;
+        temp_dir.join("corpus_review.db")
+    } else {
+        // Production mode - use application data directory
+        let app_data_dir = tauri::api::path::app_data_dir(&tauri::Config::default())
+            .ok_or_else(|| anyhow::anyhow!("Could not determine app data directory"))?;
+        std::fs::create_dir_all(&app_data_dir)?;
+        app_data_dir.join("corpus_review.db")
+    };
 
-    // Ensure the directory exists
-    std::fs::create_dir_all(&app_data_dir)?;
-
-    let database_path = app_data_dir.join("corpus_review.db");
     let database_url = format!("sqlite://{}", database_path.to_string_lossy());
-
     info!("Database path: {}", database_url);
 
     let database = Database::new(&database_url).await?;
