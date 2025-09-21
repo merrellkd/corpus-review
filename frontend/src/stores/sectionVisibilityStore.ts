@@ -25,10 +25,10 @@ interface SectionVisibilityState {
   sectionHeights: SectionHeights
 
   // Computed properties
-  shouldShowPanel: boolean
-  isDragDropAvailable: boolean
-  dragDropStatusMessage: string
-  sectionLayout: SectionLayout
+  shouldShowPanel?: boolean
+  isDragDropAvailable?: boolean
+  dragDropStatusMessage?: string
+  sectionLayout?: SectionLayout
 
   // Actions
   toggleFileExplorerSection: () => void
@@ -56,8 +56,8 @@ interface SectionVisibilityOptions {
 }
 
 const computeComputedProperties = (state: Partial<SectionVisibilityState>): Partial<SectionVisibilityState> => {
-  const shouldShowPanel = state.fileExplorerSectionVisible || state.categoryExplorerSectionVisible
-  const isDragDropAvailable = state.fileExplorerSectionVisible && state.categoryExplorerSectionVisible
+  const shouldShowPanel: boolean = !!(state.fileExplorerSectionVisible || state.categoryExplorerSectionVisible)
+  const isDragDropAvailable: boolean = !!(state.fileExplorerSectionVisible && state.categoryExplorerSectionVisible)
 
   let dragDropStatusMessage = ''
   if (isDragDropAvailable) {
@@ -220,10 +220,10 @@ const useSectionVisibilityBase = create<SectionVisibilityState>()(
           })
         }
       }
-    }),
+    },
     {
       name: 'section-visibility'
-    }
+    })
   )
 
 // Default hook without options

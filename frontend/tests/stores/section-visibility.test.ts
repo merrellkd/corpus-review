@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
 import { useSectionVisibility, useSectionVisibilityWithOptions } from '../../src/stores/sectionVisibilityStore'
 
@@ -177,7 +177,7 @@ describe('Section Visibility Management', () => {
       const { result } = renderHook(() => useSectionVisibility())
 
       act(() => {
-        result.current.resizeSections({ fileExplorerHeight: 75 })
+        result.current.resizeSections({ fileExplorer: 75 })
       })
 
       expect(result.current.sectionLayout).toEqual({
@@ -222,8 +222,8 @@ describe('Section Visibility Management', () => {
 
       expect(result.current.fileExplorerSectionVisible).toBe(false)
       expect(result.current.categoryExplorerSectionVisible).toBe(true)
-      expect(result.current.sectionLayout.fileExplorerHeight).toBe(0) // Hidden overrides height
-      expect(result.current.sectionLayout.categoryExplorerHeight).toBe(100)
+      expect(result.current.sectionLayout?.fileExplorerHeight).toBe(0) // Hidden overrides height
+      expect(result.current.sectionLayout?.categoryExplorerHeight).toBe(100)
     })
   })
 

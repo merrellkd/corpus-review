@@ -379,8 +379,8 @@ describe('Drag-and-Drop File Categorization State', () => {
       const { result } = renderHook(() => useFileCategorization())
 
       const operations = [
-        { file: { name: 'doc1.pdf' }, category: 'research', timestamp: Date.now() },
-        { file: { name: 'doc2.pdf' }, category: 'archive', timestamp: Date.now() + 1000 }
+        { file: { name: 'doc1.pdf', path: '/project/doc1.pdf', type: 'file' as const }, category: 'research', timestamp: Date.now(), status: 'success' as const },
+        { file: { name: 'doc2.pdf', path: '/project/doc2.pdf', type: 'file' as const }, category: 'archive', timestamp: Date.now() + 1000, status: 'success' as const }
       ]
 
       act(() => {
@@ -398,9 +398,10 @@ describe('Drag-and-Drop File Categorization State', () => {
       )
 
       const operation = {
-        file: { path: '/project/source/doc1.pdf', name: 'doc1.pdf' },
+        file: { path: '/project/source/doc1.pdf', name: 'doc1.pdf', type: 'file' as const },
         category: 'research',
-        timestamp: Date.now()
+        timestamp: Date.now(),
+        status: 'success' as const
       }
 
       act(() => {

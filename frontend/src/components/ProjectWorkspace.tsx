@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect } from 'react'
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels'
 import { useWorkspaceStore } from '@/stores/workspaceStore'
+import { usePanelStateMachine } from '../stores/panelStateMachine'
 
-// Individual panel components
-import { FileExplorer } from './FileExplorer'
-import { CategoryExplorer } from './CategoryExplorer'
+// New architecture components
+import { TopToolbar } from './TopToolbar'
+import { FilesCategoriesPanel } from './FilesCategoriesPanel'
 import { SearchPanel } from './SearchPanel'
 import { DocumentWorkspace } from './DocumentWorkspace'
 
@@ -12,10 +13,7 @@ export interface ProjectWorkspaceProps {
   projectId: string
 }
 
-type TabType = 'file-explorer' | 'category-explorer' | 'search'
-
 export const ProjectWorkspace: React.FC<ProjectWorkspaceProps> = ({ projectId }) => {
-  const [activeTab, setActiveTab] = useState<TabType>('file-explorer')
   const {
     currentProject,
     workspaceLayout,
@@ -24,6 +22,11 @@ export const ProjectWorkspace: React.FC<ProjectWorkspaceProps> = ({ projectId })
     loadProject,
     updatePanelSizes,
   } = useWorkspaceStore()
+
+  const {
+    isFilesCategoriesPanelActive,
+    isSearchPanelActive,
+  } = usePanelStateMachine()
 
   // Load project on mount
   useEffect(() => {
@@ -71,94 +74,56 @@ export const ProjectWorkspace: React.FC<ProjectWorkspaceProps> = ({ projectId })
     )
   }
 
-  // Calculate if any explorer panels are visible
-  const hasExplorerPanels =
-    workspaceLayout.file_explorer_visible ||
-    workspaceLayout.category_explorer_visible ||
-    workspaceLayout.search_panel_visible
+  // Check if any side panel is active (mutually exclusive)
+  const hasSidePanel = isFilesCategoriesPanelActive || isSearchPanelActive
+
+  // Determine layout class for responsive behavior
+  const layoutClass = hasSidePanel ? 'two-column-layout' : 'full-width-layout'
 
   return (
-    <div className="h-screen bg-gray-100" data-testid="workspace-container">
-      {/* Top Navigation Bar */}
-      <div className="bg-white border-b border-gray-200 px-4 py-2 flex items-center justify-between">
-        <button className="flex items-center space-x-2 text-blue-600 hover:text-blue-800">
-          <span className="text-sm">←</span>
-          <span className="text-sm font-medium">Return to Project List</span>
-        </button>
-
-        <div className="text-center flex-1">
-          <h1 className="text-lg font-semibold text-gray-900">{currentProject.name}</h1>
-        </div>
-
-        <button className="text-gray-400 hover:text-gray-600">
-          <span className="text-lg">⚙️</span>
-        </button>
-      </div>
+    <div className={`h-screen bg-gray-100 ${layoutClass}`} data-testid="workspace-container">
+      {/* Top Toolbar with panel toggles */}
+      <TopToolbar projectTitle={currentProject.name} />
 
       {/* Main workspace area */}
-      <div className="h-[calc(100vh-73px)]">
-        {hasExplorerPanels ? (
+      <div className="h-[calc(100vh-57px)]">
+        {hasSidePanel ? (
           <PanelGroup
             direction="horizontal"
-            onLayout={(sizes) => handlePanelResize('explorer', sizes)}
+            onLayout={(sizes) => handlePanelResize('panel', sizes)}
           >
-            {/* Left panel group - Explorers */}
+            {/* Side Panel - Files & Categories OR Search (mutually exclusive) */}
             <Panel
-              id="explorers"
-              defaultSize={workspaceLayout.explorer_width}
+              id="side-panel"
+              defaultSize={workspaceLayout.explorer_width || 30}
               minSize={15}
               maxSize={70}
-              className="bg-white border-r border-gray-200 border-8 border-blue-500 bg-blue-50"
+              className="bg-white border-r border-gray-200"
             >
-              <div className="h-full flex flex-col">
-                {/* Explorer content */}
-                <div
-                  className={`flex-1 overflow-hidden ${
-                    activeTab === 'file-explorer' ? 'border-6 border-green-500 bg-green-50' :
-                    activeTab === 'category-explorer' ? 'border-6 border-orange-500 bg-orange-50' :
-                    'border-6 border-purple-500 bg-purple-50'
-                  }`}
-                >
-                  {activeTab === 'file-explorer' && <FileExplorer />}
-                  {activeTab === 'category-explorer' && <CategoryExplorer />}
-                  {activeTab === 'search' && <SearchPanel />}
-                </div>
-
-                {/* Explorer tabs at bottom */}
-                <div className="flex border-t border-gray-200 bg-gray-50">
-                  <ExplorerTab
-                    title="File Explorer"
-                    isActive={activeTab === 'file-explorer'}
-                    onClick={() => setActiveTab('file-explorer')}
-                  />
-                  <ExplorerTab
-                    title="Category Explorer"
-                    isActive={activeTab === 'category-explorer'}
-                    onClick={() => setActiveTab('category-explorer')}
-                  />
-                  <ExplorerTab
-                    title="Search"
-                    isActive={activeTab === 'search'}
-                    onClick={() => setActiveTab('search')}
-                  />
-                </div>
-              </div>
+              {isFilesCategoriesPanelActive && (
+                <FilesCategoriesPanel />
+              )}
+              {isSearchPanelActive && (
+                <SearchPanel />
+              )}
             </Panel>
 
-            <PanelResizeHandle className="w-1 bg-gray-300 hover:bg-blue-500 transition-colors" />
+            <PanelResizeHandle
+              className="w-1 bg-gray-300 hover:bg-blue-500 transition-colors"
+              data-testid="panel-resize-handle"
+            />
 
-            {/* Right panel - Document workspace */}
+            {/* Document Workspace */}
             <Panel
-              id="workspace"
-              defaultSize={workspaceLayout.workspace_width}
+              id="document-workspace"
+              defaultSize={workspaceLayout.workspace_width || 70}
               minSize={30}
-className="border-8 border-red-500 bg-red-50"
             >
               <DocumentWorkspace />
             </Panel>
           </PanelGroup>
         ) : (
-          /* Full-width document workspace when no explorers are visible */
+          /* Full-width document workspace when no side panel is active */
           <DocumentWorkspace />
         )}
       </div>
@@ -169,22 +134,3 @@ className="border-8 border-red-500 bg-red-50"
   )
 }
 
-// Explorer tab component
-interface ExplorerTabProps {
-  title: string
-  isActive: boolean
-  onClick?: () => void
-}
-
-const ExplorerTab: React.FC<ExplorerTabProps> = ({ title, isActive, onClick }) => (
-  <button
-    onClick={onClick}
-    className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
-      isActive
-        ? 'border-blue-500 text-blue-600 bg-white'
-        : 'border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300'
-    }`}
-  >
-    {title}
-  </button>
-)
