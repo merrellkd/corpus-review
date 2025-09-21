@@ -126,6 +126,63 @@ Users need a flexible workspace layout with two mutually exclusive panels: a "Fi
 - **Resizable borders**: Users can drag panel boundaries to adjust widths
 - **Responsive behavior**: Layout adapts to window resizing while maintaining proportions
 
+### Panel State Management *(state logic specification)*
+
+#### State Machine Definition
+The system MUST implement a unified state machine to manage panel visibility with the following states:
+
+- **`none`**: No panels visible, Multi-Document Workspace at full width
+- **`files-only`**: Files & Categories panel with only File Explorer section visible
+- **`categories-only`**: Files & Categories panel with only Category Explorer section visible
+- **`files-and-categories`**: Files & Categories panel with both sections visible (enables drag-and-drop)
+- **`search`**: Search panel visible, Files & Categories panel hidden
+
+#### State Transition Rules
+
+**Files & Categories Button Toggle:**
+- **OFF → ON**: Restore to `lastValidState` (default: `files-only` if no previous state)
+- **ON → OFF**: Save current state as `lastValidState`, transition to `none` or `search`
+
+**Section Toggle Logic (within Files & Categories panel):**
+- **File Explorer Toggle OFF**: If Category Explorer also OFF → Auto-close panel, save state
+- **Category Explorer Toggle OFF**: If File Explorer also OFF → Auto-close panel, save state
+- **Either section ON**: If panel was closed → Auto-open panel to appropriate state
+
+**Mutual Exclusivity:**
+- **Search Panel ON**: Files & Categories panel automatically OFF
+- **Files & Categories Panel ON**: Search panel automatically OFF
+
+#### Last Valid State Persistence
+The system MUST track `lastValidFilesCategories` containing:
+```
+{
+  fileExplorerVisible: boolean,
+  categoryExplorerVisible: boolean
+}
+```
+
+**Default Values**: `{ fileExplorerVisible: true, categoryExplorerVisible: false }`
+
+#### User Experience Flow Examples
+
+**Scenario 1: Avoiding Dead States**
+1. User: Files & Categories ON, File Explorer visible
+2. User: Hide File Explorer → Panel stays (Category Explorer still visible)
+3. User: Hide Category Explorer → Panel auto-closes, button turns OFF
+4. User: Click Files & Categories → Panel reopens to File Explorer (restored state)
+
+**Scenario 2: Section Memory**
+1. User: Show both File Explorer and Category Explorer
+2. User: Click Search button → Files & Categories panel closes, saves state
+3. User: Click Files & Categories button → Both sections restore (files-and-categories state)
+
+#### Acceptance Criteria
+- **AC-SM-001**: Panel MUST never remain visible with no sections shown
+- **AC-SM-002**: Button states MUST always match visual panel state
+- **AC-SM-003**: Last valid Files & Categories configuration MUST persist across sessions
+- **AC-SM-004**: State transitions MUST be immediate and provide visual feedback
+- **AC-SM-005**: Rapid button clicking MUST not cause state inconsistencies
+
 ### Key Entities *(include if feature involves data)*
 - **Project**: Contains Source folder path and Reports folder path for file browsing
 - **WorkspaceLayout**: Panel visibility states, panel dimensions, section visibility states, and layout preferences

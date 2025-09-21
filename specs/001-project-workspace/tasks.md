@@ -217,6 +217,54 @@ Task: "New FilesCategoriesPanel component in frontend/src/components/FilesCatego
 - T029a-c: End-to-end testing of panel switching, section auto-hide, and drag-drop categorization workflows
 - T030a-c: Backend integration for panel state persistence, section visibility synchronization, and file categorization
 
+### T034a-T036b: Unified Panel State Management Refactoring
+**Purpose**: Eliminate dual-store architecture and implement single-source-of-truth state machine
+
+#### T034a-T034d: State Management Refactoring
+- **T034a**: Create unified panel state machine tests
+  - Test state transitions: none → files-only → categories-only → files-and-categories → search
+  - Test auto-close logic when both sections hidden
+  - Test last valid state persistence and restoration
+  - Test rapid button clicking and edge cases
+- **T034b**: Remove dual-store architecture
+  - Remove `sectionVisibilityStore.ts` (merge logic into main state machine)
+  - Remove coordination logic between panel and section layers
+  - Eliminate state synchronization issues
+- **T034c**: Implement unified state machine
+  - Update `panelStateMachine.ts` with new PanelStateType enumeration
+  - Add `lastValidFilesCategories` state tracking
+  - Implement auto-close/restore logic
+  - Add atomic state transition methods
+- **T034d**: Add state persistence
+  - Extend WorkspaceLayout entity with unified state fields
+  - Update repository methods for new state structure
+  - Ensure cross-session state restoration
+
+#### T035a-T035c: Component Updates for Unified State
+- **T035a**: Update FilesCategoriesPanel component
+  - Remove dependency on `sectionVisibilityStore`
+  - Use single state machine for all visibility logic
+  - Remove section toggle buttons (move to toolbar or eliminate)
+  - Implement auto-close behavior
+- **T035b**: Update TopToolbar component
+  - Add section toggle controls to toolbar (if keeping section toggles)
+  - Update Files & Categories button to use unified state
+  - Implement proper button state reflection
+- **T035c**: Update ProjectWorkspace component
+  - Remove dual-store dependencies
+  - Simplify panel rendering logic with single state source
+  - Update layout calculations for unified state
+
+#### T036a-T036b: Test Updates and Validation
+- **T036a**: Update existing component tests
+  - Modify all tests using `sectionVisibilityStore` to use unified state
+  - Update mock patterns for single state machine
+  - Ensure test coverage for auto-close/restore scenarios
+- **T036b**: Integration testing and validation
+  - End-to-end testing of unified state behavior
+  - Performance testing for state transition speed
+  - User acceptance testing for improved UX
+
 ## Notes
 - [P] tasks = different files, no dependencies
 - Verify tests fail before implementing
@@ -242,3 +290,11 @@ Task: "New FilesCategoriesPanel component in frontend/src/components/FilesCatego
 - [x] TDD approach maintained for new architecture
 - [x] Mutually exclusive panel behavior properly tested
 - [x] Drag-and-drop functionality comprehensively covered
+
+**Unified State Management Refactoring**:
+- [ ] Unified state machine has comprehensive tests (T034a before T034b-d)
+- [ ] All component updates have updated tests (T036a covers all T035a-c changes)
+- [ ] State persistence properly tested and implemented (T034d)
+- [ ] Auto-close/restore behavior thoroughly validated (T034a, T036b)
+- [ ] Performance and UX improvements verified (T036b)
+- [ ] Legacy dual-store architecture completely removed (T034b)
