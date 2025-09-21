@@ -1,13 +1,7 @@
 import React from 'react'
 import { usePanelStateMachine } from '../stores/panelStateMachine'
 
-interface TopToolbarProps {
-  projectTitle?: string
-}
-
-export const TopToolbar: React.FC<TopToolbarProps> = ({
-  projectTitle = 'Project Workspace'
-}) => {
+export const TopToolbar: React.FC = () => {
   const {
     isFilesCategoriesPanelActive,
     isSearchPanelActive,
@@ -18,17 +12,12 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
   return (
     <div
       data-testid="top-toolbar"
-      className="top-toolbar flex items-center justify-between px-4 py-2 bg-white border-b border-gray-200"
+      className="h-12 bg-gray-50 border-b border-gray-200 flex items-center px-4"
     >
-      {/* Project Title */}
-      <h1 className="text-lg font-semibold text-gray-800">
-        {projectTitle}
-      </h1>
-
       {/* Panel Toggle Controls */}
       <div
         data-testid="panel-toggles"
-        className="panel-toggle-group flex items-center space-x-2"
+        className="flex items-center space-x-2"
       >
         <button
           data-testid="files-categories-toggle-button"

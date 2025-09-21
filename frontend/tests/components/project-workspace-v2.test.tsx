@@ -18,7 +18,7 @@ let mockToggleFilesCategoriesPanel = vi.fn()
 let mockToggleSearchPanel = vi.fn()
 
 vi.mock('../../src/components/TopToolbar', () => ({
-  TopToolbar: ({ projectTitle }: { projectTitle: string }) => (
+  TopToolbar: () => (
     <div data-testid="top-toolbar">
       <button
         data-testid="files-categories-toggle-button"
@@ -32,7 +32,6 @@ vi.mock('../../src/components/TopToolbar', () => ({
       >
         Search
       </button>
-      <h1>{projectTitle}</h1>
     </div>
   )
 }))

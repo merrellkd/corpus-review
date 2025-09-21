@@ -22,11 +22,8 @@ describe('TopToolbar - Panel Toggle Controls', () => {
   })
 
   describe('Basic Rendering', () => {
-    it('should render project title and panel toggle buttons', () => {
-      render(<TopToolbar projectTitle="Test Project" />)
-
-      // Should show project title
-      expect(screen.getByText('Test Project')).toBeInTheDocument()
+    it('should render panel toggle buttons', () => {
+      render(<TopToolbar />)
 
       // Should show both toggle buttons
       expect(screen.getByTestId('files-categories-toggle')).toBeInTheDocument()
@@ -37,14 +34,19 @@ describe('TopToolbar - Panel Toggle Controls', () => {
       expect(screen.getByText('Search')).toBeInTheDocument()
     })
 
-    it('should render with default project title when none provided', () => {
+    it('should render toolbar without project title', () => {
       render(<TopToolbar />)
 
-      expect(screen.getByText('Project Workspace')).toBeInTheDocument()
+      // Toolbar should not contain project title (now in main header)
+      expect(screen.queryByText('Project Workspace')).not.toBeInTheDocument()
+
+      // But should contain toggle buttons
+      expect(screen.getByTestId('files-categories-toggle-button')).toBeInTheDocument()
+      expect(screen.getByTestId('search-toggle-button')).toBeInTheDocument()
     })
 
     it('should apply correct CSS classes for toolbar layout', () => {
-      render(<TopToolbar projectTitle="Test" />)
+      render(<TopToolbar />)
 
       const toolbar = screen.getByTestId('top-toolbar')
       expect(toolbar).toHaveClass('top-toolbar')
