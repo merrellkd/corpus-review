@@ -4,9 +4,11 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev": "tauri dev",
+    "dev": "npm run kill-port && tauri dev",
+    "dev:force": "npm run kill-port && tauri dev",
     "build": "tauri build",
     "tauri": "tauri",
+    "kill-port": "kill-port 1420",
     "frontend:dev": "cd frontend && npm run dev",
     "frontend:build": "cd frontend && npm run build",
     "frontend:test": "cd frontend && npm test",
@@ -16,5 +18,8 @@
   },
   "dependencies": {
     "@tauri-apps/cli": "^2.8.4"
+  },
+  "devDependencies": {
+    "kill-port": "^2.0.1"
   }
 }
