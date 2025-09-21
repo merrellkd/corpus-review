@@ -6,19 +6,15 @@
 
 All features MUST follow strict DDD architecture. Domain layer contains pure business logic with zero infrastructure dependencies. Application layer orchestrates domain objects. Infrastructure layer handles external concerns. UI layer consumes application services only.
 
-### II. Enhanced Five Docs Per Feature
-
-Every feature requires complete documentation structure before implementation begins. Core docs: `_brief.md`, `_contract.ts`, `_tests.md`, `_status.json`, `_prompt-pack.yaml`. Extended docs include domain models, technical design, and integration guides. Documentation drives implementation, not vice versa.
-
-### III. Layer Isolation Enforcement
+### II. Layer Isolation Enforcement
 
 Domain layer CANNOT import from application or infrastructure layers. Application layer CANNOT import from infrastructure or UI layers. Infrastructure layer implements domain repository interfaces. Violations block feature advancement.
 
-### IV. Prefixed Identifier System
+### III. Prefixed Identifier System
 
 All domain identifiers use prefixed UUID value objects (`entity_`, `doc_`, `mws_`, etc.). Self-identifying IDs enable debugging clarity and type safety. Raw UUIDs prohibited in domain logic.
 
-### V. Strict TypeScript Compilation
+### IV. Strict TypeScript Compilation
 
 All code must pass TypeScript strict mode compilation. No implicit any, no missing return types, exact optional properties enforced. Type safety is non-negotiable for production deployment.
 
