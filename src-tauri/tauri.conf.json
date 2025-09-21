@@ -1,37 +1,14 @@
 {
+  "productName": "Corpus Review",
+  "version": "0.1.0",
+  "identifier": "com.corpus-review.dev",
   "build": {
     "beforeDevCommand": "cd frontend && npm run dev",
     "beforeBuildCommand": "cd frontend && npm run build",
-    "devPath": "http://localhost:1420",
-    "distDir": "../frontend/dist"
+    "frontendDist": "../frontend/dist",
+    "devUrl": "http://localhost:1420"
   },
-  "package": {
-    "productName": "Corpus Review",
-    "version": "0.1.0"
-  },
-  "tauri": {
-    "allowlist": {
-      "all": false,
-      "shell": {
-        "all": false,
-        "open": true
-      },
-      "fs": {
-        "all": true,
-        "scope": ["**"]
-      },
-      "path": {
-        "all": true
-      },
-      "dialog": {
-        "all": true
-      }
-    },
-    "bundle": {
-      "active": true,
-      "targets": "all",
-      "identifier": "com.corpus-review.dev"
-    },
+  "app": {
     "security": {
       "csp": null
     },
@@ -46,5 +23,18 @@
         "minHeight": 600
       }
     ]
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all"
+  },
+  "plugins": {
+    "shell": {
+      "open": true
+    },
+    "fs": {
+      "scope": ["**"]
+    },
+    "dialog": {}
   }
 }
