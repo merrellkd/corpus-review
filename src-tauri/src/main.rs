@@ -29,6 +29,9 @@ async fn main() {
     let workspace_service = WorkspaceService::new(repository_factory);
 
     tauri::Builder::default()
+        .plugin(tauri_plugin_shell::init())
+        .plugin(tauri_plugin_fs::init())
+        .plugin(tauri_plugin_dialog::init())
         .manage(workspace_service)
         .invoke_handler(tauri::generate_handler![
             commands::workspace_commands::get_workspace_layout,
