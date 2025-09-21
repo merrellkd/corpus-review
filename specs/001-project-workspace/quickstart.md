@@ -1,8 +1,8 @@
 # Quickstart: Project Workspace
 
-**Feature**: Project Workspace
-**Date**: 2025-09-19
-**Purpose**: Validate implementation against user scenarios
+**Feature**: Project Workspace (Updated for Mutually Exclusive Panel Architecture)
+**Date**: 2025-09-20
+**Purpose**: Validate implementation against user scenarios with new panel design
 
 ## Prerequisites
 - Project created with Source and Reports folder paths configured
@@ -15,40 +15,80 @@
 **Given**: User opens a project with configured Source/Reports folders
 **When**: Project Workspace interface loads
 **Then**:
-- [ ] File Explorer panel shows files from Source folder
-- [ ] File Explorer panel shows files from Reports folder
-- [ ] Category Explorer panel is visible but empty
-- [ ] Search panel is visible but non-functional
+- [ ] Files & Categories panel is visible by default
+- [ ] File Explorer section shows files from Source folder
+- [ ] File Explorer section shows files from Reports folder
+- [ ] Category Explorer section is visible but empty
+- [ ] Search panel is hidden by default
 - [ ] Multi-Document Workspace area is visible and empty
-- [ ] All panel toggle buttons are available in toolbar
+- [ ] Top toolbar shows "Files & Categories" and "Search" toggle buttons
 
 **Validation Steps**:
 1. Open project "Test Project"
 2. Navigate to Project Workspace
-3. Verify File Explorer shows test files from both folders
-4. Verify Category Explorer displays empty state message
-5. Verify Search panel displays placeholder interface
-6. Verify MDW area shows "No documents open" state
+3. Verify Files & Categories panel is active on left
+4. Verify File Explorer section shows test files from both folders
+5. Verify Category Explorer section displays empty state message
+6. Verify Search panel is not visible
+7. Verify MDW area shows "No documents open" state
+8. Verify top toolbar has both toggle buttons
 
-### Scenario 2: Panel Visibility Controls
-**Given**: Workspace is loaded with all panels visible
-**When**: User toggles panel visibility
+### Scenario 2: Mutually Exclusive Panel Switching
+**Given**: Workspace is loaded with Files & Categories panel visible
+**When**: User toggles between panels
 **Then**:
-- [ ] File Explorer toggle hides/shows File Explorer independently
-- [ ] Category Explorer toggle hides/shows Category Explorer independently
-- [ ] Search toggle hides/shows Search panel independently
-- [ ] MDW expands to full width when all explorer panels hidden
+- [ ] "Search" toggle switches to Search panel, hides Files & Categories panel
+- [ ] "Files & Categories" toggle switches back to Files & Categories panel, hides Search panel
+- [ ] Toggling same active panel hides it, shows full-width MDW
+- [ ] Only one panel can be visible at a time (mutually exclusive)
 - [ ] Panel states persist when workspace reloaded
 
 **Validation Steps**:
-1. Click File Explorer toggle - verify panel hides, layout adjusts
-2. Click Category Explorer toggle - verify panel hides, layout adjusts
-3. Click Search toggle - verify panel hides, layout adjusts
-4. Verify MDW now spans full width
-5. Reload workspace - verify panel states restored
-6. Toggle panels back on - verify layout returns to multi-panel mode
+1. Start with Files & Categories panel visible
+2. Click "Search" toggle - verify Search panel shows, Files & Categories panel hides
+3. Click "Files & Categories" toggle - verify Files & Categories panel shows, Search panel hides
+4. Click "Files & Categories" toggle again - verify panel hides, MDW spans full width
+5. Reload workspace - verify panel state restored
+6. Toggle panels to verify mutually exclusive behavior
 
-### Scenario 3: Panel Resizing
+### Scenario 3: Independent Section Visibility within Files & Categories Panel
+**Given**: Files & Categories panel is active
+**When**: User toggles individual sections within the panel
+**Then**:
+- [ ] File Explorer section can be hidden while Category Explorer section remains visible
+- [ ] Category Explorer section can be hidden while File Explorer section remains visible
+- [ ] When both sections are hidden, entire Files & Categories panel automatically disappears
+- [ ] When any section is shown, Files & Categories panel becomes visible
+- [ ] Section visibility states persist when workspace reloaded
+
+**Validation Steps**:
+1. Start with Files & Categories panel visible (both sections shown)
+2. Hide File Explorer section - verify Category Explorer section remains visible
+3. Hide Category Explorer section - verify File Explorer section remains visible
+4. Hide both sections - verify entire Files & Categories panel disappears, MDW goes full width
+5. Show File Explorer section - verify Files & Categories panel reappears
+6. Reload workspace - verify section states restored
+
+### Scenario 4: Drag-and-Drop File Categorization
+**Given**: Files & Categories panel is active with both File Explorer and Category Explorer sections visible
+**When**: User drags files from File Explorer to Category Explorer
+**Then**:
+- [ ] File items are draggable from File Explorer section
+- [ ] Category areas are valid drop targets in Category Explorer section
+- [ ] Visual feedback shows drag state and valid drop zones
+- [ ] File assignment to category is recorded and persisted
+- [ ] File metadata updates to reflect category assignment
+
+**Validation Steps**:
+1. Ensure both File Explorer and Category Explorer sections are visible
+2. Drag a file from File Explorer section
+3. Verify drag visual feedback and cursor changes
+4. Drop file onto category in Category Explorer section
+5. Verify file assignment is recorded
+6. Reload workspace - verify file-category assignment persists
+7. Test with multiple files to verify bulk categorization
+
+### Scenario 5: Panel Resizing
 **Given**: Multiple panels are visible
 **When**: User drags panel borders
 **Then**:

@@ -15,7 +15,8 @@
       "Bash(npm test:*)",
       "Bash(npm uninstall:*)",
       "Bash(npm run dev:*)",
-      "WebFetch(domain:github.com)"
+      "WebFetch(domain:github.com)",
+      "Bash(.specify/scripts/bash/check-implementation-prerequisites.sh:*)"
     ],
     "deny": [],
     "ask": []

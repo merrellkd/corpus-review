@@ -1,8 +1,8 @@
 
-# Implementation Plan: Project Workspace
+# Implementation Plan: [FEATURE]
 
-**Branch**: `001-project-workspace` | **Date**: 2025-09-19 | **Spec**: [spec.md](spec.md)
-**Input**: Feature specification from `/specs/001-project-workspace/spec.md`
+**Branch**: `[###-feature-name]` | **Date**: [DATE] | **Spec**: [link]
+**Input**: Feature specification from `/specs/[###-feature-name]/spec.md`
 
 ## Execution Flow (/plan command scope)
 ```
@@ -31,48 +31,23 @@
 - Phase 3-4: Implementation execution (manual or via tools)
 
 ## Summary
-Project Workspace feature providing resizable panel layout for file browsing and multi-document editing. Features File Explorer (Source/Reports folders), Category Explorer (placeholder), Search panel (placeholder), and Multi-Document Workspace with independent panel visibility controls and layout persistence.
+[Extract from feature spec: primary requirement + technical approach from research]
 
 ## Technical Context
-**Language/Version**: TypeScript/React + Rust (Tauri backend per constitution)
-**Primary Dependencies**: React + TypeScript with Vite, Tauri (Rust), SQLX, Zustand for state management
-**Storage**: SQLite with SQLX for workspace layout preferences and project folder paths
-**Testing**: NEEDS CLARIFICATION - testing framework not specified in constitution
-**Target Platform**: Desktop application via Tauri
-**Project Type**: web - frontend React + backend Rust determines structure
-**Performance Goals**: 60fps UI interactions, <100ms panel resize response, smooth file browsing
-**Constraints**: Desktop-only, file system access required, offline-capable workspace, DDD architecture compliance
-**Scale/Scope**: Single-user workspace, hundreds of files per project, 4-panel resizable layout
+**Language/Version**: [e.g., Python 3.11, Swift 5.9, Rust 1.75 or NEEDS CLARIFICATION]  
+**Primary Dependencies**: [e.g., FastAPI, UIKit, LLVM or NEEDS CLARIFICATION]  
+**Storage**: [if applicable, e.g., PostgreSQL, CoreData, files or N/A]  
+**Testing**: [e.g., pytest, XCTest, cargo test or NEEDS CLARIFICATION]  
+**Target Platform**: [e.g., Linux server, iOS 15+, WASM or NEEDS CLARIFICATION]
+**Project Type**: [single/web/mobile - determines source structure]  
+**Performance Goals**: [domain-specific, e.g., 1000 req/s, 10k lines/sec, 60 fps or NEEDS CLARIFICATION]  
+**Constraints**: [domain-specific, e.g., <200ms p95, <100MB memory, offline-capable or NEEDS CLARIFICATION]  
+**Scale/Scope**: [domain-specific, e.g., 10k users, 1M LOC, 50 screens or NEEDS CLARIFICATION]
 
 ## Constitution Check
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-**Domain-Driven Design Compliance**: ✅ PASS
-- Feature will follow DDD architecture with domain/application/infrastructure/ui layers
-- Workspace domain contains layout entities, file explorer aggregates, panel management
-
-**Enhanced Five Docs Per Feature**: ✅ PASS
-- Will generate required docs: research.md, data-model.md, contracts/, quickstart.md, CLAUDE.md
-- Documentation-driven implementation approach
-
-**Layer Isolation Enforcement**: ✅ PASS
-- Domain layer (workspace entities, file system abstractions) isolated from infrastructure
-- UI layer will consume application services only
-- Tauri commands in infrastructure layer implementing domain repositories
-
-**Prefixed Identifier System**: ✅ PASS
-- Will use workspace_ prefixed UUIDs for layout preferences
-- File system paths as natural identifiers for documents
-
-**Strict TypeScript Compilation**: ✅ PASS
-- React frontend with strict TypeScript mode
-- Type-safe Zustand stores for workspace state
-
-**Technology Stack Compliance**: ✅ PASS
-- React + TypeScript + Vite frontend
-- Tauri Rust backend with SQLX
-- Zustand for client-side state management
-- Structured logging implementation
+[Gates determined based on constitution file]
 
 ## Project Structure
 
@@ -219,18 +194,18 @@ ios/ or android/
 *This checklist is updated during execution flow*
 
 **Phase Status**:
-- [x] Phase 0: Research complete (/plan command)
-- [x] Phase 1: Design complete (/plan command)
-- [x] Phase 2: Task planning complete (/plan command - describe approach only)
+- [ ] Phase 0: Research complete (/plan command)
+- [ ] Phase 1: Design complete (/plan command)
+- [ ] Phase 2: Task planning complete (/plan command - describe approach only)
 - [ ] Phase 3: Tasks generated (/tasks command)
 - [ ] Phase 4: Implementation complete
 - [ ] Phase 5: Validation passed
 
 **Gate Status**:
-- [x] Initial Constitution Check: PASS
-- [x] Post-Design Constitution Check: PASS
-- [x] All NEEDS CLARIFICATION resolved
-- [x] Complexity deviations documented
+- [ ] Initial Constitution Check: PASS
+- [ ] Post-Design Constitution Check: PASS
+- [ ] All NEEDS CLARIFICATION resolved
+- [ ] Complexity deviations documented
 
 ---
 *Based on Constitution v2.1.1 - See `/memory/constitution.md`*

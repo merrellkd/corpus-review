@@ -1,5 +1,5 @@
 // Project Workspace API Contracts
-// Generated from functional requirements FR-001 through FR-012
+// Updated for mutually exclusive panel architecture - Generated from functional requirements FR-001 through FR-016
 
 export interface WorkspaceLayoutDto {
   id: string;
@@ -10,16 +10,18 @@ export interface WorkspaceLayoutDto {
 }
 
 export interface PanelVisibilityStateDto {
-  fileExplorerVisible: boolean;
-  categoryExplorerVisible: boolean;
-  searchPanelVisible: boolean;
+  activePanel: 'none' | 'files_categories' | 'search';
+  fileExplorerSectionVisible: boolean; // within Files & Categories panel
+  categoryExplorerSectionVisible: boolean; // within Files & Categories panel
   documentWorkspaceVisible: boolean; // always true
 }
 
 export interface PanelDimensionStateDto {
-  explorerWidth: number; // percentage 0-100
+  filesCategoriesPanelWidth: number; // percentage 0-100
+  searchPanelWidth: number; // percentage 0-100
   workspaceWidth: number; // calculated percentage
-  panelHeights: Record<string, number>; // panel type -> height percentage
+  fileExplorerSectionHeight: number; // within Files & Categories panel
+  categoryExplorerSectionHeight: number; // within Files & Categories panel
 }
 
 export interface FileSystemItemDto {
@@ -101,8 +103,7 @@ export interface GetProjectDetailsResponse {
 
 export interface UpdatePanelVisibilityRequest {
   project_id: string;
-  panel_type: 'file_explorer' | 'category_explorer' | 'search_panel';
-  visible: boolean;
+  action_type: 'toggle_files_categories' | 'toggle_search' | 'toggle_file_explorer_section' | 'toggle_category_explorer_section';
 }
 
 export interface UpdatePanelVisibilityResponse {
@@ -141,6 +142,18 @@ export interface UpdateDocumentCaddyRequest {
 export interface UpdateDocumentCaddyResponse {
   success: boolean;
   updated_caddy: DocumentCaddyDto;
+}
+
+export interface AssignFileToCategoryRequest {
+  file_path: string;
+  category_id: string;
+  project_id: string;
+}
+
+export interface AssignFileToCategoryResponse {
+  success: boolean;
+  updated_file: FileSystemItemDto;
+  error?: string;
 }
 
 // Error Response Types

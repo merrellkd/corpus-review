@@ -1,8 +1,8 @@
 # Research: Project Workspace
 
-**Feature**: Project Workspace
-**Date**: 2025-09-19
-**Status**: Phase 0 Complete
+**Feature**: Project Workspace (Updated for Mutually Exclusive Panel Architecture)
+**Date**: 2025-09-20
+**Status**: Phase 0 Complete - Updated for new specification
 
 ## Research Findings
 
@@ -48,12 +48,14 @@
 - Native file dialogs: Limited for continuous folder monitoring
 
 ### State Management Architecture
-**Decision**: Domain-specific Zustand stores with persistence middleware
+**Decision**: Domain-specific Zustand stores with mutually exclusive panel state management
 **Rationale**:
 - Separate stores for workspace layout, file explorer, document state
 - Built-in persistence for panel sizes and visibility preferences
 - Type-safe actions and selectors following DDD boundaries
 - Optimistic updates with error rollback for file operations
+- Finite state machine pattern for mutually exclusive panel visibility (Files & Categories OR Search, never both)
+- Independent section visibility within Files & Categories panel (File Explorer + Category Explorer)
 
 **Alternatives considered**:
 - Redux Toolkit: Overly complex for workspace state management
@@ -74,5 +76,33 @@
 - Fixed-size containers: Doesn't provide the flexible workspace experience
 - Tab-based approach: Doesn't match multi-document workspace design
 
+### Mutually Exclusive Panel Architecture
+**Decision**: Two-panel system with finite state machine control
+**Rationale**:
+- Files & Categories Panel: Contains both File Explorer and Category Explorer sections that can be independently toggled
+- Search Panel: Completely independent panel for search functionality
+- Panels are mutually exclusive (only one can be visible at a time) to maintain focus and avoid UI complexity
+- Top toolbar toggles control panel switching ("Files & Categories" and "Search" buttons)
+- When both File Explorer and Category Explorer sections are hidden, entire Files & Categories panel disappears
+- Enables drag-and-drop file categorization when both sections are visible simultaneously
+
+**Alternatives considered**:
+- Three-column layout: Too complex for desktop workspace, violates focus principles
+- Tabbed interface: Prevents simultaneous file/category viewing needed for drag-drop workflow
+- Always-visible panels: Clutters workspace and conflicts with user workflow patterns
+
+### Drag-and-Drop File Categorization
+**Decision**: HTML5 Drag and Drop API with file path data transfer between sections
+**Rationale**:
+- Native browser support for drag-and-drop operations
+- Works across component boundaries within the Files & Categories panel
+- Supports file metadata transfer for categorization operations
+- Integrates with existing file system repository patterns
+
+**Alternatives considered**:
+- Mouse event handling: More complex and less accessible than native drag-drop
+- Keyboard-only assignment: Insufficient for rapid categorization workflows
+- Modal-based assignment: Poor UX for bulk categorization tasks
+
 ## Implementation Readiness
-All technical unknowns resolved. Ready for Phase 1 design and contracts generation.
+All technical unknowns resolved. New mutually exclusive panel architecture researched and validated. Ready for Phase 1 design and contracts generation.

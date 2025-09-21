@@ -9,7 +9,11 @@
 - ✅ **Domain Layer (T014-T019)**: Complete - All domain entities, value objects, and repository interfaces implemented with 37 passing tests
 - ✅ **Application Layer (T020-T021)**: Complete - WorkspaceService and FileSystemService with full DTO conversion and error handling
 - ✅ **Infrastructure Layer (T022-T024)**: Complete - SQLX repositories, Tauri file system access, and all 11 Tauri commands implemented
-- ⏳ **UI Layer (T025-T026)**: Ready to Start - Complete backend infrastructure provides API foundation
+- 🔄 **Updated Architecture Phase**: Ready to implement mutually exclusive panel architecture from updated specification
+  - ⏳ **State Management (T025a-T026c)**: Tests and implementation for mutually exclusive panel logic
+  - ⏳ **UI Components (T027a-T028f)**: Tests and implementation for new panel structure
+  - ⏳ **Integration (T029a-T030c)**: End-to-end testing and implementation
+  - ⏳ **Polish (T031a-T033)**: Performance, error handling, and validation
 
 ## Execution Flow (main)
 ```
@@ -29,7 +33,7 @@
    → Different files = mark [P] for parallel
    → Tests before implementation (TDD)
    → Domain → Application → Infrastructure → UI layers
-5. Generated 27 numbered tasks (T001-T027)
+5. Generated 33 numbered tasks (T001-T033) including updated architecture tasks
 6. Dependencies: Setup → Tests → Domain → Application → Infrastructure → UI → Polish
 ```
 
@@ -77,34 +81,85 @@
 - [x] T023 Tauri FileSystemRepository implementation in src-tauri/src/infrastructure/repositories/file_system_repository.rs ✅ COMPILED
 - [x] T024 Tauri commands (11 commands total) in src-tauri/src/commands/ ✅ COMPILED
 
-## Phase 3.6: UI Layer
-- [ ] T025 Zustand workspace store in frontend/src/stores/workspaceStore.ts
-- [ ] T026 Main workspace component with react-resizable-panels in frontend/src/components/ProjectWorkspace.tsx
+## Phase 3.6: UI Layer Updates for Mutually Exclusive Panel Architecture
+**Note**: Backend infrastructure complete - now implementing new panel behavior from updated specification
 
-## Phase 3.7: Polish
-- [ ] T027 [P] Run quickstart validation scenarios and fix any issues
+### Updated State Management (TDD)
+- [x] T025a [P] Test mutually exclusive panel state logic in frontend/tests/stores/test_panel_state_machine.ts ✅ FAILING (missing implementation)
+- [x] T025b [P] Test section visibility within Files & Categories panel in frontend/tests/stores/test_section_visibility.ts ✅ FAILING (missing implementation)
+- [x] T025c [P] Test drag-and-drop file categorization state in frontend/tests/stores/test_file_categorization.ts ✅ FAILING (missing implementation)
+
+### State Implementation
+- [ ] T026a Updated workspace store with mutually exclusive panel logic in frontend/src/stores/workspaceStore.ts
+- [ ] T026b Panel state machine for None|FilesCategoriesPanel|SearchPanel in frontend/src/stores/panelStateMachine.ts
+- [ ] T026c Section visibility manager for independent File Explorer and Category Explorer sections in frontend/src/stores/sectionVisibilityStore.ts
+
+### Updated UI Components (TDD)
+- [ ] T027a [P] Test ProjectWorkspace mutually exclusive panel rendering in frontend/tests/components/test_project_workspace_v2.tsx ✅ MUST FAIL
+- [ ] T027b [P] Test TopToolbar panel toggle buttons in frontend/tests/components/test_top_toolbar.tsx ✅ MUST FAIL
+- [ ] T027c [P] Test FilesCategoriesPanel with independent sections in frontend/tests/components/test_files_categories_panel.tsx ✅ MUST FAIL
+- [ ] T027d [P] Test drag-and-drop file categorization workflow in frontend/tests/components/test_drag_drop_categorization.tsx ✅ MUST FAIL
+
+### UI Implementation
+- [ ] T028a Updated ProjectWorkspace component for mutually exclusive panels in frontend/src/components/ProjectWorkspace.tsx
+- [ ] T028b New TopToolbar component with "Files & Categories" and "Search" toggles in frontend/src/components/TopToolbar.tsx
+- [ ] T028c New FilesCategoriesPanel with independent File Explorer and Category Explorer sections in frontend/src/components/FilesCategoriesPanel.tsx
+- [ ] T028d Enhanced FileExplorer with drag-and-drop file support in frontend/src/components/FileExplorer.tsx
+- [ ] T028e Enhanced CategoryExplorer with drop target functionality in frontend/src/components/CategoryExplorer.tsx
+- [ ] T028f Updated SearchPanel for mutually exclusive behavior in frontend/src/components/SearchPanel.tsx
+
+### Integration Tests for New Architecture
+- [ ] T029a [P] Integration test full mutually exclusive panel switching in frontend/tests/integration/test_panel_switching_v2.tsx ✅ MUST FAIL
+- [ ] T029b [P] Integration test section visibility and auto-hide behavior in frontend/tests/integration/test_section_auto_hide.tsx ✅ MUST FAIL
+- [ ] T029c [P] Integration test drag-and-drop file categorization end-to-end in frontend/tests/integration/test_drag_drop_e2e.tsx ✅ MUST FAIL
+
+### Integration Implementation
+- [ ] T030a Panel switching integration with backend state persistence
+- [ ] T030b Section visibility state synchronization with backend
+- [ ] T030c Drag-and-drop file categorization backend integration
+
+## Phase 3.7: Polish & Validation for New Architecture
+- [ ] T031a [P] Performance optimization for panel switching animations
+- [ ] T031b [P] Error handling for failed drag-and-drop operations
+- [ ] T031c [P] Loading states for panel operations
+- [ ] T032 Run updated quickstart validation scenarios for mutually exclusive panels
+- [ ] T033 Update CLAUDE.md with new mutually exclusive panel patterns
 
 ## Dependencies
-- Setup (T001-T005) before everything
-- Tests (T006-T013) before implementation (T014-T027)
-- Domain (T014-T019) before Application (T020-T021)
-- Application before Infrastructure (T022-T024)
-- Infrastructure before UI (T025-T026)
-- Implementation before polish (T027)
+
+**Original Implementation (Completed)**:
+- Setup (T001-T005) → Tests (T006-T013) → Domain (T014-T019) → Application (T020-T021) → Infrastructure (T022-T024) ✅
+
+**New Architecture Implementation**:
+- Backend Complete → New UI Tests (T025a-c) → State Implementation (T026a-c)
+- State Implementation → UI Component Tests (T027a-d) → UI Implementation (T028a-f)
+- UI Implementation → Integration Tests (T029a-c) → Integration Implementation (T030a-c)
+- All Implementation → Polish & Validation (T031a-c, T032, T033)
+
+**Sequential Dependencies**:
+- T025a-c (state tests) → T026a-c (state implementation)
+- T027a-d (component tests) → T028a-f (component implementation)
+- T029a-c (integration tests) → T030a-c (integration implementation)
 
 ## Parallel Example
-```bash
-# Launch domain entity tasks together (T014-T018):
-Task: "WorkspaceLayout entity in src-tauri/src/domain/workspace/entities/workspace_layout.rs"
-Task: "FileSystemItem entity in src-tauri/src/domain/workspace/entities/file_system_item.rs"
-Task: "DocumentCaddy entity in src-tauri/src/domain/workspace/entities/document_caddy.rs"
-Task: "Project entity in src-tauri/src/domain/workspace/entities/project.rs"
-Task: "Value objects in src-tauri/src/domain/workspace/value_objects.rs"
 
-# Launch contract tests together (T006-T010):
-Task: "Contract test get_workspace_layout command in src-tauri/tests/commands/test_workspace_layout.rs"
-Task: "Contract test save_workspace_layout command in src-tauri/tests/commands/test_save_layout.rs"
-Task: "Contract test list_folder_contents command in src-tauri/tests/commands/test_folder_contents.rs"
+**New Architecture Implementation**:
+```bash
+# Launch state management tests together (T025a-c):
+Task: "Test mutually exclusive panel state logic in frontend/tests/stores/test_panel_state_machine.ts"
+Task: "Test section visibility within Files & Categories panel in frontend/tests/stores/test_section_visibility.ts"
+Task: "Test drag-and-drop file categorization state in frontend/tests/stores/test_file_categorization.ts"
+
+# Launch UI component tests together (T027a-d):
+Task: "Test ProjectWorkspace mutually exclusive panel rendering in frontend/tests/components/test_project_workspace_v2.tsx"
+Task: "Test TopToolbar panel toggle buttons in frontend/tests/components/test_top_toolbar.tsx"
+Task: "Test FilesCategoriesPanel with independent sections in frontend/tests/components/test_files_categories_panel.tsx"
+Task: "Test drag-and-drop file categorization workflow in frontend/tests/components/test_drag_drop_categorization.tsx"
+
+# Launch UI implementation together (T028a-f):
+Task: "Updated ProjectWorkspace component for mutually exclusive panels in frontend/src/components/ProjectWorkspace.tsx"
+Task: "New TopToolbar component with panel toggles in frontend/src/components/TopToolbar.tsx"
+Task: "New FilesCategoriesPanel component in frontend/src/components/FilesCategoriesPanel.tsx"
 ```
 
 ## Detailed Task Breakdown
@@ -144,10 +199,23 @@ Task: "Contract test list_folder_contents command in src-tauri/tests/commands/te
   * list_folder_contents, search_files_recursive, get_file_info, is_path_accessible
 - Main codebase compiles successfully with proper error handling and DTO integration
 
-### T025-T026: UI Components
-- Zustand store with TypeScript interfaces
-- React components using react-resizable-panels
-- Proper state management and optimistic updates
+### T025a-T026c: Updated State Management for Mutually Exclusive Panels
+- T025a-c: Test-driven development for panel state machine and section visibility logic
+- T026a: Updated workspace store with finite state machine for mutually exclusive panels (None|FilesCategoriesPanel|SearchPanel)
+- T026b: Panel state machine implementation with automatic transitions and validation
+- T026c: Section visibility manager for independent File Explorer and Category Explorer sections within Files & Categories panel
+
+### T027a-T028f: Updated UI Components for New Architecture
+- T027a-d: Comprehensive testing for new component behavior including mutually exclusive rendering and drag-drop workflows
+- T028a: Updated ProjectWorkspace with two-column layout (panel + MDW) instead of three-column
+- T028b: New TopToolbar with "Files & Categories" and "Search" toggle buttons for panel switching
+- T028c: New FilesCategoriesPanel containing both File Explorer and Category Explorer sections
+- T028d-e: Enhanced File Explorer and Category Explorer with HTML5 drag-and-drop API support
+- T028f: Updated SearchPanel for mutually exclusive behavior
+
+### T029a-T030c: Integration for New Architecture
+- T029a-c: End-to-end testing of panel switching, section auto-hide, and drag-drop categorization workflows
+- T030a-c: Backend integration for panel state persistence, section visibility synchronization, and file categorization
 
 ## Notes
 - [P] tasks = different files, no dependencies
@@ -159,9 +227,18 @@ Task: "Contract test list_folder_contents command in src-tauri/tests/commands/te
 ## Validation Checklist
 *GATE: Checked during execution*
 
+**Original Implementation (Completed)**:
 - [x] All 8 contracts have corresponding tests (T006-T010)
 - [x] All 5 entities have model tasks (T014-T018)
 - [x] All tests come before implementation (T006-T013 before T014+)
 - [x] Parallel tasks truly independent (different files)
 - [x] Each task specifies exact file path
 - [x] No task modifies same file as another [P] task
+
+**New Architecture Implementation**:
+- [x] All new state management has tests (T025a-c before T026a-c)
+- [x] All new UI components have tests (T027a-d before T028a-f)
+- [x] All integration features have tests (T029a-c before T030a-c)
+- [x] TDD approach maintained for new architecture
+- [x] Mutually exclusive panel behavior properly tested
+- [x] Drag-and-drop functionality comprehensively covered

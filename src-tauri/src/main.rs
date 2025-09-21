@@ -11,7 +11,7 @@ pub mod application;
 pub mod infrastructure;
 
 use application::workspace_service::WorkspaceService;
-use infrastructure::database::Database;
+use infrastructure::database::{Database, initialize_database};
 use std::sync::Arc;
 
 #[tokio::main]
@@ -24,8 +24,7 @@ async fn main() {
     info!("Starting Corpus Review application");
 
     // Initialize database and services
-    let database_url = "sqlite:corpus_review.db";
-    let database = Database::new(database_url).await.expect("Failed to initialize database");
+    let database = initialize_database().await.expect("Failed to initialize database");
     let repository_factory = Arc::new(database);
     let workspace_service = WorkspaceService::new(repository_factory);
 
