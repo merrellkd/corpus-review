@@ -1,50 +1,71 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+# Corpus Review Constitution
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+### I. Domain-Driven Design (NON-NEGOTIABLE)
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+All features MUST follow strict DDD architecture. Domain layer contains pure business logic with zero infrastructure dependencies. Application layer orchestrates domain objects. Infrastructure layer handles external concerns. UI layer consumes application services only.
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+### II. Enhanced Five Docs Per Feature
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+Every feature requires complete documentation structure before implementation begins. Core docs: `_brief.md`, `_contract.ts`, `_tests.md`, `_status.json`, `_prompt-pack.yaml`. Extended docs include domain models, technical design, and integration guides. Documentation drives implementation, not vice versa.
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+### III. Layer Isolation Enforcement
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+Domain layer CANNOT import from application or infrastructure layers. Application layer CANNOT import from infrastructure or UI layers. Infrastructure layer implements domain repository interfaces. Violations block feature advancement.
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+### IV. Prefixed Identifier System
 
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
+All domain identifiers use prefixed UUID value objects (`entity_`, `doc_`, `mws_`, etc.). Self-identifying IDs enable debugging clarity and type safety. Raw UUIDs prohibited in domain logic.
 
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+### V. Strict TypeScript Compilation
+
+All code must pass TypeScript strict mode compilation. No implicit any, no missing return types, exact optional properties enforced. Type safety is non-negotiable for production deployment.
+
+## Development Workflow
+
+### Phase-Gated Feature Development
+
+Features progress through mandatory phases: discover → design → build_test → review → merged. Phase advancement requires complete audit of deliverables. No phase skipping permitted. Each phase has specific completion criteria.
+
+### AI-First Development Process
+
+Documentation optimized for Claude Code autonomous work. Feature-specific prompt packs provide complete context. Shared architectural patterns documented for consistency. Human oversight focuses on design decisions, not implementation details.
+
+### Visual-First UI Development
+
+New interfaces prototyped in UI Lab environment first. Screenshot-based iteration using Playwright integration. Design system consistency enforced through shared tokens. Components ported to main app only after visual refinement complete.
+
+## Architecture Standards
+
+### DDD Structure Requirements
+
+Every domain follows identical folder structure: `domain/` (aggregates, entities, value-objects, events, repositories), `application/` (services), `infrastructure/` (repository implementations, external services), `ui/` (components, hooks).
+
+### Technology Stack Compliance
+
+Frontend: React + TypeScript with Vite. Backend: Tauri (Rust). Database: SQLite with SQLX. AI: Hybrid local/cloud with provider abstraction. Client-side state management via Zustand with typed stores. No deviations without architectural review.
+
+### Tauri Command Organization
+
+Commands organized by domain in separate files (max 300 lines per file). All commands follow snake_case naming with validation, error handling, and proper State management. Request/Response DTOs required for complex parameters. No direct database access - use repository pattern through infrastructure layer.
+
+### Client-Side State Management
+
+UI state managed via Zustand stores with TypeScript interfaces. Each domain gets dedicated store slice with actions, selectors, and persistence. No prop drilling - use stores for cross-component state. Optimistic UI updates with error rollback patterns. Store organization mirrors DDD domain boundaries.
+
+### Robust Logging Systems
+
+Backend uses structured logging (tracing/log) with correlation IDs and domain context. Frontend implements console logging with log levels and context preservation. No sensitive data in logs. Error tracking includes user actions, system state, and reproduction steps. Log aggregation supports debugging across UI/Tauri boundary.
+
+### Security and Quality Gates
+
+No credentials in code or commits. Infrastructure dependencies isolated from domain logic. All external integrations through repository pattern. Type safety enforced at compile time.
 
 ## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+This constitution supersedes all other development practices. Feature advancement blocked until compliance verified. Complexity decisions require architectural justification. Use CLAUDE.md for implementation guidance and patterns.
 
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+All code reviews must verify: DDD compliance, TypeScript compilation, phase documentation complete, identifier patterns followed, security standards met.
+
+**Version**: 1.0.0 | **Ratified**: 2025-09-19 | **Last Amended**: 2025-09-19
