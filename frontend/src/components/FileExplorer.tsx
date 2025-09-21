@@ -26,6 +26,20 @@ export const FileExplorer: React.FC = () => {
     loadFolderContents(currentPath)
   }
 
+  const handleSourceFolderClick = () => {
+    const { currentProject } = useWorkspaceStore.getState()
+    if (currentProject) {
+      loadFolderContents(currentProject.source_folder)
+    }
+  }
+
+  const handleReportsFolderClick = () => {
+    const { currentProject } = useWorkspaceStore.getState()
+    if (currentProject) {
+      loadFolderContents(currentProject.reports_folder)
+    }
+  }
+
   const handleFileClick = (item: any) => {
     if (item.item_type === 'directory') {
       loadFolderContents(item.path)
@@ -50,11 +64,10 @@ export const FileExplorer: React.FC = () => {
   }
 
   return (
-    <div className="h-full flex flex-col border-2 border-blue-300 bg-white" data-testid="file-explorer-panel">
-      {/* Header with refresh button */}
-      <div className="p-3 border-b border-gray-200">
+    <div className="h-full flex flex-col bg-white" data-testid="file-explorer-panel">
+      {/* Controls */}
+      <div className="p-2 border-b border-gray-200">
         <div className="flex items-center justify-between mb-2">
-          <h3 className="text-sm font-medium text-gray-700">File Explorer</h3>
           <button
             onClick={handleRefresh}
             disabled={isLoading}
@@ -78,10 +91,20 @@ export const FileExplorer: React.FC = () => {
       {/* Folder navigation */}
       <div className="px-3 py-2 bg-gray-50 border-b border-gray-100">
         <div className="flex space-x-4 text-xs">
-          <button className="text-blue-600 hover:text-blue-800 font-medium">
+          <button
+            onClick={handleSourceFolderClick}
+            className={`hover:text-blue-800 font-medium ${
+              currentPath.includes('Source') ? 'text-blue-600' : 'text-gray-600'
+            }`}
+          >
             Source Folder
           </button>
-          <button className="text-gray-600 hover:text-blue-600">
+          <button
+            onClick={handleReportsFolderClick}
+            className={`hover:text-blue-600 ${
+              currentPath.includes('Reports') ? 'text-blue-600 font-medium' : 'text-gray-600'
+            }`}
+          >
             Reports Folder
           </button>
         </div>

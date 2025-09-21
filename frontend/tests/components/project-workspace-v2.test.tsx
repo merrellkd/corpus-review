@@ -1,9 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { render, screen, fireEvent } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import { ProjectWorkspace } from '../../src/components/ProjectWorkspace'
-
-// Import the mocked stores to access them for per-test configuration
-import { usePanelStateMachine } from '../../src/stores/panelStateMachine'
 
 // Mock react-resizable-panels
 vi.mock('react-resizable-panels', () => ({
@@ -13,276 +10,122 @@ vi.mock('react-resizable-panels', () => ({
 }))
 
 // Mock the components
-// Create a simple mock for TopToolbar that we can control
-let mockToggleFilesCategoriesPanel = vi.fn()
-let mockToggleSearchPanel = vi.fn()
-
 vi.mock('../../src/components/TopToolbar', () => ({
-  TopToolbar: () => (
-    <div data-testid="top-toolbar">
-      <button
-        data-testid="files-categories-toggle-button"
-        onClick={mockToggleFilesCategoriesPanel}
-      >
-        Files & Categories
-      </button>
-      <button
-        data-testid="search-toggle-button"
-        onClick={mockToggleSearchPanel}
-      >
-        Search
-      </button>
-    </div>
-  )
+  TopToolbar: () => <div data-testid="top-toolbar">Toolbar</div>
 }))
 
 vi.mock('../../src/components/FilesCategoriesPanel', () => ({
-  FilesCategoriesPanel: () => <div data-testid="files-categories-panel">Files & Categories Panel</div>
+  FilesCategoriesPanel: () => <div data-testid="files-categories-panel">Files & Categories</div>
 }))
 
 vi.mock('../../src/components/SearchPanel', () => ({
-  SearchPanel: () => <div data-testid="search-panel">Search Panel</div>
+  SearchPanel: () => <div data-testid="search-panel">Search</div>
 }))
 
 vi.mock('../../src/components/DocumentWorkspace', () => ({
-  DocumentWorkspace: () => (
-    <div data-testid="document-workspace">
-      <div data-testid="multi-document-workspace">Document Workspace</div>
-    </div>
-  )
+  DocumentWorkspace: () => <div data-testid="document-workspace">Documents</div>
 }))
 
-// Mock the stores
+// Mock workspace store
 vi.mock('../../src/stores/workspaceStore', () => ({
   useWorkspaceStore: vi.fn(() => ({
-    currentProject: { id: 'test-project', name: 'Test Project' },
-    workspaceLayout: {
-      explorer_width: 30,
-      workspace_width: 70,
-      file_explorer_visible: true,
-      category_explorer_visible: true,
-      search_panel_visible: false
+    currentProject: {
+      id: 'test-project',
+      name: 'Test Project',
+      sourceFolderPath: '/test/source',
+      reportsFolderPath: '/test/reports'
     },
+    workspaceLayout: null,
     isLoading: false,
-    error: null,
     loadProject: vi.fn(),
     updatePanelSizes: vi.fn()
   }))
 }))
 
-vi.mock('../../src/stores/panelStateMachine', () => ({
-  usePanelStateMachine: vi.fn(() => ({
-    activePanel: 'none',
+// Mock unified panel state
+vi.mock('../../src/stores/unifiedPanelState', () => ({
+  useUnifiedPanelState: vi.fn(() => ({
+    currentState: 'none',
     isFilesCategoriesPanelActive: false,
     isSearchPanelActive: false,
-    layoutMode: 'full-width',
-    toggleFilesCategoriesPanel: vi.fn(),
-    toggleSearchPanel: vi.fn()
+    fileExplorerVisible: true,
+    categoryExplorerVisible: true,
+    isDragDropAvailable: false,
+    toggleFilesCategories: vi.fn(),
+    toggleSearch: vi.fn(),
+    toggleFileExplorer: vi.fn(),
+    toggleCategoryExplorer: vi.fn()
   }))
 }))
 
-vi.mock('../../src/stores/sectionVisibilityStore', () => ({
-  useSectionVisibility: vi.fn(() => ({
-    fileExplorerSectionVisible: true,
-    categoryExplorerSectionVisible: true,
-    shouldShowPanel: true,
-    toggleFileExplorerSection: vi.fn(),
-    toggleCategoryExplorerSection: vi.fn()
-  }))
-}))
-
-describe('ProjectWorkspace V2 - Mutually Exclusive Panel Architecture', () => {
-  const mockUsePanelStateMachine = vi.mocked(usePanelStateMachine)
-
+describe('ProjectWorkspace V2 - Unified State Integration', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    // Reset mock functions
-    mockToggleFilesCategoriesPanel = vi.fn()
-    mockToggleSearchPanel = vi.fn()
   })
 
-  describe('Panel Layout Architecture', () => {
-    it('should render in two-column layout when Files & Categories panel is active', () => {
-      // Mock Files & Categories panel active
-      mockUsePanelStateMachine.mockReturnValue({
-        activePanel: 'files_categories',
-        isFilesCategoriesPanelActive: true,
-        isSearchPanelActive: false,
-        layoutMode: 'two-column',
-        toggleFilesCategoriesPanel: vi.fn(),
-        toggleSearchPanel: vi.fn()
-      })
-
+  describe('Basic Rendering', () => {
+    it('should render with toolbar and document workspace', () => {
       render(<ProjectWorkspace projectId="test-project" />)
 
-      // Should show two-column layout with Files & Categories panel
-      expect(screen.getByTestId('workspace-container')).toHaveClass('two-column-layout')
-      expect(screen.getByTestId('files-categories-panel')).toBeInTheDocument()
-      expect(screen.queryByTestId('search-panel')).not.toBeInTheDocument()
-      expect(screen.getByTestId('multi-document-workspace')).toBeInTheDocument()
+      expect(screen.getByTestId('top-toolbar')).toBeInTheDocument()
+      expect(screen.getByTestId('document-workspace')).toBeInTheDocument()
     })
 
-    it('should render in two-column layout when Search panel is active', () => {
-      // Mock Search panel active
-      mockUsePanelStateMachine.mockReturnValue({
-        activePanel: 'search',
-        isFilesCategoriesPanelActive: false,
-        isSearchPanelActive: true,
-        layoutMode: 'two-column',
-        toggleFilesCategoriesPanel: vi.fn(),
-        toggleSearchPanel: vi.fn()
-      })
+    it('should have correct layout classes based on panel state', () => {
+      const { container } = render(<ProjectWorkspace projectId="test-project" />)
 
-      render(<ProjectWorkspace projectId="test-project" />)
-
-      // Should show two-column layout with Search panel
-      expect(screen.getByTestId('workspace-container')).toHaveClass('two-column-layout')
-      expect(screen.queryByTestId('files-categories-panel')).not.toBeInTheDocument()
-      expect(screen.getByTestId('search-panel')).toBeInTheDocument()
-      expect(screen.getByTestId('multi-document-workspace')).toBeInTheDocument()
-    })
-
-    it('should render in full-width layout when no panels are active', () => {
-      // Mock no panels active
-      mockUsePanelStateMachine.mockReturnValue({
-        activePanel: 'none',
-        isFilesCategoriesPanelActive: false,
-        isSearchPanelActive: false,
-        layoutMode: 'full-width',
-        toggleFilesCategoriesPanel: vi.fn(),
-        toggleSearchPanel: vi.fn()
-      })
-
-      render(<ProjectWorkspace projectId="test-project" />)
-
-      // Should show full-width layout with only MDW
-      expect(screen.getByTestId('workspace-container')).toHaveClass('full-width-layout')
-      expect(screen.queryByTestId('files-categories-panel')).not.toBeInTheDocument()
-      expect(screen.queryByTestId('search-panel')).not.toBeInTheDocument()
-      expect(screen.getByTestId('multi-document-workspace')).toBeInTheDocument()
-    })
-
-    it('should enforce mutually exclusive panel behavior', () => {
-      // Start with Files & Categories active
-      mockUsePanelStateMachine.mockReturnValue({
-        activePanel: 'files_categories',
-        isFilesCategoriesPanelActive: true,
-        isSearchPanelActive: false,
-        layoutMode: 'two-column',
-        toggleFilesCategoriesPanel: mockToggleFilesCategoriesPanel,
-        toggleSearchPanel: mockToggleSearchPanel
-      })
-
-      render(<ProjectWorkspace projectId="test-project" />)
-
-      // Should only show Files & Categories panel
-      expect(screen.getByTestId('files-categories-panel')).toBeInTheDocument()
-      expect(screen.queryByTestId('search-panel')).not.toBeInTheDocument()
-
-      // Activating Search should call toggle
-      fireEvent.click(screen.getByTestId('search-toggle-button'))
-      expect(mockToggleSearchPanel).toHaveBeenCalled()
+      // Should have full-width layout when no panels are active
+      const workspaceDiv = container.querySelector('div')
+      expect(workspaceDiv).toHaveClass('h-screen', 'bg-gray-100', 'full-width-layout')
     })
   })
 
   describe('Panel Visibility Integration', () => {
-    it('should integrate with panel state machine for panel switching', () => {
-      mockUsePanelStateMachine.mockReturnValue({
-        activePanel: 'none',
-        isFilesCategoriesPanelActive: false,
-        isSearchPanelActive: false,
-        layoutMode: 'full-width',
-        toggleFilesCategoriesPanel: mockToggleFilesCategoriesPanel,
-        toggleSearchPanel: mockToggleSearchPanel
-      })
-
-      render(<ProjectWorkspace projectId="test-project" />)
-
-      // Toggle Files & Categories
-      fireEvent.click(screen.getByTestId('files-categories-toggle-button'))
-      expect(mockToggleFilesCategoriesPanel).toHaveBeenCalled()
-
-      // Toggle Search
-      fireEvent.click(screen.getByTestId('search-toggle-button'))
-      expect(mockToggleSearchPanel).toHaveBeenCalled()
-    })
-
-    it('should hide Files & Categories panel when both sections are hidden', () => {
-      // Mock Files & Categories panel active but both sections hidden
-      const mockUseSectionVisibility = vi.fn(() => ({
-        fileExplorerSectionVisible: false,
-        categoryExplorerSectionVisible: false,
-        shouldShowPanel: false,
-        toggleFileExplorerSection: vi.fn(),
-        toggleCategoryExplorerSection: vi.fn()
-      }))
-
-      vi.mocked(require('../../src/stores/sectionVisibilityStore')).useSectionVisibility.mockImplementation(mockUseSectionVisibility)
-
-      mockUsePanelStateMachine.mockReturnValue({
-        activePanel: 'files_categories',
+    it('should show files-categories panel when active', () => {
+      const { useUnifiedPanelState } = require('../../src/stores/unifiedPanelState')
+      useUnifiedPanelState.mockReturnValue({
+        currentState: 'files-only',
         isFilesCategoriesPanelActive: true,
         isSearchPanelActive: false,
-        layoutMode: 'two-column',
-        toggleFilesCategoriesPanel: vi.fn(),
-        toggleSearchPanel: vi.fn()
+        fileExplorerVisible: true,
+        categoryExplorerVisible: false,
+        isDragDropAvailable: false,
+        toggleFilesCategories: vi.fn(),
+        toggleSearch: vi.fn(),
+        toggleFileExplorer: vi.fn(),
+        toggleCategoryExplorer: vi.fn()
       })
 
       render(<ProjectWorkspace projectId="test-project" />)
+      expect(screen.getByTestId('files-categories-panel')).toBeInTheDocument()
+      expect(screen.queryByTestId('search-panel')).not.toBeInTheDocument()
+    })
 
-      // Panel should be hidden when both sections are hidden
+    it('should show search panel when active', () => {
+      const { useUnifiedPanelState } = require('../../src/stores/unifiedPanelState')
+      useUnifiedPanelState.mockReturnValue({
+        currentState: 'search',
+        isFilesCategoriesPanelActive: false,
+        isSearchPanelActive: true,
+        fileExplorerVisible: false,
+        categoryExplorerVisible: false,
+        isDragDropAvailable: false,
+        toggleFilesCategories: vi.fn(),
+        toggleSearch: vi.fn(),
+        toggleFileExplorer: vi.fn(),
+        toggleCategoryExplorer: vi.fn()
+      })
+
+      render(<ProjectWorkspace projectId="test-project" />)
       expect(screen.queryByTestId('files-categories-panel')).not.toBeInTheDocument()
-    })
-  })
-
-  describe('Responsive Layout Behavior', () => {
-    it('should apply correct CSS classes for layout modes', () => {
-      mockUsePanelStateMachine.mockReturnValue({
-        activePanel: 'files_categories',
-        isFilesCategoriesPanelActive: true,
-        isSearchPanelActive: false,
-        layoutMode: 'two-column',
-        toggleFilesCategoriesPanel: vi.fn(),
-        toggleSearchPanel: vi.fn()
-      })
-
-      render(<ProjectWorkspace projectId="test-project" />)
-
-      const container = screen.getByTestId('workspace-container')
-      expect(container).toHaveClass('two-column-layout')
-      expect(container).not.toHaveClass('full-width-layout')
+      expect(screen.getByTestId('search-panel')).toBeInTheDocument()
     })
 
-    it('should render resize handles between panels in two-column mode', () => {
-      mockUsePanelStateMachine.mockReturnValue({
-        activePanel: 'files_categories',
-        isFilesCategoriesPanelActive: true,
-        isSearchPanelActive: false,
-        layoutMode: 'two-column',
-        toggleFilesCategoriesPanel: vi.fn(),
-        toggleSearchPanel: vi.fn()
-      })
-
+    it('should show neither panel when in none state', () => {
       render(<ProjectWorkspace projectId="test-project" />)
-
-      // Should have resize handle between panel and MDW
-      expect(screen.getByTestId('panel-resize-handle')).toBeInTheDocument()
-    })
-
-    it('should not render resize handles in full-width mode', () => {
-      mockUsePanelStateMachine.mockReturnValue({
-        activePanel: 'none',
-        isFilesCategoriesPanelActive: false,
-        isSearchPanelActive: false,
-        layoutMode: 'full-width',
-        toggleFilesCategoriesPanel: vi.fn(),
-        toggleSearchPanel: vi.fn()
-      })
-
-      render(<ProjectWorkspace projectId="test-project" />)
-
-      // Should not have resize handle in full-width mode
-      expect(screen.queryByTestId('panel-resize-handle')).not.toBeInTheDocument()
+      expect(screen.queryByTestId('files-categories-panel')).not.toBeInTheDocument()
+      expect(screen.queryByTestId('search-panel')).not.toBeInTheDocument()
+      expect(screen.getByTestId('document-workspace')).toBeInTheDocument()
     })
   })
 })

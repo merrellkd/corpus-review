@@ -21,11 +21,10 @@ vi.mock('../../src/stores/fileCategorization', () => ({
   }))
 }))
 
-// Mock the section visibility store
-vi.mock('../../src/stores/sectionVisibilityStore', () => ({
-  useSectionVisibility: vi.fn(() => ({
-    isDragDropAvailable: true,
-    dragDropStatusMessage: 'Drag files from File Explorer to Category Explorer to assign categories'
+// Mock the unified panel state store
+vi.mock('../../src/stores/unifiedPanelState', () => ({
+  useUnifiedPanelState: vi.fn(() => ({
+    isDragDropAvailable: true
   }))
 }))
 
@@ -100,12 +99,10 @@ describe('Drag-and-Drop File Categorization Workflow', () => {
     })
 
     it('should prevent drag start when drag-drop is not available', () => {
-      const mockUseSectionVisibility = vi.fn(() => ({
-        isDragDropAvailable: false,
-        dragDropStatusMessage: 'Show Category Explorer section to enable file categorization'
-      }))
-
-      vi.mocked(require('../../src/stores/sectionVisibilityStore')).useSectionVisibility.mockImplementation(mockUseSectionVisibility)
+      const { useUnifiedPanelState } = require('../../src/stores/unifiedPanelState')
+      useUnifiedPanelState.mockReturnValue({
+        isDragDropAvailable: false
+      })
 
       render(<DragDropCategorizationWorkflow />)
 

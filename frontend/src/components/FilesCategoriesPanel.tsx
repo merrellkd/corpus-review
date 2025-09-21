@@ -1,5 +1,6 @@
 import React from 'react'
 import { useUnifiedPanelState } from '../stores/unifiedPanelState'
+import { FileExplorer } from './FileExplorer'
 
 export const FilesCategoriesPanel: React.FC = () => {
   const {
@@ -79,11 +80,8 @@ export const FilesCategoriesPanel: React.FC = () => {
             <div className="section-header p-2 bg-gray-50 border-b border-gray-200">
               <h3 className="font-medium text-gray-800">File Explorer</h3>
             </div>
-            <div className="section-content p-2">
-              {/* File Explorer content will be implemented later */}
-              <div className="text-gray-500 text-sm">
-                File tree view will be displayed here
-              </div>
+            <div className="section-content h-full">
+              <FileExplorer />
             </div>
           </div>
         )}

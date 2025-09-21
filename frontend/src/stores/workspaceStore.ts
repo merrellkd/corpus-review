@@ -58,6 +58,7 @@ const mockLayout: WorkspaceLayout = {
 }
 
 const mockFiles: FileSystemItem[] = [
+  // Source folder files
   {
     name: 'research-notes.md',
     path: '/Users/demo/Documents/Research/Source/research-notes.md',
@@ -67,6 +68,129 @@ const mockFiles: FileSystemItem[] = [
     formatted_size: '2.3 KB',
     is_accessible: true,
     last_modified: '2024-01-15T10:30:00Z',
+  },
+  {
+    name: 'data-collection.pdf',
+    path: '/Users/demo/Documents/Research/Source/data-collection.pdf',
+    parent_path: '/Users/demo/Documents/Research/Source',
+    item_type: 'file',
+    size: 1245680,
+    formatted_size: '1.2 MB',
+    is_accessible: true,
+    last_modified: '2024-01-12T14:22:00Z',
+  },
+  {
+    name: 'interview-transcripts.docx',
+    path: '/Users/demo/Documents/Research/Source/interview-transcripts.docx',
+    parent_path: '/Users/demo/Documents/Research/Source',
+    item_type: 'file',
+    size: 45800,
+    formatted_size: '45 KB',
+    is_accessible: true,
+    last_modified: '2024-01-10T09:15:00Z',
+  },
+  {
+    name: 'survey-results.xlsx',
+    path: '/Users/demo/Documents/Research/Source/survey-results.xlsx',
+    parent_path: '/Users/demo/Documents/Research/Source',
+    item_type: 'file',
+    size: 128500,
+    formatted_size: '125 KB',
+    is_accessible: true,
+    last_modified: '2024-01-08T16:45:00Z',
+  },
+  {
+    name: 'literature-review.md',
+    path: '/Users/demo/Documents/Research/Source/literature-review.md',
+    parent_path: '/Users/demo/Documents/Research/Source',
+    item_type: 'file',
+    size: 8950,
+    formatted_size: '8.9 KB',
+    is_accessible: true,
+    last_modified: '2024-01-05T11:30:00Z',
+  },
+  {
+    name: 'images',
+    path: '/Users/demo/Documents/Research/Source/images',
+    parent_path: '/Users/demo/Documents/Research/Source',
+    item_type: 'directory',
+    size: 0,
+    formatted_size: '-',
+    is_accessible: true,
+    last_modified: '2024-01-14T08:20:00Z',
+  },
+  {
+    name: 'raw-data',
+    path: '/Users/demo/Documents/Research/Source/raw-data',
+    parent_path: '/Users/demo/Documents/Research/Source',
+    item_type: 'directory',
+    size: 0,
+    formatted_size: '-',
+    is_accessible: true,
+    last_modified: '2024-01-13T15:10:00Z',
+  },
+  {
+    name: 'README.md',
+    path: '/Users/demo/Documents/Research/Source/README.md',
+    parent_path: '/Users/demo/Documents/Research/Source',
+    item_type: 'file',
+    size: 1024,
+    formatted_size: '1.0 KB',
+    is_accessible: true,
+    last_modified: '2024-01-01T12:00:00Z',
+  }
+]
+
+const mockReportsFiles: FileSystemItem[] = [
+  {
+    name: 'final-report.pdf',
+    path: '/Users/demo/Documents/Research/Reports/final-report.pdf',
+    parent_path: '/Users/demo/Documents/Research/Reports',
+    item_type: 'file',
+    size: 2048000,
+    formatted_size: '2.0 MB',
+    is_accessible: true,
+    last_modified: '2024-01-16T10:30:00Z',
+  },
+  {
+    name: 'preliminary-findings.docx',
+    path: '/Users/demo/Documents/Research/Reports/preliminary-findings.docx',
+    parent_path: '/Users/demo/Documents/Research/Reports',
+    item_type: 'file',
+    size: 67200,
+    formatted_size: '66 KB',
+    is_accessible: true,
+    last_modified: '2024-01-14T16:20:00Z',
+  },
+  {
+    name: 'data-analysis.xlsx',
+    path: '/Users/demo/Documents/Research/Reports/data-analysis.xlsx',
+    parent_path: '/Users/demo/Documents/Research/Reports',
+    item_type: 'file',
+    size: 256000,
+    formatted_size: '250 KB',
+    is_accessible: true,
+    last_modified: '2024-01-12T14:15:00Z',
+  },
+  {
+    name: 'charts-and-graphs',
+    path: '/Users/demo/Documents/Research/Reports/charts-and-graphs',
+    parent_path: '/Users/demo/Documents/Research/Reports',
+    item_type: 'directory',
+    size: 0,
+    formatted_size: '-',
+    is_accessible: true,
+    last_modified: '2024-01-11T09:45:00Z',
+  },
+  {
+    name: 'executive-summary.pdf',
+    path: '/Users/demo/Documents/Research/Reports/executive-summary.pdf',
+    parent_path: '/Users/demo/Documents/Research/Reports',
+    item_type: 'file',
+    size: 512000,
+    formatted_size: '500 KB',
+    is_accessible: true,
+    last_modified: '2024-01-15T13:22:00Z',
   }
 ]
 
@@ -131,10 +255,11 @@ export const useWorkspaceStore = create<WorkspaceState>()(
         try {
           // For development, use mock data
           if (isDevelopment) {
-            await new Promise(resolve => setTimeout(resolve, 500)) // Simulate loading
+            await new Promise(resolve => setTimeout(resolve, 100)) // Simulate loading
             set({
               currentProject: mockProject,
               workspaceLayout: mockLayout,
+              currentPath: mockProject.source_folder,
               fileExplorerItems: mockFiles,
               isLoading: false
             })
@@ -155,9 +280,18 @@ export const useWorkspaceStore = create<WorkspaceState>()(
 
         try {
           if (isDevelopment) {
-            await new Promise(resolve => setTimeout(resolve, 300))
+            await new Promise(resolve => setTimeout(resolve, 50))
+
+            // Determine which mock files to show based on folder path
+            let filesToShow: FileSystemItem[] = []
+            if (folderPath.includes('Source') || folderPath === '' || !folderPath.includes('Reports')) {
+              filesToShow = mockFiles
+            } else if (folderPath.includes('Reports')) {
+              filesToShow = mockReportsFiles
+            }
+
             set({
-              fileExplorerItems: mockFiles,
+              fileExplorerItems: filesToShow,
               isLoading: false
             })
           } else {

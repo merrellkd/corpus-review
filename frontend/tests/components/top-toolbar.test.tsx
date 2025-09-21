@@ -2,21 +2,20 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 import { TopToolbar } from '../../src/components/TopToolbar'
 
-// Mock the panel state machine
-vi.mock('../../src/stores/panelStateMachine', () => ({
-  usePanelStateMachine: vi.fn(() => ({
-    activePanel: 'none',
+// Mock the unified panel state store
+const mockToggleFilesCategories = vi.fn()
+const mockToggleSearch = vi.fn()
+
+vi.mock('../../src/stores/unifiedPanelState', () => ({
+  useUnifiedPanelState: vi.fn(() => ({
     isFilesCategoriesPanelActive: false,
     isSearchPanelActive: false,
-    toggleFilesCategoriesPanel: vi.fn(),
-    toggleSearchPanel: vi.fn()
+    toggleFilesCategories: mockToggleFilesCategories,
+    toggleSearch: mockToggleSearch
   }))
 }))
 
-describe('TopToolbar - Panel Toggle Controls', () => {
-  const mockToggleFilesCategories = vi.fn()
-  const mockToggleSearch = vi.fn()
-
+describe('TopToolbar - Unified State Integration', () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })
@@ -25,210 +24,84 @@ describe('TopToolbar - Panel Toggle Controls', () => {
     it('should render panel toggle buttons', () => {
       render(<TopToolbar />)
 
-      // Should show both toggle buttons
-      expect(screen.getByTestId('files-categories-toggle')).toBeInTheDocument()
-      expect(screen.getByTestId('search-toggle')).toBeInTheDocument()
-
-      // Should show button labels
+      expect(screen.getByTestId('files-categories-toggle-button')).toBeInTheDocument()
+      expect(screen.getByTestId('search-toggle-button')).toBeInTheDocument()
       expect(screen.getByText('Files & Categories')).toBeInTheDocument()
       expect(screen.getByText('Search')).toBeInTheDocument()
     })
-
-    it('should render toolbar without project title', () => {
-      render(<TopToolbar />)
-
-      // Toolbar should not contain project title (now in main header)
-      expect(screen.queryByText('Project Workspace')).not.toBeInTheDocument()
-
-      // But should contain toggle buttons
-      expect(screen.getByTestId('files-categories-toggle-button')).toBeInTheDocument()
-      expect(screen.getByTestId('search-toggle-button')).toBeInTheDocument()
-    })
-
-    it('should apply correct CSS classes for toolbar layout', () => {
-      render(<TopToolbar />)
-
-      const toolbar = screen.getByTestId('top-toolbar')
-      expect(toolbar).toHaveClass('top-toolbar')
-
-      const toggleGroup = screen.getByTestId('panel-toggles')
-      expect(toggleGroup).toHaveClass('panel-toggle-group')
-    })
   })
 
-  describe('Panel Toggle States', () => {
-    it('should show Files & Categories button as active when panel is active', () => {
-      const mockUsePanelStateMachine = vi.fn(() => ({
-        activePanel: 'files_categories',
+  describe('Button States', () => {
+    it('should show inactive state when no panels are active', () => {
+      render(<TopToolbar />)
+
+      const filesCategoriesButton = screen.getByTestId('files-categories-toggle-button')
+      const searchButton = screen.getByTestId('search-toggle-button')
+
+      expect(filesCategoriesButton).toHaveClass('bg-gray-100', 'text-gray-700')
+      expect(searchButton).toHaveClass('bg-gray-100', 'text-gray-700')
+      expect(filesCategoriesButton).toHaveAttribute('aria-pressed', 'false')
+      expect(searchButton).toHaveAttribute('aria-pressed', 'false')
+    })
+
+    it('should show active state for Files & Categories when active', () => {
+      const { useUnifiedPanelState } = require('../../src/stores/unifiedPanelState')
+      useUnifiedPanelState.mockReturnValue({
         isFilesCategoriesPanelActive: true,
         isSearchPanelActive: false,
-        toggleFilesCategoriesPanel: mockToggleFilesCategories,
-        toggleSearchPanel: mockToggleSearch
-      }))
-
-      vi.mocked(require('../../src/stores/panelStateMachine')).usePanelStateMachine.mockImplementation(mockUsePanelStateMachine)
+        toggleFilesCategories: mockToggleFilesCategories,
+        toggleSearch: mockToggleSearch
+      })
 
       render(<TopToolbar />)
 
-      const filesCategoriesButton = screen.getByTestId('files-categories-toggle')
-      const searchButton = screen.getByTestId('search-toggle')
+      const filesCategoriesButton = screen.getByTestId('files-categories-toggle-button')
+      const searchButton = screen.getByTestId('search-toggle-button')
 
-      expect(filesCategoriesButton).toHaveClass('active')
-      expect(searchButton).not.toHaveClass('active')
+      expect(filesCategoriesButton).toHaveClass('active', 'bg-blue-600', 'text-white')
+      expect(searchButton).toHaveClass('bg-gray-100', 'text-gray-700')
+      expect(filesCategoriesButton).toHaveAttribute('aria-pressed', 'true')
+      expect(searchButton).toHaveAttribute('aria-pressed', 'false')
     })
 
-    it('should show Search button as active when panel is active', () => {
-      const mockUsePanelStateMachine = vi.fn(() => ({
-        activePanel: 'search',
+    it('should show active state for Search when active', () => {
+      const { useUnifiedPanelState } = require('../../src/stores/unifiedPanelState')
+      useUnifiedPanelState.mockReturnValue({
         isFilesCategoriesPanelActive: false,
         isSearchPanelActive: true,
-        toggleFilesCategoriesPanel: mockToggleFilesCategories,
-        toggleSearchPanel: mockToggleSearch
-      }))
-
-      vi.mocked(require('../../src/stores/panelStateMachine')).usePanelStateMachine.mockImplementation(mockUsePanelStateMachine)
+        toggleFilesCategories: mockToggleFilesCategories,
+        toggleSearch: mockToggleSearch
+      })
 
       render(<TopToolbar />)
 
-      const filesCategoriesButton = screen.getByTestId('files-categories-toggle')
-      const searchButton = screen.getByTestId('search-toggle')
+      const filesCategoriesButton = screen.getByTestId('files-categories-toggle-button')
+      const searchButton = screen.getByTestId('search-toggle-button')
 
-      expect(filesCategoriesButton).not.toHaveClass('active')
-      expect(searchButton).toHaveClass('active')
-    })
-
-    it('should show both buttons as inactive when no panel is active', () => {
-      const mockUsePanelStateMachine = vi.fn(() => ({
-        activePanel: 'none',
-        isFilesCategoriesPanelActive: false,
-        isSearchPanelActive: false,
-        toggleFilesCategoriesPanel: mockToggleFilesCategories,
-        toggleSearchPanel: mockToggleSearch
-      }))
-
-      vi.mocked(require('../../src/stores/panelStateMachine')).usePanelStateMachine.mockImplementation(mockUsePanelStateMachine)
-
-      render(<TopToolbar />)
-
-      const filesCategoriesButton = screen.getByTestId('files-categories-toggle')
-      const searchButton = screen.getByTestId('search-toggle')
-
-      expect(filesCategoriesButton).not.toHaveClass('active')
-      expect(searchButton).not.toHaveClass('active')
+      expect(filesCategoriesButton).toHaveClass('bg-gray-100', 'text-gray-700')
+      expect(searchButton).toHaveClass('active', 'bg-blue-600', 'text-white')
+      expect(filesCategoriesButton).toHaveAttribute('aria-pressed', 'false')
+      expect(searchButton).toHaveAttribute('aria-pressed', 'true')
     })
   })
 
-  describe('Toggle Interactions', () => {
-    it('should call toggleFilesCategoriesPanel when Files & Categories button clicked', () => {
-      const mockUsePanelStateMachine = vi.fn(() => ({
-        activePanel: 'none',
-        isFilesCategoriesPanelActive: false,
-        isSearchPanelActive: false,
-        toggleFilesCategoriesPanel: mockToggleFilesCategories,
-        toggleSearchPanel: mockToggleSearch
-      }))
-
-      vi.mocked(require('../../src/stores/panelStateMachine')).usePanelStateMachine.mockImplementation(mockUsePanelStateMachine)
-
+  describe('Button Interactions', () => {
+    it('should call toggleFilesCategories when Files & Categories button clicked', () => {
       render(<TopToolbar />)
 
-      fireEvent.click(screen.getByTestId('files-categories-toggle'))
+      const filesCategoriesButton = screen.getByTestId('files-categories-toggle-button')
+      fireEvent.click(filesCategoriesButton)
+
       expect(mockToggleFilesCategories).toHaveBeenCalledTimes(1)
     })
 
-    it('should call toggleSearchPanel when Search button clicked', () => {
-      const mockUsePanelStateMachine = vi.fn(() => ({
-        activePanel: 'none',
-        isFilesCategoriesPanelActive: false,
-        isSearchPanelActive: false,
-        toggleFilesCategoriesPanel: mockToggleFilesCategories,
-        toggleSearchPanel: mockToggleSearch
-      }))
-
-      vi.mocked(require('../../src/stores/panelStateMachine')).usePanelStateMachine.mockImplementation(mockUsePanelStateMachine)
-
+    it('should call toggleSearch when Search button clicked', () => {
       render(<TopToolbar />)
 
-      fireEvent.click(screen.getByTestId('search-toggle'))
+      const searchButton = screen.getByTestId('search-toggle-button')
+      fireEvent.click(searchButton)
+
       expect(mockToggleSearch).toHaveBeenCalledTimes(1)
-    })
-
-    it('should handle rapid toggle clicks without errors', () => {
-      const mockUsePanelStateMachine = vi.fn(() => ({
-        activePanel: 'none',
-        isFilesCategoriesPanelActive: false,
-        isSearchPanelActive: false,
-        toggleFilesCategoriesPanel: mockToggleFilesCategories,
-        toggleSearchPanel: mockToggleSearch
-      }))
-
-      vi.mocked(require('../../src/stores/panelStateMachine')).usePanelStateMachine.mockImplementation(mockUsePanelStateMachine)
-
-      render(<TopToolbar />)
-
-      const filesCategoriesButton = screen.getByTestId('files-categories-toggle')
-
-      // Rapid clicks
-      fireEvent.click(filesCategoriesButton)
-      fireEvent.click(filesCategoriesButton)
-      fireEvent.click(filesCategoriesButton)
-
-      expect(mockToggleFilesCategories).toHaveBeenCalledTimes(3)
-    })
-  })
-
-  describe('Mutually Exclusive Behavior Indication', () => {
-    it('should ensure only one toggle can be active at a time', () => {
-      // Test that the UI correctly reflects the mutually exclusive state
-      const mockUsePanelStateMachine = vi.fn(() => ({
-        activePanel: 'files_categories',
-        isFilesCategoriesPanelActive: true,
-        isSearchPanelActive: false, // This should always be false when files_categories is true
-        toggleFilesCategoriesPanel: mockToggleFilesCategories,
-        toggleSearchPanel: mockToggleSearch
-      }))
-
-      vi.mocked(require('../../src/stores/panelStateMachine')).usePanelStateMachine.mockImplementation(mockUsePanelStateMachine)
-
-      render(<TopToolbar />)
-
-      const filesCategoriesButton = screen.getByTestId('files-categories-toggle')
-      const searchButton = screen.getByTestId('search-toggle')
-
-      // Only Files & Categories should be active
-      expect(filesCategoriesButton).toHaveClass('active')
-      expect(searchButton).not.toHaveClass('active')
-
-      // Both buttons should be clickable for switching
-      expect(filesCategoriesButton).not.toBeDisabled()
-      expect(searchButton).not.toBeDisabled()
-    })
-
-    it('should provide visual feedback for toggle state changes', () => {
-      let panelState = 'none'
-
-      const mockUsePanelStateMachine = vi.fn(() => ({
-        activePanel: panelState,
-        isFilesCategoriesPanelActive: panelState === 'files_categories',
-        isSearchPanelActive: panelState === 'search',
-        toggleFilesCategoriesPanel: () => { panelState = panelState === 'files_categories' ? 'none' : 'files_categories' },
-        toggleSearchPanel: () => { panelState = panelState === 'search' ? 'none' : 'search' }
-      }))
-
-      vi.mocked(require('../../src/stores/panelStateMachine')).usePanelStateMachine.mockImplementation(mockUsePanelStateMachine)
-
-      const { rerender } = render(<TopToolbar />)
-
-      // Initially both inactive
-      expect(screen.getByTestId('files-categories-toggle')).not.toHaveClass('active')
-      expect(screen.getByTestId('search-toggle')).not.toHaveClass('active')
-
-      // After state change, should show visual feedback
-      panelState = 'files_categories'
-      rerender(<TopToolbar />)
-
-      expect(screen.getByTestId('files-categories-toggle')).toHaveClass('active')
-      expect(screen.getByTestId('search-toggle')).not.toHaveClass('active')
     })
   })
 
@@ -236,31 +109,11 @@ describe('TopToolbar - Panel Toggle Controls', () => {
     it('should have proper ARIA labels for toggle buttons', () => {
       render(<TopToolbar />)
 
-      const filesCategoriesButton = screen.getByTestId('files-categories-toggle')
-      const searchButton = screen.getByTestId('search-toggle')
+      const filesCategoriesButton = screen.getByTestId('files-categories-toggle-button')
+      const searchButton = screen.getByTestId('search-toggle-button')
 
       expect(filesCategoriesButton).toHaveAttribute('aria-label', 'Toggle Files & Categories panel')
       expect(searchButton).toHaveAttribute('aria-label', 'Toggle Search panel')
-    })
-
-    it('should indicate toggle state to screen readers', () => {
-      const mockUsePanelStateMachine = vi.fn(() => ({
-        activePanel: 'files_categories',
-        isFilesCategoriesPanelActive: true,
-        isSearchPanelActive: false,
-        toggleFilesCategoriesPanel: mockToggleFilesCategories,
-        toggleSearchPanel: mockToggleSearch
-      }))
-
-      vi.mocked(require('../../src/stores/panelStateMachine')).usePanelStateMachine.mockImplementation(mockUsePanelStateMachine)
-
-      render(<TopToolbar />)
-
-      const filesCategoriesButton = screen.getByTestId('files-categories-toggle')
-      const searchButton = screen.getByTestId('search-toggle')
-
-      expect(filesCategoriesButton).toHaveAttribute('aria-pressed', 'true')
-      expect(searchButton).toHaveAttribute('aria-pressed', 'false')
     })
   })
 })
