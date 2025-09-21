@@ -16,7 +16,9 @@
       "Bash(npm uninstall:*)",
       "Bash(npm run dev:*)",
       "WebFetch(domain:github.com)",
-      "Bash(.specify/scripts/bash/check-implementation-prerequisites.sh:*)"
+      "Bash(.specify/scripts/bash/check-implementation-prerequisites.sh:*)",
+      "Bash(npm run lint)",
+      "Bash(timeout 10s npm run dev:*)"
     ],
     "deny": [],
     "ask": []

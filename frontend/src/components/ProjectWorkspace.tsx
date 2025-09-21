@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels'
-import { useWorkspaceStore } from '@/stores/workspaceStore'
+import { useWorkspaceStore } from '../stores/workspaceStore'
 import { usePanelStateMachine } from '../stores/panelStateMachine'
 
 // New architecture components

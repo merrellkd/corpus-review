@@ -1,25 +1,32 @@
 import React, { useState } from 'react'
-import { useWorkspaceStore, FileSystemItemDto } from '@/stores/workspaceStore'
+import { useWorkspaceStore } from '../stores/workspaceStore'
+import { usePanelStateMachine } from '../stores/panelStateMachine'
 
 export const SearchPanel: React.FC = () => {
   const {
     searchResults,
-    currentProject,
     isLoading,
     searchFiles,
     createDocumentCaddy,
   } = useWorkspaceStore()
 
+  const { isSearchPanelActive } = usePanelStateMachine()
+
   const [query, setQuery] = useState('')
 
   const handleSearch = () => {
-    if (query.trim() && currentProject) {
-      searchFiles(currentProject.source_folder, query.trim())
+    if (query.trim()) {
+      searchFiles(query.trim())
     }
   }
 
   const handleFileClick = (filePath: string) => {
     createDocumentCaddy(filePath)
+  }
+
+  // Don't render if this panel is not active due to mutually exclusive behavior
+  if (!isSearchPanelActive) {
+    return null
   }
 
   return (
@@ -58,11 +65,12 @@ export const SearchPanel: React.FC = () => {
           </div>
         ) : (
           <div className="p-1">
-            {searchResults.map((item: FileSystemItemDto) => (
+            {searchResults.map((item: any) => (
               <div
                 key={item.path}
                 onClick={() => handleFileClick(item.path)}
                 className="flex items-center justify-between p-2 hover:bg-gray-100 cursor-pointer rounded text-xs"
+                data-testid={`search-result-${item.name}`}
               >
                 <div className="flex items-center space-x-2 flex-1 min-w-0">
                   <span className="w-4 h-4 flex-shrink-0 text-gray-600">📄</span>
@@ -78,6 +86,20 @@ export const SearchPanel: React.FC = () => {
             ))}
           </div>
         )}
+      </div>
+
+      {/* Footer with search stats */}
+      <div className="px-3 py-2 bg-purple-50 border-t border-purple-200">
+        <div className="text-xs text-purple-700">
+          {isLoading
+            ? 'Searching...'
+            : searchResults.length > 0
+            ? `Found ${searchResults.length} results`
+            : query
+            ? 'No results found'
+            : 'Search across project files'
+          }
+        </div>
       </div>
     </div>
   )

@@ -1,5 +1,7 @@
 import React, { useState } from 'react'
-import { useWorkspaceStore, FileSystemItemDto } from '@/stores/workspaceStore'
+import { useWorkspaceStore } from '../stores/workspaceStore'
+import { useFileCategorization } from '../stores/fileCategorization'
+import { useSectionVisibility } from '../stores/sectionVisibilityStore'
 
 export const FileExplorer: React.FC = () => {
   const {
@@ -10,18 +12,41 @@ export const FileExplorer: React.FC = () => {
     createDocumentCaddy,
   } = useWorkspaceStore()
 
+  const {
+    startDrag,
+    isDragging,
+    draggedFile
+  } = useFileCategorization()
+
+  const { isDragDropAvailable } = useSectionVisibility()
+
   const [searchQuery, setSearchQuery] = useState('')
 
   const handleRefresh = () => {
     loadFolderContents(currentPath)
   }
 
-  const handleFileClick = (item: FileSystemItemDto) => {
+  const handleFileClick = (item: any) => {
     if (item.item_type === 'directory') {
       loadFolderContents(item.path)
     } else {
       createDocumentCaddy(item.path)
     }
+  }
+
+  const handleDragStart = (item: any) => {
+    if (!isDragDropAvailable || item.item_type === 'directory') {
+      return
+    }
+
+    const fileData = {
+      path: item.path,
+      name: item.name,
+      type: 'file' as const,
+      size: item.size || 0
+    }
+
+    startDrag(fileData)
   }
 
   return (
@@ -82,31 +107,58 @@ export const FileExplorer: React.FC = () => {
                 searchQuery === '' ||
                 item.name.toLowerCase().includes(searchQuery.toLowerCase())
               )
-              .map((item: FileSystemItemDto) => (
-                <div
-                  key={item.path}
-                  onClick={() => handleFileClick(item)}
-                  className="flex items-center justify-between p-2 hover:bg-gray-100 cursor-pointer rounded text-xs"
-                  data-testid={`file-item-${item.name}`}
-                  data-type={item.item_type}
-                >
-                  <div className="flex items-center space-x-2 flex-1 min-w-0">
-                    <span className={`w-4 h-4 flex-shrink-0 ${
-                      item.item_type === 'directory' ? 'text-blue-600' : 'text-gray-600'
-                    }`}>
-                      {item.item_type === 'directory' ? '📁' : '📄'}
-                    </span>
-                    <span className="truncate">{item.name}</span>
-                  </div>
+              .map((item: any) => {
+                const isDraggable = isDragDropAvailable && item.item_type === 'file'
+                const isBeingDragged = isDragging && draggedFile?.path === item.path
 
-                  <div className="text-xs text-gray-500 ml-2 flex-shrink-0">
-                    {item.formatted_size}
+                return (
+                  <div
+                    key={item.path}
+                    onClick={() => handleFileClick(item)}
+                    draggable={isDraggable}
+                    onDragStart={() => handleDragStart(item)}
+                    className={`flex items-center justify-between p-2 hover:bg-gray-100 cursor-pointer rounded text-xs ${
+                      isBeingDragged ? 'opacity-50 bg-blue-100' : ''
+                    } ${isDraggable ? 'drag-source' : ''}`}
+                    data-testid={`file-item-${item.name}`}
+                    data-type={item.item_type}
+                    tabIndex={0}
+                    role={isDraggable ? 'button' : undefined}
+                    aria-label={isDraggable ? `Drag ${item.name} to categorize` : undefined}
+                  >
+                    <div className="flex items-center space-x-2 flex-1 min-w-0">
+                      <span className={`w-4 h-4 flex-shrink-0 ${
+                        item.item_type === 'directory' ? 'text-blue-600' : 'text-gray-600'
+                      }`}>
+                        {item.item_type === 'directory' ? '📁' : '📄'}
+                      </span>
+                      <span className="truncate">{item.name}</span>
+                      {isDraggable && (
+                        <span className="text-xs text-gray-400 ml-1" title="Draggable">⋮⋮</span>
+                      )}
+                    </div>
+
+                    <div className="text-xs text-gray-500 ml-2 flex-shrink-0">
+                      {item.formatted_size}
+                    </div>
                   </div>
-                </div>
-              ))}
+                )
+              })}
           </div>
         )}
       </div>
+
+      {/* Drag-Drop Status Footer */}
+      {isDragDropAvailable && (
+        <div className="px-3 py-2 bg-blue-50 border-t border-blue-200">
+          <div className="text-xs text-blue-700">
+            {isDragging
+              ? `Dragging: ${draggedFile?.name}`
+              : 'Drag files to Category Explorer to categorize'
+            }
+          </div>
+        </div>
+      )}
 
       {/* Status indicators for testing */}
       {!isLoading && fileExplorerItems.length === 0 && (

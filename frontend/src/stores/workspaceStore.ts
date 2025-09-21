@@ -70,6 +70,20 @@ const mockFiles: FileSystemItem[] = [
   }
 ]
 
+// Document Caddy type
+interface DocumentCaddy {
+  id: string
+  title: string
+  filePath: string
+  content?: string
+  isActive: boolean
+  position_x?: number
+  position_y?: number
+  width?: number
+  height?: number
+  z_index?: number
+}
+
 // Workspace store state
 interface WorkspaceState {
   // Core state
@@ -78,13 +92,21 @@ interface WorkspaceState {
   isLoading: boolean
   error: string | null
 
+  // Navigation state
+  currentPath: string
+
   // Collections
   fileExplorerItems: FileSystemItem[]
   categoryExplorerItems: FileSystemItem[]
   searchResults: FileSystemItem[]
+  documentCaddies: DocumentCaddy[]
 
   // Actions
   loadProject: (projectId: string) => Promise<void>
+  loadFolderContents: (folderPath: string) => Promise<void>
+  createDocumentCaddy: (filePath: string) => void
+  updateDocumentCaddy: (caddyId: string, updates: Partial<DocumentCaddy>) => void
+  searchFiles: (query: string) => Promise<void>
   updatePanelSizes: (panelType: string, width: number) => void
 }
 
@@ -96,12 +118,14 @@ export const useWorkspaceStore = create<WorkspaceState>()(
       workspaceLayout: null,
       isLoading: false,
       error: null,
+      currentPath: '',
       fileExplorerItems: [],
       categoryExplorerItems: [],
       searchResults: [],
+      documentCaddies: [],
 
       // Actions
-      loadProject: async (projectId: string) => {
+      loadProject: async (_projectId: string) => {
         set({ isLoading: true, error: null })
 
         try {
@@ -126,7 +150,93 @@ export const useWorkspaceStore = create<WorkspaceState>()(
         }
       },
 
-      updatePanelSizes: (panelType: string, width: number) => {
+      loadFolderContents: async (folderPath: string) => {
+        set({ isLoading: true, error: null, currentPath: folderPath })
+
+        try {
+          if (isDevelopment) {
+            await new Promise(resolve => setTimeout(resolve, 300))
+            set({
+              fileExplorerItems: mockFiles,
+              isLoading: false
+            })
+          } else {
+            set({ error: 'API integration not implemented yet', isLoading: false })
+          }
+        } catch (error) {
+          set({
+            error: error instanceof Error ? error.message : 'Failed to load folder contents',
+            isLoading: false
+          })
+        }
+      },
+
+      createDocumentCaddy: (filePath: string) => {
+        const current = get()
+        const existingCaddy = current.documentCaddies.find(caddy => caddy.filePath === filePath)
+
+        if (existingCaddy) {
+          // Activate existing caddy
+          set({
+            documentCaddies: current.documentCaddies.map(caddy => ({
+              ...caddy,
+              isActive: caddy.id === existingCaddy.id
+            }))
+          })
+          return
+        }
+
+        // Create new caddy
+        const fileName = filePath.split('/').pop() || 'Unknown'
+        const newCaddy: DocumentCaddy = {
+          id: `caddy_${Date.now()}`,
+          title: fileName,
+          filePath,
+          isActive: true
+        }
+
+        set({
+          documentCaddies: [
+            ...current.documentCaddies.map(caddy => ({ ...caddy, isActive: false })),
+            newCaddy
+          ]
+        })
+      },
+
+      updateDocumentCaddy: (caddyId: string, updates: Partial<DocumentCaddy>) => {
+        const current = get()
+        set({
+          documentCaddies: current.documentCaddies.map(caddy =>
+            caddy.id === caddyId ? { ...caddy, ...updates } : caddy
+          )
+        })
+      },
+
+      searchFiles: async (query: string) => {
+        set({ isLoading: true, error: null })
+
+        try {
+          if (isDevelopment) {
+            await new Promise(resolve => setTimeout(resolve, 400))
+            const filteredFiles = mockFiles.filter(file =>
+              file.name.toLowerCase().includes(query.toLowerCase())
+            )
+            set({
+              searchResults: filteredFiles,
+              isLoading: false
+            })
+          } else {
+            set({ error: 'Search API integration not implemented yet', isLoading: false })
+          }
+        } catch (error) {
+          set({
+            error: error instanceof Error ? error.message : 'Search failed',
+            isLoading: false
+          })
+        }
+      },
+
+      updatePanelSizes: (_panelType: string, width: number) => {
         const current = get()
         if (!current.workspaceLayout) return
 

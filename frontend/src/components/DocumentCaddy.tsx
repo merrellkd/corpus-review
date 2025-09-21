@@ -1,5 +1,18 @@
 import React, { useState, useRef, useCallback } from 'react'
-import { useWorkspaceStore, DocumentCaddyDto } from '@/stores/workspaceStore'
+import { useWorkspaceStore } from '../stores/workspaceStore'
+
+interface DocumentCaddyDto {
+  id: string
+  title: string
+  filePath: string
+  content?: string
+  isActive: boolean
+  position_x?: number
+  position_y?: number
+  width?: number
+  height?: number
+  z_index?: number
+}
 
 interface DocumentCaddyProps {
   caddy: DocumentCaddyDto
@@ -42,7 +55,7 @@ export const DocumentCaddy: React.FC<DocumentCaddyProps> = ({ caddy }) => {
     const newY = e.clientY - dragOffset.y
 
     // Update position in store
-    updateDocumentCaddy(caddy.id, newX, newY)
+    updateDocumentCaddy(caddy.id, { position_x: newX, position_y: newY })
   }, [isDragging, dragOffset, caddy.id, updateDocumentCaddy])
 
   React.useEffect(() => {
@@ -63,7 +76,7 @@ export const DocumentCaddy: React.FC<DocumentCaddyProps> = ({ caddy }) => {
       ref={caddyRef}
       className={`absolute bg-white border-2 border-dashed border-gray-400 rounded-lg shadow-lg ${
         isDragging ? 'shadow-xl border-blue-500' : ''
-      } ${caddy.is_active ? 'border-blue-500' : ''}`}
+      } ${caddy.isActive ? 'border-blue-500' : ''}`}
       style={{
         left: `${caddy.position_x}px`,
         top: `${caddy.position_y}px`,
