@@ -4,9 +4,11 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev": "tauri dev",
+    "dev": "npm run kill-port && tauri dev",
+    "dev:force": "npm run kill-port && tauri dev",
     "build": "tauri build",
     "tauri": "tauri",
+    "kill-port": "lsof -ti:1420 | xargs kill -9 || true",
     "frontend:dev": "cd frontend && npm run dev",
     "frontend:build": "cd frontend && npm run build",
     "frontend:test": "cd frontend && npm test",

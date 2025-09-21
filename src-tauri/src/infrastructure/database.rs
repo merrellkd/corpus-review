@@ -87,8 +87,10 @@ pub async fn initialize_database() -> Result<Database> {
         temp_dir.join("corpus_review.db")
     } else {
         // Production mode - use application data directory
-        let app_data_dir = tauri::api::path::app_data_dir(&tauri::Config::default())
-            .ok_or_else(|| anyhow::anyhow!("Could not determine app data directory"))?;
+        let app_data_dir = std::env::var("HOME")
+            .map(|home| std::path::PathBuf::from(home).join(".corpus_review"))
+            .or_else(|_| std::env::var("APPDATA").map(|appdata| std::path::PathBuf::from(appdata).join("corpus_review")))
+            .unwrap_or_else(|_| std::env::temp_dir().join("corpus_review"));
         std::fs::create_dir_all(&app_data_dir)?;
         app_data_dir.join("corpus_review.db")
     };
