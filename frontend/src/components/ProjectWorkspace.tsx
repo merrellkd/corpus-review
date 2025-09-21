@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react'
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels'
 import { useWorkspaceStore } from '../stores/workspaceStore'
-import { usePanelStateMachine } from '../stores/panelStateMachine'
+import { useUnifiedPanelState } from '../stores/unifiedPanelState'
 
 // New architecture components
 import { TopToolbar } from './TopToolbar'
@@ -26,7 +26,7 @@ export const ProjectWorkspace: React.FC<ProjectWorkspaceProps> = ({ projectId })
   const {
     isFilesCategoriesPanelActive,
     isSearchPanelActive,
-  } = usePanelStateMachine()
+  } = useUnifiedPanelState()
 
   // Load project on mount
   useEffect(() => {

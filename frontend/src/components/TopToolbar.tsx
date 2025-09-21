@@ -1,13 +1,13 @@
 import React from 'react'
-import { usePanelStateMachine } from '../stores/panelStateMachine'
+import { useUnifiedPanelState } from '../stores/unifiedPanelState'
 
 export const TopToolbar: React.FC = () => {
   const {
     isFilesCategoriesPanelActive,
     isSearchPanelActive,
-    toggleFilesCategoriesPanel,
-    toggleSearchPanel
-  } = usePanelStateMachine()
+    toggleFilesCategories,
+    toggleSearch
+  } = useUnifiedPanelState()
 
   return (
     <div
@@ -26,7 +26,7 @@ export const TopToolbar: React.FC = () => {
               ? 'active bg-blue-600 text-white'
               : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
           }`}
-          onClick={toggleFilesCategoriesPanel}
+          onClick={toggleFilesCategories}
           aria-label="Toggle Files & Categories panel"
           aria-pressed={isFilesCategoriesPanelActive}
         >
@@ -40,7 +40,7 @@ export const TopToolbar: React.FC = () => {
               ? 'active bg-blue-600 text-white'
               : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
           }`}
-          onClick={toggleSearchPanel}
+          onClick={toggleSearch}
           aria-label="Toggle Search panel"
           aria-pressed={isSearchPanelActive}
         >

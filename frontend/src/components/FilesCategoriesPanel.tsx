@@ -1,30 +1,31 @@
 import React from 'react'
-import { useSectionVisibility } from '../stores/sectionVisibilityStore'
+import { useUnifiedPanelState } from '../stores/unifiedPanelState'
 
 export const FilesCategoriesPanel: React.FC = () => {
   const {
-    fileExplorerSectionVisible,
-    categoryExplorerSectionVisible,
-    shouldShowPanel,
-    dragDropStatusMessage,
-    sectionLayout,
-    toggleFileExplorerSection,
-    toggleCategoryExplorerSection,
-    resizeSections
-  } = useSectionVisibility()
+    isFilesCategoriesPanelActive,
+    fileExplorerVisible,
+    categoryExplorerVisible,
+    isDragDropAvailable,
+    toggleFileExplorer,
+    toggleCategoryExplorer
+  } = useUnifiedPanelState()
 
-  // Don't render if both sections are hidden
-  if (!shouldShowPanel) {
+  // Don't render if panel is not active
+  if (!isFilesCategoriesPanelActive) {
     return null
   }
 
-  const layoutClass = {
-    'split': 'split-layout',
-    'file-only': 'file-only-layout',
-    'category-only': 'category-only-layout'
-  }[sectionLayout?.layout || 'split']
+  // Determine layout based on visible sections
+  const getLayoutClass = () => {
+    if (fileExplorerVisible && categoryExplorerVisible) return 'split-layout'
+    if (fileExplorerVisible && !categoryExplorerVisible) return 'file-only-layout'
+    if (!fileExplorerVisible && categoryExplorerVisible) return 'category-only-layout'
+    return 'split-layout' // fallback
+  }
 
-  const showResizeHandle = fileExplorerSectionVisible && categoryExplorerSectionVisible
+  const showResizeHandle = fileExplorerVisible && categoryExplorerVisible
+  const layoutClass = getLayoutClass()
 
   return (
     <div
@@ -39,13 +40,13 @@ export const FilesCategoriesPanel: React.FC = () => {
           <button
             data-testid="file-explorer-toggle"
             className={`section-toggle px-3 py-1 text-sm rounded ${
-              fileExplorerSectionVisible
+              fileExplorerVisible
                 ? 'active bg-blue-600 text-white'
                 : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
             }`}
-            onClick={toggleFileExplorerSection}
+            onClick={toggleFileExplorer}
             aria-label="Toggle File Explorer section"
-            aria-pressed={fileExplorerSectionVisible}
+            aria-pressed={fileExplorerVisible}
           >
             File Explorer
           </button>
@@ -53,13 +54,13 @@ export const FilesCategoriesPanel: React.FC = () => {
           <button
             data-testid="category-explorer-toggle"
             className={`section-toggle px-3 py-1 text-sm rounded ${
-              categoryExplorerSectionVisible
+              categoryExplorerVisible
                 ? 'active bg-blue-600 text-white'
                 : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
             }`}
-            onClick={toggleCategoryExplorerSection}
+            onClick={toggleCategoryExplorer}
             aria-label="Toggle Category Explorer section"
-            aria-pressed={categoryExplorerSectionVisible}
+            aria-pressed={categoryExplorerVisible}
           >
             Category Explorer
           </button>
@@ -69,11 +70,11 @@ export const FilesCategoriesPanel: React.FC = () => {
       {/* Sections Container */}
       <div className="sections-container flex-1 flex flex-col">
         {/* File Explorer Section */}
-        {fileExplorerSectionVisible && (
+        {fileExplorerVisible && (
           <div
             data-testid="file-explorer-section"
             className="file-explorer-section bg-white overflow-hidden"
-            style={{ height: `${sectionLayout?.fileExplorerHeight || 50}%` }}
+            style={{ height: showResizeHandle ? '50%' : '100%' }}
           >
             <div className="section-header p-2 bg-gray-50 border-b border-gray-200">
               <h3 className="font-medium text-gray-800">File Explorer</h3>
@@ -95,7 +96,7 @@ export const FilesCategoriesPanel: React.FC = () => {
             onMouseDown={(e) => {
               // Basic resize implementation - will be enhanced later
               const startY = e.clientY
-              const startHeight = sectionLayout?.fileExplorerHeight || 50
+              const startHeight = 50 // Default 50/50 split
 
               const handleMouseMove = (e: MouseEvent) => {
                 const deltaY = e.clientY - startY
@@ -104,7 +105,13 @@ export const FilesCategoriesPanel: React.FC = () => {
                 const deltaPercent = (deltaY / containerHeight) * 100
                 const newHeight = Math.max(10, Math.min(90, startHeight + deltaPercent))
 
-                resizeSections?.({ fileExplorer: newHeight })
+                // For now, just visual feedback - could implement persistence later
+                const fileSection = target.previousElementSibling as HTMLElement
+                const categorySection = target.nextElementSibling as HTMLElement
+                if (fileSection && categorySection) {
+                  fileSection.style.height = `${newHeight}%`
+                  categorySection.style.height = `${100 - newHeight}%`
+                }
               }
 
               const handleMouseUp = () => {
@@ -119,11 +126,11 @@ export const FilesCategoriesPanel: React.FC = () => {
         )}
 
         {/* Category Explorer Section */}
-        {categoryExplorerSectionVisible && (
+        {categoryExplorerVisible && (
           <div
             data-testid="category-explorer-section"
             className="category-explorer-section bg-white overflow-hidden"
-            style={{ height: `${sectionLayout?.categoryExplorerHeight || 50}%` }}
+            style={{ height: showResizeHandle ? '50%' : '100%' }}
           >
             <div className="section-header p-2 bg-gray-50 border-b border-gray-200">
               <h3 className="font-medium text-gray-800">Category Explorer</h3>
@@ -141,7 +148,10 @@ export const FilesCategoriesPanel: React.FC = () => {
       {/* Drag-Drop Status */}
       <div className="drag-drop-status p-2 bg-gray-50 border-t border-gray-200">
         <div className="text-xs text-gray-600">
-          {dragDropStatusMessage}
+          {isDragDropAvailable
+            ? 'Drag files from File Explorer to Category Explorer to categorize them'
+            : 'Show both File Explorer and Category Explorer to enable drag-and-drop categorization'
+          }
         </div>
       </div>
     </div>
