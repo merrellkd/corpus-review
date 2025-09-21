@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { useWorkspaceStore } from '../stores/workspaceStore'
 import { useFileCategorization } from '../stores/fileCategorization'
-import { useSectionVisibility } from '../stores/sectionVisibilityStore'
+import { useUnifiedPanelState } from '../stores/unifiedPanelState'
 
 export const FileExplorer: React.FC = () => {
   const {
@@ -18,7 +18,7 @@ export const FileExplorer: React.FC = () => {
     draggedFile
   } = useFileCategorization()
 
-  const { isDragDropAvailable } = useSectionVisibility()
+  const { isDragDropAvailable } = useUnifiedPanelState()
 
   const [searchQuery, setSearchQuery] = useState('')
 

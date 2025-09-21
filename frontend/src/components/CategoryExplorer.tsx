@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { useWorkspaceStore } from '../stores/workspaceStore'
 import { useFileCategorization } from '../stores/fileCategorization'
-import { useSectionVisibility } from '../stores/sectionVisibilityStore'
+import { useUnifiedPanelState } from '../stores/unifiedPanelState'
 
 export const CategoryExplorer: React.FC = () => {
   const { createDocumentCaddy } = useWorkspaceStore()
@@ -18,7 +18,7 @@ export const CategoryExplorer: React.FC = () => {
     dropZoneStates
   } = useFileCategorization()
 
-  const { isDragDropAvailable } = useSectionVisibility()
+  const { isDragDropAvailable } = useUnifiedPanelState()
 
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set(['category-a']))
 

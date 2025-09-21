@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 import { useFileCategorization } from '../stores/fileCategorization'
-import { useSectionVisibility } from '../stores/sectionVisibilityStore'
+import { useUnifiedPanelState } from '../stores/unifiedPanelState'
 
 export const DragDropCategorizationWorkflow: React.FC = () => {
   const {
@@ -19,7 +19,7 @@ export const DragDropCategorizationWorkflow: React.FC = () => {
     setDropZoneHover
   } = useFileCategorization()
 
-  const { isDragDropAvailable } = useSectionVisibility()
+  const { isDragDropAvailable } = useUnifiedPanelState()
 
   // Sample file data - in real implementation this would come from file explorer
   const sampleFiles = [
