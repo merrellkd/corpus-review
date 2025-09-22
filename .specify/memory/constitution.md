@@ -20,17 +20,17 @@ All code must pass TypeScript strict mode compilation. No implicit any, no missi
 
 ## Development Workflow
 
-### Phase-Gated Feature Development
+### Spec-Driven Development Workflow
 
-Features progress through mandatory phases: discover → design → build_test → review → merged. Phase advancement requires complete audit of deliverables. No phase skipping permitted. Each phase has specific completion criteria.
+Features follow GitHub's spec-kit methodology: establish principles → create functional specifications → technical planning → task breakdown → iterative implementation. Specifications define "what" and "why" before "how". AI models interpret specs for multi-step refinement rather than one-shot generation. Implementation aligns to wireframes and user scenarios.
 
 ### AI-First Development Process
 
 Documentation optimized for Claude Code autonomous work. Feature-specific prompt packs provide complete context. Shared architectural patterns documented for consistency. Human oversight focuses on design decisions, not implementation details.
 
-### Visual-First UI Development
+### Figma-to-Implementation Workflow
 
-New interfaces prototyped in UI Lab environment first. Screenshot-based iteration using Playwright integration. Design system consistency enforced through shared tokens. Components ported to main app only after visual refinement complete.
+New interfaces start with Figma wireframes defining layout, components, and interactions. Screenshots and design specs extracted from Figma inform functional specifications. Implementation follows wireframe-to-component mapping with design system consistency. Visual validation against Figma designs before feature completion.
 
 ## Architecture Standards
 
