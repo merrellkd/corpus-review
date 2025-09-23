@@ -123,13 +123,8 @@ export const WorkspaceCommandBar: React.FC<WorkspaceCommandBarProps> = ({
           </button>
         </div>
 
-        {/* Document Count Indicator */}
+        {/* Document Management Actions */}
         <div className="flex items-center space-x-4">
-          <span className="text-sm text-gray-600">
-            {documentCount} {documentCount === 1 ? 'document' : 'documents'}
-          </span>
-
-          {/* Document Management Actions */}
           <div className="flex items-center space-x-2">
             {documentCount > 0 && (
               <button

@@ -16,7 +16,6 @@ export const DocumentWorkspace: React.FC = () => {
     createWorkspace,
     loadWorkspace,
     switchLayoutMode,
-    addDocument,
     removeDocument,
     removeAllDocuments,
     saveWorkspace,
