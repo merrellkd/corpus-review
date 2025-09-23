@@ -1,8 +1,9 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useCallback, useRef } from 'react'
 import { useWorkspaceStore, workspaceSelectors } from '../domains/workspace/ui/stores/workspace-store'
-import { MultiDocumentWorkspace } from '../domains/workspace/ui/containers/MultiDocumentWorkspace'
 import { LayoutModeType } from '../domains/workspace/domain/value-objects/layout-mode'
 import { Position, Dimensions } from '../domains/workspace/domain/value-objects/geometry'
+import { WorkspaceCommandBar } from '../domains/workspace/ui/components/WorkspaceCommandBar'
+import { DocumentCaddy } from '../domains/workspace/ui/components/DocumentCaddy'
 
 export const DocumentWorkspace: React.FC = () => {
   const {
@@ -25,6 +26,68 @@ export const DocumentWorkspace: React.FC = () => {
   const isLoading = useWorkspaceStore(workspaceSelectors.isLoading)
   const hasError = useWorkspaceStore(workspaceSelectors.hasError)
 
+  const workspaceRef = useRef<HTMLDivElement>(null)
+  const resizeObserverRef = useRef<ResizeObserver | null>(null)
+  const resizeTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const lastResizeRef = useRef<{ width: number; height: number } | null>(null)
+
+  // Handle document activation
+  const handleDocumentActivate = useCallback((documentId: string) => {
+    activateDocument(documentId)
+  }, [activateDocument])
+
+  // Handle document movement with validation
+  const handleDocumentMove = useCallback((documentId: string, position: Position) => {
+    if (!currentWorkspace) return
+
+    // Validate position is within workspace bounds
+    const maxX = Math.max(0, currentWorkspace.workspaceDimensions.width - 200) // Minimum visible width
+    const maxY = Math.max(0, currentWorkspace.workspaceDimensions.height - 100) // Minimum visible height
+
+    const originalX = position.getX()
+    const originalY = position.getY()
+    const boundedX = Math.max(0, Math.min(originalX, maxX))
+    const boundedY = Math.max(0, Math.min(originalY, maxY))
+
+    try {
+      const boundedPosition = Position.fromCoordinates(boundedX, boundedY)
+      moveDocument(documentId, boundedPosition)
+    } catch (error) {
+      console.warn('Invalid position during document move:', error)
+    }
+  }, [moveDocument, currentWorkspace])
+
+  // Handle document resizing with validation
+  const handleDocumentResize = useCallback((documentId: string, dimensions: Dimensions) => {
+    if (!currentWorkspace) return
+
+    // Validate minimum and maximum dimensions
+    const minWidth = 200
+    const minHeight = 150
+    const maxWidth = currentWorkspace.workspaceDimensions.width
+    const maxHeight = currentWorkspace.workspaceDimensions.height
+
+    const boundedWidth = Math.max(minWidth, Math.min(dimensions.getWidth(), maxWidth))
+    const boundedHeight = Math.max(minHeight, Math.min(dimensions.getHeight(), maxHeight))
+
+    try {
+      const boundedDimensions = Dimensions.fromValues(boundedWidth, boundedHeight)
+      resizeDocument(documentId, boundedDimensions)
+    } catch (error) {
+      console.warn('Invalid dimensions during document resize:', error)
+    }
+  }, [resizeDocument, currentWorkspace])
+
+  // Handle document close
+  const handleDocumentClose = useCallback((documentId: string) => {
+    removeDocument(documentId)
+  }, [removeDocument])
+
+  // Handle document title change
+  const handleDocumentTitleChange = useCallback((documentId: string, newTitle: string) => {
+    updateDocumentTitle(documentId, newTitle)
+  }, [updateDocumentTitle])
+
   // Initialize demo workspace on mount
   useEffect(() => {
     if (!currentWorkspace) {
@@ -32,6 +95,59 @@ export const DocumentWorkspace: React.FC = () => {
         .catch(console.error)
     }
   }, [currentWorkspace, createWorkspace])
+
+  // Handle workspace resize observation with debouncing
+  useEffect(() => {
+    if (!workspaceRef.current || !currentWorkspace) {
+      return
+    }
+
+    resizeObserverRef.current = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const { width, height } = entry.contentRect
+        if (width > 0 && height > 0) {
+          // Check if dimensions actually changed significantly
+          const tolerance = 1 // 1px tolerance
+          const lastResize = lastResizeRef.current
+
+          if (lastResize) {
+            const widthChanged = Math.abs(lastResize.width - width) > tolerance
+            const heightChanged = Math.abs(lastResize.height - height) > tolerance
+
+            if (!widthChanged && !heightChanged) {
+              return // Skip if no significant change
+            }
+          }
+
+          // Debounce the resize calls
+          if (resizeTimeoutRef.current) {
+            clearTimeout(resizeTimeoutRef.current)
+          }
+
+          resizeTimeoutRef.current = setTimeout(() => {
+            try {
+              const newDimensions = Dimensions.fromValues(width, height)
+              lastResizeRef.current = { width, height }
+              updateWorkspaceDimensions(newDimensions)
+            } catch (error) {
+              console.warn('Invalid workspace dimensions during resize:', error)
+            }
+          }, 100) // 100ms debounce
+        }
+      }
+    })
+
+    resizeObserverRef.current.observe(workspaceRef.current)
+
+    return () => {
+      if (resizeObserverRef.current) {
+        resizeObserverRef.current.disconnect()
+      }
+      if (resizeTimeoutRef.current) {
+        clearTimeout(resizeTimeoutRef.current)
+      }
+    }
+  }, [updateWorkspaceDimensions, currentWorkspace])
 
   if (hasError) {
     return (
@@ -59,22 +175,6 @@ export const DocumentWorkspace: React.FC = () => {
     )
   }
 
-  // Convert documents to UI format
-  const documentsUIData = documents.map(doc => ({
-    id: doc.id,
-    title: doc.title,
-    filePath: doc.filePath,
-    position: doc.position,
-    dimensions: doc.dimensions,
-    zIndex: doc.zIndex,
-    isActive: doc.isActive,
-    isVisible: doc.isVisible,
-    state: doc.state,
-    errorMessage: doc.errorMessage,
-    isDraggable: doc.isDraggable,
-    isResizable: doc.isResizable,
-  }))
-
   const handleAddDocument = async () => {
     try {
       // Demo: Add a sample document
@@ -93,35 +193,12 @@ export const DocumentWorkspace: React.FC = () => {
     }
   }
 
-  const handleMoveDocument = async (documentId: string, position: Position) => {
-    try {
-      await moveDocument(documentId, position)
-    } catch (error) {
-      console.error('Failed to move document:', error)
-    }
-  }
 
-  const handleResizeDocument = async (documentId: string, dimensions: Dimensions) => {
+  const handleLayoutModeChange = async (mode: LayoutModeType) => {
     try {
-      await resizeDocument(documentId, dimensions)
+      await switchLayoutMode(mode)
     } catch (error) {
-      console.error('Failed to resize document:', error)
-    }
-  }
-
-  const handleActivateDocument = async (documentId: string) => {
-    try {
-      await activateDocument(documentId)
-    } catch (error) {
-      console.error('Failed to activate document:', error)
-    }
-  }
-
-  const handleRemoveDocument = async (documentId: string) => {
-    try {
-      await removeDocument(documentId)
-    } catch (error) {
-      console.error('Failed to remove document:', error)
+      console.error('Failed to switch layout mode:', error)
     }
   }
 
@@ -130,14 +207,6 @@ export const DocumentWorkspace: React.FC = () => {
       await removeAllDocuments()
     } catch (error) {
       console.error('Failed to remove all documents:', error)
-    }
-  }
-
-  const handleLayoutModeChange = async (mode: LayoutModeType) => {
-    try {
-      await switchLayoutMode(mode)
-    } catch (error) {
-      console.error('Failed to switch layout mode:', error)
     }
   }
 
@@ -159,44 +228,187 @@ export const DocumentWorkspace: React.FC = () => {
     }
   }
 
-  const handleTitleChange = async (documentId: string, newTitle: string) => {
-    try {
-      await updateDocumentTitle(documentId, newTitle)
-    } catch (error) {
-      console.error('Failed to update document title:', error)
+  // Get workspace container classes based on layout mode
+  const getWorkspaceClasses = () => {
+    const baseClasses = 'relative w-full h-full overflow-hidden bg-gray-50'
+
+    let workspaceClasses
+    switch (currentWorkspace.layoutMode) {
+      case LayoutModeType.STACKED:
+        workspaceClasses = `${baseClasses} workspace-stacked`
+        break
+      case LayoutModeType.GRID:
+        workspaceClasses = `${baseClasses} workspace-grid`
+        break
+      case LayoutModeType.FREEFORM:
+        workspaceClasses = `${baseClasses} workspace-freeform`
+        break
+      default:
+        workspaceClasses = baseClasses
     }
+
+    return workspaceClasses
   }
 
-  const handleWorkspaceResize = async (dimensions: Dimensions) => {
-    try {
-      await updateWorkspaceDimensions(dimensions)
-    } catch (error) {
-      console.error('Failed to update workspace dimensions:', error)
+  // Get document container styles
+  const getDocumentContainerStyle = (): React.CSSProperties => {
+    const style = {
+      width: currentWorkspace.workspaceDimensions.width,
+      height: currentWorkspace.workspaceDimensions.height,
+      position: 'relative' as const,
     }
+
+    return style
+  }
+
+  // Render empty state
+  const renderEmptyState = () => (
+    <div className="flex flex-col items-center justify-center h-full text-gray-500">
+      <div className="text-center max-w-md">
+        <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+        <h3 className="mt-4 text-lg font-medium text-gray-900">No documents</h3>
+        <p className="mt-2 text-sm text-gray-600">
+          Add documents to get started with your multi-document workspace.
+        </p>
+        <button
+          type="button"
+          onClick={handleAddDocument}
+          disabled={isLoading}
+          className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <svg className="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+          </svg>
+          Add Document
+        </button>
+      </div>
+    </div>
+  )
+
+  // Render layout mode indicator
+  const renderLayoutModeIndicator = () => (
+    <div className="absolute top-4 right-4 z-10 bg-white bg-opacity-90 backdrop-blur-sm rounded-lg px-3 py-2 shadow-sm border border-gray-200">
+      <div className="flex items-center space-x-2 text-sm text-gray-600">
+        <span className="font-medium">Layout:</span>
+        <span className={`px-2 py-1 rounded text-xs font-medium ${
+          currentWorkspace.layoutMode === LayoutModeType.STACKED ? 'bg-blue-100 text-blue-800' :
+          currentWorkspace.layoutMode === LayoutModeType.GRID ? 'bg-green-100 text-green-800' :
+          'bg-purple-100 text-purple-800'
+        }`}>
+          {currentWorkspace.layoutMode}
+        </span>
+        {documents.length > 0 && (
+          <>
+            <span className="text-gray-400">•</span>
+            <span>{documents.length} {documents.length === 1 ? 'document' : 'documents'}</span>
+          </>
+        )}
+      </div>
+    </div>
+  )
+
+  // Render workspace statistics
+  const renderWorkspaceStats = () => {
+    const activeDocument = documents.find(doc => doc.isActive)
+    const visibleDocuments = documents.filter(doc => doc.isVisible)
+
+    return (
+      <div className="absolute bottom-4 left-4 z-10 bg-white bg-opacity-90 backdrop-blur-sm rounded-lg px-3 py-2 shadow-sm border border-gray-200">
+        <div className="flex items-center space-x-4 text-xs text-gray-600">
+          <span>
+            <span className="font-medium">Visible:</span> {visibleDocuments.length}/{documents.length}
+          </span>
+          {activeDocument && (
+            <span>
+              <span className="font-medium">Active:</span> {activeDocument.title}
+            </span>
+          )}
+          <span>
+            <span className="font-medium">Workspace:</span> {currentWorkspace.workspaceDimensions.width}×{currentWorkspace.workspaceDimensions.height}
+          </span>
+        </div>
+      </div>
+    )
   }
 
   return (
-    <div className="h-full bg-gray-50 relative overflow-hidden" data-testid="document-workspace-panel">
-      <MultiDocumentWorkspace
-        workspaceId={currentWorkspace.id}
-        workspaceName={currentWorkspace.name}
+    <div className="multi-document-workspace flex flex-col h-full" data-testid="document-workspace-panel">
+      {/* Command Bar */}
+      <WorkspaceCommandBar
         currentLayoutMode={currentWorkspace.layoutMode}
-        documents={documentsUIData}
-        workspaceDimensions={currentWorkspace.workspaceDimensions}
-        isLoading={isLoading}
-        disabled={false}
+        documentCount={documents.length}
         onLayoutModeChange={handleLayoutModeChange}
         onAddDocument={handleAddDocument}
-        onRemoveDocument={handleRemoveDocument}
         onRemoveAllDocuments={handleRemoveAllDocuments}
         onSaveWorkspace={handleSaveWorkspace}
         onLoadWorkspace={handleLoadWorkspace}
-        onActivateDocument={handleActivateDocument}
-        onMoveDocument={handleMoveDocument}
-        onResizeDocument={handleResizeDocument}
-        onTitleChange={handleTitleChange}
-        onWorkspaceResize={handleWorkspaceResize}
+        isLoading={isLoading}
+        disabled={false}
       />
+
+      {/* Workspace Area */}
+      <div className="flex-1 relative">
+        <div
+          ref={workspaceRef}
+          className={getWorkspaceClasses()}
+          style={getDocumentContainerStyle()}
+          data-testid={`workspace-${currentWorkspace.id}`}
+          role="application"
+          aria-label={`Multi-document workspace: ${currentWorkspace.name}`}
+          tabIndex={-1}
+        >
+          {documents.length === 0 ? (
+            renderEmptyState()
+          ) : (
+            <>
+              {/* Document Caddies */}
+              {documents.map((document) => (
+                <DocumentCaddy
+                  key={document.id}
+                  id={document.id}
+                  title={document.title}
+                  filePath={document.filePath}
+                  position={document.position}
+                  dimensions={document.dimensions}
+                  zIndex={document.zIndex}
+                  isActive={document.isActive}
+                  isVisible={document.isVisible}
+                  state={document.state}
+                  errorMessage={document.errorMessage}
+                  isDraggable={document.isDraggable}
+                  isResizable={document.isResizable}
+                  onActivate={handleDocumentActivate}
+                  onMove={handleDocumentMove}
+                  onResize={handleDocumentResize}
+                  onClose={handleDocumentClose}
+                  onTitleChange={handleDocumentTitleChange}
+                />
+              ))}
+
+              {/* Layout Mode Indicator */}
+              {renderLayoutModeIndicator()}
+
+              {/* Workspace Statistics */}
+              {renderWorkspaceStats()}
+            </>
+          )}
+
+          {/* Loading Overlay */}
+          {isLoading && (
+            <div className="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center z-50">
+              <div className="flex flex-col items-center space-y-4">
+                <svg className="animate-spin h-8 w-8 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span className="text-sm text-gray-600">Loading workspace...</span>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   )
 }

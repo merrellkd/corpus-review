@@ -55,16 +55,23 @@ export const DocumentCaddy: React.FC<DocumentCaddyProps> = ({
   const [isResizing, setIsResizing] = useState(false);
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [editedTitle, setEditedTitle] = useState(title);
-  const [dragStart, setDragStart] = useState<{ x: number; y: number; startX: number; startY: number } | null>(null);
-  const [resizeStart, setResizeStart] = useState<{ x: number; y: number; startWidth: number; startHeight: number } | null>(null);
+
+  // Local state for immediate visual feedback during drag/resize
+  const [localPosition, setLocalPosition] = useState<{ x: number; y: number } | null>(null);
+  const [localDimensions, setLocalDimensions] = useState<{ width: number; height: number } | null>(null);
 
   const caddyRef = useRef<HTMLDivElement>(null);
   const titleInputRef = useRef<HTMLInputElement>(null);
+  const dragStartRef = useRef<{ x: number; y: number; startX: number; startY: number } | null>(null);
+  const resizeStartRef = useRef<{ x: number; y: number; startWidth: number; startHeight: number } | null>(null);
+  const rafIdRef = useRef<number | null>(null);
+  const visualUpdateRef = useRef<number | null>(null);
 
   // Update edited title when title prop changes
   useEffect(() => {
     setEditedTitle(title);
   }, [title]);
+
 
   // Focus title input when editing starts
   useEffect(() => {
@@ -85,15 +92,69 @@ export const DocumentCaddy: React.FC<DocumentCaddyProps> = ({
     // Activate this caddy
     onActivate(id);
 
-    // Start dragging
-    setIsDragging(true);
-    setDragStart({
+    // Start dragging - capture current position at the moment of mouse down
+    const dragData = {
       x: e.clientX,
       y: e.clientY,
       startX: position.x,
       startY: position.y,
-    });
-  }, [isDraggable, isEditingTitle, state, onActivate, id, position.x, position.y]);
+    };
+
+    dragStartRef.current = dragData;
+    setIsDragging(true);
+
+    // Attach event listeners immediately
+    const handleMouseMove = (e: MouseEvent) => {
+      if (dragStartRef.current) {
+        const dragStart = dragStartRef.current;
+        const deltaX = e.clientX - dragStart.x;
+        const deltaY = e.clientY - dragStart.y;
+        const newX = Math.max(0, dragStart.startX + deltaX);
+        const newY = Math.max(0, dragStart.startY + deltaY);
+
+        // Throttle visual feedback to reduce re-renders
+        if (visualUpdateRef.current) {
+          cancelAnimationFrame(visualUpdateRef.current);
+        }
+        visualUpdateRef.current = requestAnimationFrame(() => {
+          setLocalPosition({ x: newX, y: newY });
+        });
+
+        // Throttle parent callbacks at lower frequency
+        if (rafIdRef.current) {
+          cancelAnimationFrame(rafIdRef.current);
+        }
+
+        rafIdRef.current = requestAnimationFrame(() => {
+          try {
+            const newPosition = Position.fromCoordinates(newX, newY);
+            onMove(id, newPosition);
+          } catch (error) {
+            console.warn('Invalid position during drag:', error);
+          }
+        });
+      }
+    };
+
+    const handleMouseUp = () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+      if (rafIdRef.current) {
+        cancelAnimationFrame(rafIdRef.current);
+        rafIdRef.current = null;
+      }
+      if (visualUpdateRef.current) {
+        cancelAnimationFrame(visualUpdateRef.current);
+        visualUpdateRef.current = null;
+      }
+      setIsDragging(false);
+      dragStartRef.current = null;
+      setLocalPosition(null);
+    };
+
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+  }, [isDraggable, isEditingTitle, state, onActivate, id, position.x, position.y, onMove]);
 
   const handleResizeMouseDown = useCallback((e: React.MouseEvent) => {
     if (!isResizable || state !== DocumentCaddyState.READY) {
@@ -103,64 +164,70 @@ export const DocumentCaddy: React.FC<DocumentCaddyProps> = ({
     e.preventDefault();
     e.stopPropagation();
 
-    setIsResizing(true);
-    setResizeStart({
+    const resizeData = {
       x: e.clientX,
       y: e.clientY,
       startWidth: dimensions.width,
       startHeight: dimensions.height,
-    });
-  }, [isResizable, state, dimensions.width, dimensions.height]);
+    };
 
-  // Handle mouse move for dragging and resizing
-  useEffect(() => {
+    resizeStartRef.current = resizeData;
+    setIsResizing(true);
+
+    // Attach event listeners immediately
     const handleMouseMove = (e: MouseEvent) => {
-      if (isDragging && dragStart) {
-        const deltaX = e.clientX - dragStart.x;
-        const deltaY = e.clientY - dragStart.y;
-        const newX = Math.max(0, dragStart.startX + deltaX);
-        const newY = Math.max(0, dragStart.startY + deltaY);
-
-        try {
-          const newPosition = Position.fromCoordinates(newX, newY);
-          onMove(id, newPosition);
-        } catch (error) {
-          console.warn('Invalid position during drag:', error);
-        }
-      }
-
-      if (isResizing && resizeStart) {
+      if (resizeStartRef.current) {
+        const resizeStart = resizeStartRef.current;
         const deltaX = e.clientX - resizeStart.x;
         const deltaY = e.clientY - resizeStart.y;
-        const newWidth = Math.max(100, resizeStart.startWidth + deltaX);
-        const newHeight = Math.max(50, resizeStart.startHeight + deltaY);
+        const newWidth = Math.max(200, resizeStart.startWidth + deltaX);
+        const newHeight = Math.max(150, resizeStart.startHeight + deltaY);
 
-        try {
-          const newDimensions = Dimensions.fromValues(newWidth, newHeight);
-          onResize(id, newDimensions);
-        } catch (error) {
-          console.warn('Invalid dimensions during resize:', error);
+        // Throttle visual feedback to reduce re-renders
+        if (visualUpdateRef.current) {
+          cancelAnimationFrame(visualUpdateRef.current);
         }
+        visualUpdateRef.current = requestAnimationFrame(() => {
+          setLocalDimensions({ width: newWidth, height: newHeight });
+        });
+
+        // Throttle parent callbacks at lower frequency
+        if (rafIdRef.current) {
+          cancelAnimationFrame(rafIdRef.current);
+        }
+
+        rafIdRef.current = requestAnimationFrame(() => {
+          try {
+            const newDimensions = Dimensions.fromValues(newWidth, newHeight);
+            onResize(id, newDimensions);
+          } catch (error) {
+            console.warn('Invalid dimensions during resize:', error);
+          }
+        });
       }
     };
 
     const handleMouseUp = () => {
-      setIsDragging(false);
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+      if (rafIdRef.current) {
+        cancelAnimationFrame(rafIdRef.current);
+        rafIdRef.current = null;
+      }
+      if (visualUpdateRef.current) {
+        cancelAnimationFrame(visualUpdateRef.current);
+        visualUpdateRef.current = null;
+      }
       setIsResizing(false);
-      setDragStart(null);
-      setResizeStart(null);
+      resizeStartRef.current = null;
+      setLocalDimensions(null);
     };
 
-    if (isDragging || isResizing) {
-      document.addEventListener('mousemove', handleMouseMove);
-      document.addEventListener('mouseup', handleMouseUp);
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+  }, [isResizable, state, dimensions.width, dimensions.height, onResize, id]);
 
-      return () => {
-        document.removeEventListener('mousemove', handleMouseMove);
-        document.removeEventListener('mouseup', handleMouseUp);
-      };
-    }
-  }, [isDragging, isResizing, dragStart, resizeStart, onMove, onResize, id]);
+  // Old useEffect-based mouse handling removed - now handled directly in mouse down events
 
   const handleTitleDoubleClick = useCallback(() => {
     if (onTitleChange && state === DocumentCaddyState.READY) {
@@ -256,13 +323,14 @@ export const DocumentCaddy: React.FC<DocumentCaddyProps> = ({
   };
 
   const style: React.CSSProperties = {
-    left: position.x,
-    top: position.y,
-    width: dimensions.width,
-    height: dimensions.height,
+    left: localPosition?.x ?? position.x,
+    top: localPosition?.y ?? position.y,
+    width: localDimensions?.width ?? dimensions.width,
+    height: localDimensions?.height ?? dimensions.height,
     zIndex,
     display: isVisible ? 'block' : 'none',
   };
+
 
   if (!isVisible) {
     return null;

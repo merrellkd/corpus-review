@@ -23,7 +23,10 @@
       "Bash(.specify/scripts/bash/update-agent-context.sh:*)",
       "Bash(.specify/scripts/bash/check-task-prerequisites.sh:*)",
       "Bash(awk:*)",
-      "Bash(xargs -r kill -9)"
+      "Bash(xargs -r kill -9)",
+      "Bash(pkill:*)",
+      "Bash(rm:*)",
+      "Bash(npm run typecheck:*)"
     ],
     "deny": [],
     "ask": []
