@@ -380,10 +380,17 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
                   // Update document positions from layout results
                   response.layout_results.forEach((result: any) => {
                     if (state.currentWorkspace!.documents[result.document_id]) {
-                      state.currentWorkspace!.documents[result.document_id].position = result.position;
-                      state.currentWorkspace!.documents[result.document_id].dimensions = result.dimensions;
-                      state.currentWorkspace!.documents[result.document_id].zIndex = result.z_index;
-                      state.currentWorkspace!.documents[result.document_id].isVisible = result.is_visible;
+                      const currentDoc = state.currentWorkspace!.documents[result.document_id];
+
+                      currentDoc.position = result.position;
+                      currentDoc.dimensions = result.dimensions;
+                      currentDoc.isVisible = result.is_visible;
+
+                      // Only update z-index if this document is not the active one
+                      // Active documents should maintain their elevated z-index
+                      if (!currentDoc.isActive) {
+                        currentDoc.zIndex = result.z_index;
+                      }
                     }
                   });
                 }
@@ -426,10 +433,17 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
                   // Update document positions from layout results
                   response.layout_results.forEach((result: any) => {
                     if (state.currentWorkspace!.documents[result.document_id]) {
-                      state.currentWorkspace!.documents[result.document_id].position = result.position;
-                      state.currentWorkspace!.documents[result.document_id].dimensions = result.dimensions;
-                      state.currentWorkspace!.documents[result.document_id].zIndex = result.z_index;
-                      state.currentWorkspace!.documents[result.document_id].isVisible = result.is_visible;
+                      const currentDoc = state.currentWorkspace!.documents[result.document_id];
+
+                      currentDoc.position = result.position;
+                      currentDoc.dimensions = result.dimensions;
+                      currentDoc.isVisible = result.is_visible;
+
+                      // Only update z-index if this document is not the active one
+                      // Active documents should maintain their elevated z-index
+                      if (!currentDoc.isActive) {
+                        currentDoc.zIndex = result.z_index;
+                      }
                     }
                   });
 
@@ -617,10 +631,18 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
                     state.currentWorkspace!.documents[id].isActive = false;
                   });
 
-                  // Activate target document
+                  // Activate target document and bring to front
                   if (state.currentWorkspace.documents[documentId]) {
                     state.currentWorkspace.documents[documentId].isActive = true;
                     state.currentWorkspace.activeDocumentId = documentId;
+
+                    // Find the highest z-index among all documents
+                    const maxZIndex = Math.max(
+                      ...Object.values(state.currentWorkspace.documents).map(doc => doc.zIndex)
+                    );
+
+                    // Set the active document's z-index to be higher than all others
+                    state.currentWorkspace.documents[documentId].zIndex = maxZIndex + 1;
                   }
 
                   state.currentWorkspace.lastModified = new Date();
@@ -657,10 +679,17 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
                   // Update all affected documents from layout results
                   response.layout_results.forEach((result: any) => {
                     if (state.currentWorkspace!.documents[result.document_id]) {
-                      state.currentWorkspace!.documents[result.document_id].position = result.position;
-                      state.currentWorkspace!.documents[result.document_id].dimensions = result.dimensions;
-                      state.currentWorkspace!.documents[result.document_id].zIndex = result.z_index;
-                      state.currentWorkspace!.documents[result.document_id].isVisible = result.is_visible;
+                      const currentDoc = state.currentWorkspace!.documents[result.document_id];
+
+                      currentDoc.position = result.position;
+                      currentDoc.dimensions = result.dimensions;
+                      currentDoc.isVisible = result.is_visible;
+
+                      // Only update z-index if this document is not the active one
+                      // Active documents should maintain their elevated z-index
+                      if (!currentDoc.isActive) {
+                        currentDoc.zIndex = result.z_index;
+                      }
                     }
                   });
 
@@ -707,10 +736,17 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
                   // Update all affected documents from layout results
                   response.layout_results.forEach((result: any) => {
                     if (state.currentWorkspace!.documents[result.document_id]) {
-                      state.currentWorkspace!.documents[result.document_id].position = result.position;
-                      state.currentWorkspace!.documents[result.document_id].dimensions = result.dimensions;
-                      state.currentWorkspace!.documents[result.document_id].zIndex = result.z_index;
-                      state.currentWorkspace!.documents[result.document_id].isVisible = result.is_visible;
+                      const currentDoc = state.currentWorkspace!.documents[result.document_id];
+
+                      currentDoc.position = result.position;
+                      currentDoc.dimensions = result.dimensions;
+                      currentDoc.isVisible = result.is_visible;
+
+                      // Only update z-index if this document is not the active one
+                      // Active documents should maintain their elevated z-index
+                      if (!currentDoc.isActive) {
+                        currentDoc.zIndex = result.z_index;
+                      }
                     }
                   });
 
