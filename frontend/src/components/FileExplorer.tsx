@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
-import { useWorkspaceStore } from '../stores/workspaceStore'
+import { useWorkspaceStore as useOldWorkspaceStore } from '../stores/workspaceStore'
+import { useWorkspaceStore } from '../domains/workspace/ui/stores/workspace-store'
 import { useFileCategorization } from '../stores/fileCategorization'
 import { useUnifiedPanelState } from '../stores/unifiedPanelState'
 
@@ -9,8 +10,10 @@ export const FileExplorer: React.FC = () => {
     currentPath,
     isLoading,
     loadFolderContents,
-    createDocumentCaddy,
-  } = useWorkspaceStore()
+  } = useOldWorkspaceStore()
+
+  // Use the new Multi-Document Workspace store for adding documents
+  const { addDocument } = useWorkspaceStore()
 
   const {
     startDrag,
@@ -27,24 +30,29 @@ export const FileExplorer: React.FC = () => {
   }
 
   const handleSourceFolderClick = () => {
-    const { currentProject } = useWorkspaceStore.getState()
+    const { currentProject } = useOldWorkspaceStore.getState()
     if (currentProject) {
       loadFolderContents(currentProject.source_folder)
     }
   }
 
   const handleReportsFolderClick = () => {
-    const { currentProject } = useWorkspaceStore.getState()
+    const { currentProject } = useOldWorkspaceStore.getState()
     if (currentProject) {
       loadFolderContents(currentProject.reports_folder)
     }
   }
 
-  const handleFileClick = (item: any) => {
+  const handleFileClick = async (item: any) => {
     if (item.item_type === 'directory') {
       loadFolderContents(item.path)
     } else {
-      createDocumentCaddy(item.path)
+      try {
+        await addDocument(item.path)
+        console.log(`Added document to workspace: ${item.path}`)
+      } catch (error) {
+        console.error(`Failed to add document to workspace: ${item.path}`, error)
+      }
     }
   }
 

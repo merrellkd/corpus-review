@@ -1,0 +1,287 @@
+{
+  "name": "Multi-Document Workspace UI Events",
+  "description": "Frontend event contracts for workspace interactions",
+  "version": "1.0.0",
+  "events": {
+    "layout_mode_changed": {
+      "description": "Emitted when workspace layout mode changes",
+      "payload": {
+        "workspace_id": {
+          "type": "string",
+          "pattern": "^mws_[a-f0-9-]+$",
+          "required": true
+        },
+        "previous_mode": {
+          "type": "string",
+          "enum": ["stacked", "grid", "freeform"],
+          "required": true
+        },
+        "new_mode": {
+          "type": "string",
+          "enum": ["stacked", "grid", "freeform"],
+          "required": true
+        },
+        "triggered_by": {
+          "type": "string",
+          "enum": ["user", "system"],
+          "required": true,
+          "description": "Whether change was user-initiated or automatic"
+        },
+        "transition_duration": {
+          "type": "number",
+          "description": "Animation duration in milliseconds"
+        }
+      }
+    },
+    "document_caddy_added": {
+      "description": "Emitted when a new document is added to workspace",
+      "payload": {
+        "workspace_id": {
+          "type": "string",
+          "pattern": "^mws_[a-f0-9-]+$",
+          "required": true
+        },
+        "document_id": {
+          "type": "string",
+          "pattern": "^doc_[a-f0-9-]+$",
+          "required": true
+        },
+        "document_path": {
+          "type": "string",
+          "required": true
+        },
+        "title": {
+          "type": "string",
+          "required": true
+        },
+        "initial_position": {
+          "$ref": "#/components/Position",
+          "required": true
+        },
+        "initial_dimensions": {
+          "$ref": "#/components/Dimensions",
+          "required": true
+        }
+      }
+    },
+    "document_caddy_removed": {
+      "description": "Emitted when a document is removed from workspace",
+      "payload": {
+        "workspace_id": {
+          "type": "string",
+          "pattern": "^mws_[a-f0-9-]+$",
+          "required": true
+        },
+        "document_id": {
+          "type": "string",
+          "pattern": "^doc_[a-f0-9-]+$",
+          "required": true
+        },
+        "document_path": {
+          "type": "string",
+          "required": true
+        }
+      }
+    },
+    "document_caddy_activated": {
+      "description": "Emitted when a document becomes active",
+      "payload": {
+        "workspace_id": {
+          "type": "string",
+          "pattern": "^mws_[a-f0-9-]+$",
+          "required": true
+        },
+        "document_id": {
+          "type": "string",
+          "pattern": "^doc_[a-f0-9-]+$",
+          "required": true
+        },
+        "previous_active_id": {
+          "type": "string",
+          "pattern": "^doc_[a-f0-9-]+$",
+          "description": "Previously active document, if any"
+        },
+        "new_z_index": {
+          "type": "number",
+          "required": true
+        }
+      }
+    },
+    "document_caddy_moved": {
+      "description": "Emitted when a document position changes",
+      "payload": {
+        "workspace_id": {
+          "type": "string",
+          "pattern": "^mws_[a-f0-9-]+$",
+          "required": true
+        },
+        "document_id": {
+          "type": "string",
+          "pattern": "^doc_[a-f0-9-]+$",
+          "required": true
+        },
+        "old_position": {
+          "$ref": "#/components/Position",
+          "required": true
+        },
+        "new_position": {
+          "$ref": "#/components/Position",
+          "required": true
+        },
+        "triggered_layout_switch": {
+          "type": "boolean",
+          "description": "Whether this move triggered auto-switch to freeform"
+        }
+      }
+    },
+    "document_caddy_resized": {
+      "description": "Emitted when a document is resized",
+      "payload": {
+        "workspace_id": {
+          "type": "string",
+          "pattern": "^mws_[a-f0-9-]+$",
+          "required": true
+        },
+        "document_id": {
+          "type": "string",
+          "pattern": "^doc_[a-f0-9-]+$",
+          "required": true
+        },
+        "old_dimensions": {
+          "$ref": "#/components/Dimensions",
+          "required": true
+        },
+        "new_dimensions": {
+          "$ref": "#/components/Dimensions",
+          "required": true
+        },
+        "triggered_layout_switch": {
+          "type": "boolean",
+          "description": "Whether this resize triggered auto-switch to freeform"
+        }
+      }
+    },
+    "workspace_cleared": {
+      "description": "Emitted when all documents are closed",
+      "payload": {
+        "workspace_id": {
+          "type": "string",
+          "pattern": "^mws_[a-f0-9-]+$",
+          "required": true
+        },
+        "closed_count": {
+          "type": "number",
+          "required": true,
+          "description": "Number of documents that were closed"
+        },
+        "closed_document_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^doc_[a-f0-9-]+$"
+          },
+          "required": true
+        }
+      }
+    },
+    "layout_transition_started": {
+      "description": "Emitted when layout mode transition animation begins",
+      "payload": {
+        "workspace_id": {
+          "type": "string",
+          "pattern": "^mws_[a-f0-9-]+$",
+          "required": true
+        },
+        "from_mode": {
+          "type": "string",
+          "enum": ["stacked", "grid", "freeform"],
+          "required": true
+        },
+        "to_mode": {
+          "type": "string",
+          "enum": ["stacked", "grid", "freeform"],
+          "required": true
+        },
+        "duration": {
+          "type": "number",
+          "description": "Expected transition duration in milliseconds"
+        }
+      }
+    },
+    "layout_transition_completed": {
+      "description": "Emitted when layout mode transition animation finishes",
+      "payload": {
+        "workspace_id": {
+          "type": "string",
+          "pattern": "^mws_[a-f0-9-]+$",
+          "required": true
+        },
+        "new_mode": {
+          "type": "string",
+          "enum": ["stacked", "grid", "freeform"],
+          "required": true
+        },
+        "document_positions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/DocumentPosition"
+          },
+          "description": "Final positions of all documents"
+        }
+      }
+    }
+  },
+  "components": {
+    "Position": {
+      "type": "object",
+      "properties": {
+        "x": {
+          "type": "number",
+          "minimum": 0,
+          "description": "X coordinate in pixels"
+        },
+        "y": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Y coordinate in pixels"
+        }
+      },
+      "required": ["x", "y"]
+    },
+    "Dimensions": {
+      "type": "object",
+      "properties": {
+        "width": {
+          "type": "number",
+          "minimum": 100,
+          "description": "Width in pixels, minimum 100px"
+        },
+        "height": {
+          "type": "number",
+          "minimum": 100,
+          "description": "Height in pixels, minimum 100px"
+        }
+      },
+      "required": ["width", "height"]
+    },
+    "DocumentPosition": {
+      "type": "object",
+      "properties": {
+        "document_id": {
+          "type": "string",
+          "pattern": "^doc_[a-f0-9-]+$"
+        },
+        "position": {
+          "$ref": "#/components/Position"
+        },
+        "dimensions": {
+          "$ref": "#/components/Dimensions"
+        },
+        "z_index": {
+          "type": "number"
+        }
+      },
+      "required": ["document_id", "position", "dimensions", "z_index"]
+    }
+  }
+}
