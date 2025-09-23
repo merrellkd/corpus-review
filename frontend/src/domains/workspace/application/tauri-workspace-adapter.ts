@@ -4,6 +4,12 @@ import { Position, Dimensions } from '../domain/value-objects/geometry';
 import { LayoutModeType, LayoutMode } from '../domain/value-objects/layout-mode';
 import { Workspace } from '../domain/aggregates/workspace';
 import { WorkspaceRepository, DocumentFileService } from './workspace-service';
+import {
+  WorkspaceDomainError,
+  WorkspaceErrorFactory,
+  isWorkspaceDomainError,
+  getUserMessage
+} from '../domain/errors/workspace-errors';
 
 /**
  * Tauri command request/response types
@@ -96,7 +102,7 @@ export class TauriWorkspaceRepository implements WorkspaceRepository {
       const workspaceData = this.serializeWorkspace(workspace);
       await invoke('save_workspace', { workspace: workspaceData });
     } catch (error) {
-      throw new Error(`Failed to save workspace: ${error}`);
+      throw TauriErrorHandler.handleWorkspaceError(error);
     }
   }
 
@@ -114,7 +120,7 @@ export class TauriWorkspaceRepository implements WorkspaceRepository {
           return undefined;
         }
       }
-      throw new Error(`Failed to find workspace: ${error}`);
+      throw TauriErrorHandler.handleWorkspaceError(error);
     }
   }
 
@@ -132,7 +138,7 @@ export class TauriWorkspaceRepository implements WorkspaceRepository {
           return undefined;
         }
       }
-      throw new Error(`Failed to find workspace by name: ${error}`);
+      throw TauriErrorHandler.handleWorkspaceError(error);
     }
   }
 
@@ -143,7 +149,7 @@ export class TauriWorkspaceRepository implements WorkspaceRepository {
       });
       return result;
     } catch (error) {
-      throw new Error(`Failed to delete workspace: ${error}`);
+      throw TauriErrorHandler.handleWorkspaceError(error);
     }
   }
 
@@ -154,7 +160,7 @@ export class TauriWorkspaceRepository implements WorkspaceRepository {
       });
       return result;
     } catch (error) {
-      throw new Error(`Failed to check workspace existence: ${error}`);
+      throw TauriErrorHandler.handleWorkspaceError(error);
     }
   }
 
@@ -214,7 +220,7 @@ export class TauriDocumentFileService implements DocumentFileService {
       const result: boolean = await invoke('file_exists', { filePath });
       return result;
     } catch (error) {
-      throw new Error(`Failed to check file existence: ${error}`);
+      throw TauriErrorHandler.handleDocumentError(error, { filePath });
     }
   }
 
@@ -223,7 +229,7 @@ export class TauriDocumentFileService implements DocumentFileService {
       const title: string = await invoke('get_file_title', { filePath });
       return title;
     } catch (error) {
-      throw new Error(`Failed to get file title: ${error}`);
+      throw TauriErrorHandler.handleDocumentError(error, { filePath });
     }
   }
 
@@ -232,7 +238,7 @@ export class TauriDocumentFileService implements DocumentFileService {
       const isValid: boolean = await invoke('validate_file_path', { filePath });
       return isValid;
     } catch (error) {
-      throw new Error(`Failed to validate file path: ${error}`);
+      throw TauriErrorHandler.handleDocumentError(error, { filePath });
     }
   }
 }
@@ -263,7 +269,7 @@ export class TauriWorkspaceAdapter {
       const response: CreateWorkspaceResponse = await invoke('create_workspace', request as any);
       return response;
     } catch (error) {
-      throw new Error(`Failed to create workspace: ${error}`);
+      throw TauriErrorHandler.handleWorkspaceError(error);
     }
   }
 
@@ -287,7 +293,7 @@ export class TauriWorkspaceAdapter {
       const response: AddDocumentResponse = await invoke('add_document_to_workspace', request as any);
       return response;
     } catch (error) {
-      throw new Error(`Failed to add document: ${error}`);
+      throw TauriErrorHandler.handleDocumentError(error, { filePath });
     }
   }
 
@@ -302,7 +308,7 @@ export class TauriWorkspaceAdapter {
       });
       return result;
     } catch (error) {
-      throw new Error(`Failed to remove document: ${error}`);
+      throw TauriErrorHandler.handleDocumentError(error, { documentId });
     }
   }
 
@@ -316,7 +322,7 @@ export class TauriWorkspaceAdapter {
       });
       return count;
     } catch (error) {
-      throw new Error(`Failed to remove all documents: ${error}`);
+      throw TauriErrorHandler.handleWorkspaceError(error);
     }
   }
 
@@ -330,7 +336,7 @@ export class TauriWorkspaceAdapter {
         document_id: documentId,
       });
     } catch (error) {
-      throw new Error(`Failed to activate document: ${error}`);
+      throw TauriErrorHandler.handleDocumentError(error, { documentId });
     }
   }
 
@@ -352,7 +358,7 @@ export class TauriWorkspaceAdapter {
       const response: LayoutModeChangeResponse = await invoke('move_document', request as any);
       return response;
     } catch (error) {
-      throw new Error(`Failed to move document: ${error}`);
+      throw TauriErrorHandler.handleLayoutError(error, { position });
     }
   }
 
@@ -374,7 +380,7 @@ export class TauriWorkspaceAdapter {
       const response: LayoutModeChangeResponse = await invoke('resize_document', request as any);
       return response;
     } catch (error) {
-      throw new Error(`Failed to resize document: ${error}`);
+      throw TauriErrorHandler.handleLayoutError(error, { dimensions });
     }
   }
 
@@ -396,7 +402,7 @@ export class TauriWorkspaceAdapter {
       const response: LayoutModeChangeResponse = await invoke('switch_layout_mode', request as any);
       return response;
     } catch (error) {
-      throw new Error(`Failed to switch layout mode: ${error}`);
+      throw TauriErrorHandler.handleLayoutError(error, { layoutMode });
     }
   }
 
@@ -410,7 +416,7 @@ export class TauriWorkspaceAdapter {
       });
       return response;
     } catch (error) {
-      throw new Error(`Failed to get workspace state: ${error}`);
+      throw TauriErrorHandler.handleWorkspaceError(error);
     }
   }
 
@@ -428,7 +434,7 @@ export class TauriWorkspaceAdapter {
       });
       return response;
     } catch (error) {
-      throw new Error(`Failed to update workspace size: ${error}`);
+      throw TauriErrorHandler.handleLayoutError(error, { dimensions });
     }
   }
 
@@ -441,7 +447,7 @@ export class TauriWorkspaceAdapter {
         workspace_id: workspaceId,
       });
     } catch (error) {
-      throw new Error(`Failed to save workspace state: ${error}`);
+      throw TauriErrorHandler.handleWorkspaceError(error);
     }
   }
 
@@ -455,52 +461,158 @@ export class TauriWorkspaceAdapter {
       });
       return response;
     } catch (error) {
-      throw new Error(`Failed to load workspace state: ${error}`);
+      throw TauriErrorHandler.handleWorkspaceError(error);
     }
   }
 }
 
 /**
- * Error handling utilities for Tauri operations
+ * Enhanced error handling utilities for Tauri operations
  */
 export class TauriErrorHandler {
-  static handleWorkspaceError(error: unknown): Error {
-    if (error && typeof error === 'object' && 'message' in error) {
-      const message = (error as { message: string }).message;
-
-      if (message.includes('permission denied')) {
-        return new Error('Permission denied. Please check file access permissions.');
-      }
-
-      if (message.includes('file not found')) {
-        return new Error('File not found. Please verify the file path.');
-      }
-
-      if (message.includes('workspace not found')) {
-        return new Error('Workspace not found. It may have been deleted.');
-      }
-
-      if (message.includes('invalid layout mode')) {
-        return new Error('Invalid layout mode specified.');
-      }
-
-      return new Error(`Workspace operation failed: ${message}`);
+  /**
+   * Handle workspace errors from Tauri backend
+   */
+  static handleWorkspaceError(error: unknown): WorkspaceDomainError {
+    // If already a domain error, return as-is
+    if (isWorkspaceDomainError(error)) {
+      return error;
     }
 
-    return new Error(`Unknown workspace error: ${error}`);
+    // Use the error factory to create appropriate domain errors
+    return WorkspaceErrorFactory.fromTauriError(error);
   }
 
-  static isRetryableError(error: Error): boolean {
-    const retryableMessages = [
-      'network error',
-      'timeout',
-      'connection refused',
-      'temporary failure',
-    ];
+  /**
+   * Handle document operation errors
+   */
+  static handleDocumentError(error: unknown, context: { filePath?: string; documentId?: string } = {}): WorkspaceDomainError {
+    if (isWorkspaceDomainError(error)) {
+      return error;
+    }
 
-    return retryableMessages.some(msg =>
-      error.message.toLowerCase().includes(msg)
-    );
+    const domainError = WorkspaceErrorFactory.fromTauriError(error);
+
+    // Add context if available
+    if (context.filePath || context.documentId) {
+      return new (domainError.constructor as any)(
+        context.filePath || context.documentId || 'unknown',
+        domainError.message
+      );
+    }
+
+    return domainError;
+  }
+
+  /**
+   * Handle layout operation errors
+   */
+  static handleLayoutError(error: unknown, context: { layoutMode?: string; position?: Position; dimensions?: Dimensions } = {}): WorkspaceDomainError {
+    if (isWorkspaceDomainError(error)) {
+      return error;
+    }
+
+    const domainError = WorkspaceErrorFactory.fromTauriError(error);
+
+    // Create specific errors based on context
+    if (context.layoutMode && domainError.code === 'INVALID_LAYOUT_MODE') {
+      return WorkspaceErrorFactory.createPositionError(0, 0, domainError.message);
+    }
+
+    if (context.position && domainError.code === 'INVALID_POSITION') {
+      return WorkspaceErrorFactory.createPositionError(
+        context.position.getX(),
+        context.position.getY(),
+        domainError.message
+      );
+    }
+
+    if (context.dimensions && domainError.code === 'INVALID_DIMENSIONS') {
+      return WorkspaceErrorFactory.createDimensionsError(
+        context.dimensions.getWidth(),
+        context.dimensions.getHeight(),
+        domainError.message
+      );
+    }
+
+    return domainError;
+  }
+
+  /**
+   * Check if an error is recoverable (user can retry)
+   */
+  static isRetryableError(error: unknown): boolean {
+    if (isWorkspaceDomainError(error)) {
+      return error.recoverable;
+    }
+
+    // Legacy check for non-domain errors
+    if (error instanceof Error) {
+      const retryableMessages = [
+        'network error',
+        'timeout',
+        'connection refused',
+        'temporary failure',
+        'file access',
+        'permission denied'
+      ];
+
+      return retryableMessages.some(msg =>
+        error.message.toLowerCase().includes(msg)
+      );
+    }
+
+    return false;
+  }
+
+  /**
+   * Check if an error requires user confirmation
+   */
+  static requiresConfirmation(error: unknown): boolean {
+    return isWorkspaceDomainError(error) && error.code === 'CONFIRMATION_REQUIRED';
+  }
+
+  /**
+   * Extract user-friendly error message
+   */
+  static getUserMessage(error: unknown): string {
+    return getUserMessage(error);
+  }
+
+  /**
+   * Extract error code for logging/analytics
+   */
+  static getErrorCode(error: unknown): string {
+    if (isWorkspaceDomainError(error)) {
+      return error.code;
+    }
+
+    return 'UNKNOWN_ERROR';
+  }
+
+  /**
+   * Create error summary for error boundaries
+   */
+  static createErrorSummary(error: unknown, operation: string): {
+    code: string;
+    message: string;
+    userMessage: string;
+    recoverable: boolean;
+    timestamp: Date;
+    operation: string;
+  } {
+    const domainError = isWorkspaceDomainError(error)
+      ? error
+      : WorkspaceErrorFactory.fromTauriError(error);
+
+    return {
+      code: domainError.code,
+      message: domainError.message,
+      userMessage: domainError.userMessage,
+      recoverable: domainError.recoverable,
+      timestamp: domainError.timestamp,
+      operation
+    };
   }
 }
 

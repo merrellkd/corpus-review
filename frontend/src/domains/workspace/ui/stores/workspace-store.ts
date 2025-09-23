@@ -8,6 +8,13 @@ import { DocumentCaddyState } from '../../domain/entities/document-caddy';
 import { WorkspaceService } from '../../application/workspace-service';
 import { TauriWorkspaceAdapter, TauriErrorHandler } from '../../application/tauri-workspace-adapter';
 import { createMockWorkspaceAdapter } from '../../application/mock-workspace-adapter';
+import {
+  WorkspaceDomainError,
+  isWorkspaceDomainError,
+  getUserMessage,
+  getErrorCode,
+  isRecoverableError
+} from '../../domain/errors/workspace-errors';
 
 /**
  * Detect if we're running in Tauri environment
@@ -29,15 +36,18 @@ const createWorkspaceAdapter = () => {
 /**
  * Handle workspace errors for both environments
  */
-const handleWorkspaceError = (error: unknown): Error => {
+const handleWorkspaceError = (error: unknown): WorkspaceDomainError => {
   if (isTauriEnvironment()) {
     return TauriErrorHandler.handleWorkspaceError(error);
   } else {
-    // Simple error handling for mock environment
-    if (error instanceof Error) {
+    // Use error factory for mock environment too
+    if (isWorkspaceDomainError(error)) {
       return error;
     }
-    return new Error(`Workspace operation failed: ${error}`);
+    if (error instanceof Error) {
+      return TauriErrorHandler.handleWorkspaceError(error);
+    }
+    return TauriErrorHandler.handleWorkspaceError(new Error(`Workspace operation failed: ${error}`));
   }
 };
 
@@ -78,14 +88,27 @@ export interface WorkspaceUIState {
 }
 
 /**
+ * Error state with detailed information
+ */
+export interface ErrorState {
+  error: WorkspaceDomainError | null;
+  operation: string;
+  timestamp: Date;
+  recoverable: boolean;
+  userMessage: string;
+  code: string;
+  context?: any;
+}
+
+/**
  * Application state
  */
 export interface WorkspaceAppState {
   // Current workspace
   currentWorkspace?: WorkspaceUIState | undefined;
 
-  // Global error state
-  error?: string;
+  // Enhanced error state
+  errorState: ErrorState | null;
 
   // UI state
   commandBarState: {
@@ -148,9 +171,13 @@ export interface WorkspaceStoreActions {
 
   // UI state management
   setLoading: (isLoading: boolean) => void;
-  setError: (error?: string) => void;
-  clearError: () => void;
   setCommandBarState: (state: Partial<WorkspaceAppState['commandBarState']>) => void;
+
+  // Enhanced error handling
+  setError: (error: unknown, operation: string, context?: any) => void;
+  clearError: () => void;
+  retryLastOperation: () => Promise<void>;
+  isErrorRecoverable: () => boolean;
 
   // Internal helpers
   updateDocument: (documentId: string, updates: Partial<DocumentUIState>) => void;
@@ -173,6 +200,7 @@ export type WorkspaceStore = WorkspaceAppState & WorkspaceStoreActions;
  */
 const initialState: WorkspaceAppState = {
   currentWorkspace: undefined,
+  errorState: null,
   commandBarState: {
     isLoading: false,
     disabled: false,
@@ -232,11 +260,8 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
                 };
               });
             } catch (error) {
-              const handledError = handleWorkspaceError(error);
-              set((state) => {
-                state.error = handledError.message;
-              });
-              throw handledError;
+              get().setError(error, 'createWorkspace', { name, layoutMode, dimensions });
+              throw error;
             } finally {
               set((state) => {
                 state.operations.creating = false;
@@ -295,11 +320,8 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
                 };
               });
             } catch (error) {
-              const handledError = handleWorkspaceError(error);
-              set((state) => {
-                state.error = handledError.message;
-              });
-              throw handledError;
+              get().setError(error, 'loadWorkspace', { workspaceId });
+              throw error;
             } finally {
               set((state) => {
                 state.operations.loading = false;
@@ -326,11 +348,8 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
                 }
               });
             } catch (error) {
-              const handledError = handleWorkspaceError(error);
-              set((state) => {
-                state.error = handledError.message;
-              });
-              throw handledError;
+              // Error is already handled by the outer catch with setError
+              throw error;
             } finally {
               set((state) => {
                 state.operations.saving = false;
@@ -396,11 +415,8 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
                 }
               });
             } catch (error) {
-              const handledError = handleWorkspaceError(error);
-              set((state) => {
-                state.error = handledError.message;
-              });
-              throw handledError;
+              // Error is already handled by the outer catch with setError
+              throw error;
             }
           });
         },
@@ -457,12 +473,11 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
                 }
               });
             } catch (error) {
-              const handledError = handleWorkspaceError(error);
               set((state) => {
-                state.error = handledError.message;
                 state.transitionState.isTransitioning = false;
               });
-              throw handledError;
+              // Error is already handled by the outer catch with setError
+              throw error;
             } finally {
               set((state) => {
                 state.operations.switchingLayout = false;
@@ -538,11 +553,8 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
                 await get().switchLayoutMode(LayoutModeType.GRID, 'user');
               }
             } catch (error) {
-              const handledError = handleWorkspaceError(error);
-              set((state) => {
-                state.error = handledError.message;
-              });
-              throw handledError;
+              // Error is already handled by the outer catch with setError
+              throw error;
             } finally {
               set((state) => {
                 state.operations.addingDocument = false;
@@ -589,11 +601,8 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
                 }
               }
             } catch (error) {
-              const handledError = handleWorkspaceError(error);
-              set((state) => {
-                state.error = handledError.message;
-              });
-              throw handledError;
+              // Error is already handled by the outer catch with setError
+              throw error;
             } finally {
               set((state) => {
                 state.operations.removingDocument = false;
@@ -619,11 +628,8 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
                 }
               });
             } catch (error) {
-              const handledError = handleWorkspaceError(error);
-              set((state) => {
-                state.error = handledError.message;
-              });
-              throw handledError;
+              // Error is already handled by the outer catch with setError
+              throw error;
             }
           });
         },
@@ -661,11 +667,8 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
                 }
               });
             } catch (error) {
-              const handledError = handleWorkspaceError(error);
-              set((state) => {
-                state.error = handledError.message;
-              });
-              throw handledError;
+              // Error is already handled by the outer catch with setError
+              throw error;
             }
           });
         },
@@ -714,11 +717,8 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
                 }
               });
             } catch (error) {
-              const handledError = handleWorkspaceError(error);
-              set((state) => {
-                state.error = handledError.message;
-              });
-              throw handledError;
+              // Error is already handled by the outer catch with setError
+              throw error;
             } finally {
               set((state) => {
                 state.operations.movingDocument = false;
@@ -771,11 +771,8 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
                 }
               });
             } catch (error) {
-              const handledError = handleWorkspaceError(error);
-              set((state) => {
-                state.error = handledError.message;
-              });
-              throw handledError;
+              // Error is already handled by the outer catch with setError
+              throw error;
             } finally {
               set((state) => {
                 state.operations.resizingDocument = false;
@@ -816,16 +813,79 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
           });
         },
 
-        setError: (error?: string) => {
+        setError: (error: unknown, operation: string, context?: any) => {
+          const domainError = handleWorkspaceError(error);
+
           set((state) => {
-            state.error = error;
+            state.errorState = {
+              error: domainError,
+              operation,
+              timestamp: new Date(),
+              recoverable: isRecoverableError(domainError),
+              userMessage: getUserMessage(domainError),
+              code: getErrorCode(domainError),
+              context,
+            };
           });
         },
 
         clearError: () => {
           set((state) => {
-            state.error = undefined;
+            state.errorState = null;
           });
+        },
+
+        retryLastOperation: async () => {
+          const errorState = get().errorState;
+          if (!errorState || !errorState.recoverable) {
+            throw new Error('No recoverable operation to retry');
+          }
+
+          // Clear the error first
+          get().clearError();
+
+          // Retry based on operation type
+          try {
+            switch (errorState.operation) {
+              case 'createWorkspace':
+                if (errorState.context?.name) {
+                  await get().createWorkspace(
+                    errorState.context.name,
+                    errorState.context.layoutMode,
+                    errorState.context.dimensions
+                  );
+                }
+                break;
+              case 'loadWorkspace':
+                if (errorState.context?.workspaceId) {
+                  await get().loadWorkspace(errorState.context.workspaceId);
+                }
+                break;
+              case 'addDocument':
+                if (errorState.context?.filePath) {
+                  await get().addDocument(
+                    errorState.context.filePath,
+                    errorState.context.position,
+                    errorState.context.dimensions
+                  );
+                }
+                break;
+              case 'saveWorkspace':
+                await get().saveWorkspace();
+                break;
+              default:
+                throw new Error(`Cannot retry operation: ${errorState.operation}`);
+            }
+          } catch (retryError) {
+            // If retry fails, set a new error
+            get().setError(retryError, `retry_${errorState.operation}`, errorState.context);
+            throw retryError;
+          }
+        },
+
+        isErrorRecoverable: () => {
+          const errorState = get().errorState;
+          return errorState ? errorState.recoverable : false;
         },
 
         setCommandBarState: (newState) => {
@@ -924,7 +984,7 @@ export const workspaceSelectors = {
     } = state.operations;
     return Object.values(majorOperations).some(Boolean);
   },
-  hasError: (state: WorkspaceStore) => !!state.error,
+  hasError: (state: WorkspaceStore) => !!state.errorState,
   documentCount: (state: WorkspaceStore) => state.currentWorkspace?.documentOrder.length || 0,
   layoutMode: (state: WorkspaceStore) => state.currentWorkspace?.layoutMode,
   workspaceDimensions: (state: WorkspaceStore) => state.currentWorkspace?.workspaceDimensions,
