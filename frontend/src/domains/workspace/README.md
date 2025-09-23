@@ -341,6 +341,7 @@ interface WorkspaceAppState {
 ```typescript
 import { useWorkspaceStore } from './ui/hooks/useWorkspaceStore'
 import { LayoutModeType } from './domain/value-objects/layout-mode'
+import { DocumentWorkspace } from '../../../components/DocumentWorkspace'
 
 function MyWorkspaceApp() {
   const createWorkspace = useWorkspaceStore(state => state.createWorkspace)
@@ -353,7 +354,7 @@ function MyWorkspaceApp() {
   return (
     <div>
       {currentWorkspace ? (
-        <MultiDocumentWorkspace />
+        <DocumentWorkspace />
       ) : (
         <button onClick={handleCreateWorkspace}>
           Create Workspace
@@ -388,13 +389,14 @@ function AddDocumentButton() {
 ```typescript
 import { useWorkspaceErrors } from './ui/hooks/useWorkspaceErrors'
 import { ErrorFeedback } from './ui/components/ErrorFeedback'
+import { DocumentWorkspace } from '../../../components/DocumentWorkspace'
 
 function WorkspaceWithErrorHandling() {
   const { hasError, errorState, handleRetry, handleDismiss } = useWorkspaceErrors()
 
   return (
     <div>
-      <MultiDocumentWorkspace />
+      <DocumentWorkspace />
       {hasError && (
         <ErrorFeedback
           error={errorState?.error}

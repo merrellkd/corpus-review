@@ -102,7 +102,7 @@
 - [x] T030 [P] WorkspaceCommandBar component in `frontend/src/domains/workspace/ui/components/WorkspaceCommandBar.tsx`
 - [x] T031 [P] DocumentCaddy component in `frontend/src/domains/workspace/ui/components/DocumentCaddy.tsx`
 - [x] T032 [P] LayoutModeButton component in `frontend/src/domains/workspace/ui/components/LayoutModeButton.tsx`
-- [x] T033 MultiDocumentWorkspace container component in `frontend/src/domains/workspace/ui/containers/MultiDocumentWorkspace.tsx`
+- [x] T033 MultiDocumentWorkspace container component (integrated into existing DocumentWorkspace)
 - [x] T034 Layout transition animations in `frontend/src/domains/workspace/ui/components/LayoutTransitions.tsx`
 
 ## Phase 3.4: Integration
@@ -122,7 +122,7 @@
 - [ ] T044 Layout transition performance optimization (<16ms target)
 - [x] T045 [P] Error handling and user feedback for failed operations
 - [x] T046 [P] Update component documentation in `frontend/src/domains/workspace/README.md`
-- [ ] T047 Run quickstart validation scenarios from `specs/002-multi-document-workspace/quickstart.md`
+- [x] T047 Run quickstart validation scenarios from `specs/002-multi-document-workspace/quickstart.md`
 
 ## Dependencies
 

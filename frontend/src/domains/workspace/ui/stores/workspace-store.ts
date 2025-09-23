@@ -1,11 +1,10 @@
 import { create } from 'zustand';
 import { devtools, subscribeWithSelector } from 'zustand/middleware';
 import { immer } from 'zustand/middleware/immer';
-import { WorkspaceId, DocumentCaddyId } from '../../domain/value-objects/identifiers';
+import { DocumentCaddyId } from '../../domain/value-objects/identifiers';
 import { Position, Dimensions } from '../../domain/value-objects/geometry';
 import { LayoutModeType, DocumentLayoutResult } from '../../domain/value-objects/layout-mode';
 import { DocumentCaddyState } from '../../domain/entities/document-caddy';
-import { WorkspaceService } from '../../application/workspace-service';
 import { TauriWorkspaceAdapter, TauriErrorHandler } from '../../application/tauri-workspace-adapter';
 import { createMockWorkspaceAdapter } from '../../application/mock-workspace-adapter';
 import {
