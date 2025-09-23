@@ -20,7 +20,8 @@
       "Bash(npm run lint)",
       "Bash(timeout 10s npm run dev:*)",
       "Bash(.specify/scripts/bash/setup-plan.sh:*)",
-      "Bash(.specify/scripts/bash/update-agent-context.sh:*)"
+      "Bash(.specify/scripts/bash/update-agent-context.sh:*)",
+      "Bash(.specify/scripts/bash/check-task-prerequisites.sh:*)"
     ],
     "deny": [],
     "ask": []
