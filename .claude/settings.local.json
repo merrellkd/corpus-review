@@ -18,7 +18,9 @@
       "WebFetch(domain:github.com)",
       "Bash(.specify/scripts/bash/check-implementation-prerequisites.sh:*)",
       "Bash(npm run lint)",
-      "Bash(timeout 10s npm run dev:*)"
+      "Bash(timeout 10s npm run dev:*)",
+      "Bash(.specify/scripts/bash/setup-plan.sh:*)",
+      "Bash(.specify/scripts/bash/update-agent-context.sh:*)"
     ],
     "deny": [],
     "ask": []

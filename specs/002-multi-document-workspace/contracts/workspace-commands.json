@@ -1,0 +1,357 @@
+{
+  "name": "Multi-Document Workspace Commands",
+  "description": "Tauri command contracts for workspace layout management",
+  "version": "1.0.0",
+  "commands": {
+    "create_workspace": {
+      "description": "Create a new multi-document workspace",
+      "request": {
+        "name": {
+          "type": "string",
+          "required": true,
+          "description": "Human-readable workspace name"
+        }
+      },
+      "response": {
+        "workspace_id": {
+          "type": "string",
+          "pattern": "^mws_[a-f0-9-]+$",
+          "description": "Prefixed UUID for the workspace"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO timestamp of creation"
+        }
+      },
+      "errors": [
+        "WorkspaceNameAlreadyExists",
+        "InvalidWorkspaceName"
+      ]
+    },
+    "add_document_to_workspace": {
+      "description": "Add a document to the workspace as a DocumentCaddy",
+      "request": {
+        "workspace_id": {
+          "type": "string",
+          "pattern": "^mws_[a-f0-9-]+$",
+          "required": true
+        },
+        "document_path": {
+          "type": "string",
+          "required": true,
+          "description": "Absolute file path to the document"
+        },
+        "title": {
+          "type": "string",
+          "required": false,
+          "description": "Display title, defaults to filename"
+        }
+      },
+      "response": {
+        "document_id": {
+          "type": "string",
+          "pattern": "^doc_[a-f0-9-]+$",
+          "description": "Prefixed UUID for the DocumentCaddy"
+        },
+        "position": {
+          "$ref": "#/components/Position"
+        },
+        "dimensions": {
+          "$ref": "#/components/Dimensions"
+        }
+      },
+      "errors": [
+        "WorkspaceNotFound",
+        "DocumentPathNotFound",
+        "DocumentAlreadyOpen",
+        "InvalidDocumentPath"
+      ]
+    },
+    "switch_layout_mode": {
+      "description": "Change the workspace layout mode",
+      "request": {
+        "workspace_id": {
+          "type": "string",
+          "pattern": "^mws_[a-f0-9-]+$",
+          "required": true
+        },
+        "layout_mode": {
+          "type": "string",
+          "enum": ["stacked", "grid", "freeform"],
+          "required": true
+        }
+      },
+      "response": {
+        "previous_mode": {
+          "type": "string",
+          "enum": ["stacked", "grid", "freeform"]
+        },
+        "new_mode": {
+          "type": "string",
+          "enum": ["stacked", "grid", "freeform"]
+        },
+        "document_positions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/DocumentPosition"
+          }
+        }
+      },
+      "errors": [
+        "WorkspaceNotFound",
+        "InvalidLayoutMode"
+      ]
+    },
+    "move_document": {
+      "description": "Move a DocumentCaddy to a new position",
+      "request": {
+        "workspace_id": {
+          "type": "string",
+          "pattern": "^mws_[a-f0-9-]+$",
+          "required": true
+        },
+        "document_id": {
+          "type": "string",
+          "pattern": "^doc_[a-f0-9-]+$",
+          "required": true
+        },
+        "position": {
+          "$ref": "#/components/Position",
+          "required": true
+        }
+      },
+      "response": {
+        "layout_mode": {
+          "type": "string",
+          "enum": ["stacked", "grid", "freeform"],
+          "description": "May auto-switch to freeform"
+        },
+        "updated_position": {
+          "$ref": "#/components/Position"
+        }
+      },
+      "errors": [
+        "WorkspaceNotFound",
+        "DocumentNotFound",
+        "InvalidPosition"
+      ]
+    },
+    "resize_document": {
+      "description": "Resize a DocumentCaddy",
+      "request": {
+        "workspace_id": {
+          "type": "string",
+          "pattern": "^mws_[a-f0-9-]+$",
+          "required": true
+        },
+        "document_id": {
+          "type": "string",
+          "pattern": "^doc_[a-f0-9-]+$",
+          "required": true
+        },
+        "dimensions": {
+          "$ref": "#/components/Dimensions",
+          "required": true
+        }
+      },
+      "response": {
+        "layout_mode": {
+          "type": "string",
+          "enum": ["stacked", "grid", "freeform"],
+          "description": "May auto-switch to freeform"
+        },
+        "updated_dimensions": {
+          "$ref": "#/components/Dimensions"
+        }
+      },
+      "errors": [
+        "WorkspaceNotFound",
+        "DocumentNotFound",
+        "InvalidDimensions"
+      ]
+    },
+    "activate_document": {
+      "description": "Bring a document to the front and set as active",
+      "request": {
+        "workspace_id": {
+          "type": "string",
+          "pattern": "^mws_[a-f0-9-]+$",
+          "required": true
+        },
+        "document_id": {
+          "type": "string",
+          "pattern": "^doc_[a-f0-9-]+$",
+          "required": true
+        }
+      },
+      "response": {
+        "previous_active_id": {
+          "type": "string",
+          "pattern": "^doc_[a-f0-9-]+$",
+          "description": "Previously active document, if any"
+        },
+        "z_index": {
+          "type": "number",
+          "description": "New z-index for the activated document"
+        }
+      },
+      "errors": [
+        "WorkspaceNotFound",
+        "DocumentNotFound"
+      ]
+    },
+    "close_all_documents": {
+      "description": "Close all documents in the workspace",
+      "request": {
+        "workspace_id": {
+          "type": "string",
+          "pattern": "^mws_[a-f0-9-]+$",
+          "required": true
+        },
+        "confirm": {
+          "type": "boolean",
+          "required": true,
+          "description": "Confirmation to prevent accidental closure"
+        }
+      },
+      "response": {
+        "closed_count": {
+          "type": "number",
+          "description": "Number of documents that were closed"
+        },
+        "closed_document_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^doc_[a-f0-9-]+$"
+          }
+        }
+      },
+      "errors": [
+        "WorkspaceNotFound",
+        "ConfirmationRequired"
+      ]
+    },
+    "get_workspace_state": {
+      "description": "Query current workspace state",
+      "request": {
+        "workspace_id": {
+          "type": "string",
+          "pattern": "^mws_[a-f0-9-]+$",
+          "required": true
+        }
+      },
+      "response": {
+        "workspace_id": {
+          "type": "string",
+          "pattern": "^mws_[a-f0-9-]+$"
+        },
+        "layout_mode": {
+          "type": "string",
+          "enum": ["stacked", "grid", "freeform"]
+        },
+        "documents": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/DocumentCaddyState"
+          }
+        },
+        "active_document_id": {
+          "type": "string",
+          "pattern": "^doc_[a-f0-9-]+$"
+        },
+        "container_dimensions": {
+          "$ref": "#/components/Dimensions"
+        }
+      },
+      "errors": [
+        "WorkspaceNotFound"
+      ]
+    }
+  },
+  "components": {
+    "Position": {
+      "type": "object",
+      "properties": {
+        "x": {
+          "type": "number",
+          "minimum": 0,
+          "description": "X coordinate in pixels"
+        },
+        "y": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Y coordinate in pixels"
+        }
+      },
+      "required": ["x", "y"]
+    },
+    "Dimensions": {
+      "type": "object",
+      "properties": {
+        "width": {
+          "type": "number",
+          "minimum": 100,
+          "description": "Width in pixels, minimum 100px"
+        },
+        "height": {
+          "type": "number",
+          "minimum": 100,
+          "description": "Height in pixels, minimum 100px"
+        }
+      },
+      "required": ["width", "height"]
+    },
+    "DocumentPosition": {
+      "type": "object",
+      "properties": {
+        "document_id": {
+          "type": "string",
+          "pattern": "^doc_[a-f0-9-]+$"
+        },
+        "position": {
+          "$ref": "#/components/Position"
+        },
+        "dimensions": {
+          "$ref": "#/components/Dimensions"
+        },
+        "z_index": {
+          "type": "number"
+        }
+      },
+      "required": ["document_id", "position", "dimensions", "z_index"]
+    },
+    "DocumentCaddyState": {
+      "type": "object",
+      "properties": {
+        "document_id": {
+          "type": "string",
+          "pattern": "^doc_[a-f0-9-]+$"
+        },
+        "document_path": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "position": {
+          "$ref": "#/components/Position"
+        },
+        "dimensions": {
+          "$ref": "#/components/Dimensions"
+        },
+        "is_active": {
+          "type": "boolean"
+        },
+        "is_visible": {
+          "type": "boolean"
+        },
+        "z_index": {
+          "type": "number"
+        }
+      },
+      "required": ["document_id", "document_path", "title", "position", "dimensions", "is_active", "is_visible", "z_index"]
+    }
+  }
+}
