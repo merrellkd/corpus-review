@@ -416,15 +416,16 @@ export const useFileExplorerIntegration = () => {
         await addDocument(filePath, position, dimensions);
 
         // For now, assume success since addDocument doesn't return result object yet
+        const documentId = `doc_${crypto.randomUUID()}`; // Temporary ID
         addedDocuments.push({
-          documentId: `doc_${crypto.randomUUID()}`, // Temporary ID
+          documentId,
           filePath,
           title: filePath.split('/').pop() || filePath,
         });
 
         // Dispatch event
         dispatchDocumentAdded(
-          `doc_${crypto.randomUUID()}`,
+          documentId,
           filePath,
           position,
           dimensions
