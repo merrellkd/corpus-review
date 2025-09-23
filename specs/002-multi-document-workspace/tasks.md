@@ -63,22 +63,22 @@
 ## Phase 3.3: Core Implementation (ONLY after tests are failing)
 
 ### Domain Models [P]
-- [ ] T014 [P] WorkspaceId and DocumentCaddyId value objects in `frontend/src/domains/workspace/domain/value-objects/identifiers.ts`
-- [ ] T015 [P] Position and Dimensions value objects in `frontend/src/domains/workspace/domain/value-objects/geometry.ts`
-- [ ] T016 [P] LayoutMode value objects and strategy pattern in `frontend/src/domains/workspace/domain/value-objects/layout-mode.ts`
-- [ ] T017 [P] DocumentCaddy entity in `frontend/src/domains/workspace/domain/entities/document-caddy.ts`
-- [ ] T018 [P] Workspace aggregate root in `frontend/src/domains/workspace/domain/aggregates/workspace.ts`
-- [ ] T019 [P] Domain events in `frontend/src/domains/workspace/domain/events/workspace-events.ts`
+- [x] T014 [P] WorkspaceId and DocumentCaddyId value objects in `frontend/src/domains/workspace/domain/value-objects/identifiers.ts`
+- [x] T015 [P] Position and Dimensions value objects in `frontend/src/domains/workspace/domain/value-objects/geometry.ts`
+- [x] T016 [P] LayoutMode value objects and strategy pattern in `frontend/src/domains/workspace/domain/value-objects/layout-mode.ts`
+- [x] T017 [P] DocumentCaddy entity in `frontend/src/domains/workspace/domain/entities/document-caddy.ts`
+- [x] T018 [P] Workspace aggregate root in `frontend/src/domains/workspace/domain/aggregates/workspace.ts`
+- [x] T019 [P] Domain events in `frontend/src/domains/workspace/domain/events/workspace-events.ts`
 
 ### Backend Domain Models [P]
-- [ ] T020 [P] Workspace domain models in `src-tauri/src/domains/workspace/domain/workspace.rs`
-- [ ] T021 [P] Document caddy domain models in `src-tauri/src/domains/workspace/domain/document_caddy.rs`
-- [ ] T022 [P] Layout mode domain logic in `src-tauri/src/domains/workspace/domain/layout_mode.rs`
+- [x] T020 [P] Workspace domain models in `src-tauri/src/domains/workspace/domain/workspace.rs`
+- [x] T021 [P] Document caddy domain models in `src-tauri/src/domains/workspace/domain/document_caddy.rs`
+- [x] T022 [P] Layout mode domain logic in `src-tauri/src/domains/workspace/domain/layout_mode.rs`
 
 ### Application Services
-- [ ] T023 WorkspaceService in `frontend/src/domains/workspace/application/workspace-service.ts`
-- [ ] T024 LayoutEngineService in `frontend/src/domains/workspace/application/layout-engine-service.ts`
-- [ ] T025 DocumentCaddyService in `frontend/src/domains/workspace/application/document-caddy-service.ts`
+- [x] T023 WorkspaceService in `frontend/src/domains/workspace/application/workspace-service.ts`
+- [x] T024 LayoutEngineService in `frontend/src/domains/workspace/application/layout-engine-service.ts`
+- [x] T025 DocumentCaddyService in `frontend/src/domains/workspace/application/document-caddy-service.ts`
 
 ### Infrastructure Layer
 - [ ] T026 [P] Workspace repository implementation in `frontend/src/domains/workspace/infrastructure/workspace-repository.ts`
