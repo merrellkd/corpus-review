@@ -352,6 +352,13 @@ export class DocumentCaddy {
   }
 
   /**
+   * Checks if the document caddy is visible in the current layout
+   */
+  isVisible(): boolean {
+    return this.state !== DocumentCaddyState.CLOSING;
+  }
+
+  /**
    * Checks equality with another DocumentCaddy based on ID
    */
   equals(other: DocumentCaddy): boolean {

@@ -83,7 +83,7 @@ export class DocumentCaddyService {
    */
   async loadDocument(
     caddy: DocumentCaddy,
-    workspaceId: string
+    _workspaceId: string
   ): Promise<void> {
     const documentId = caddy.getId();
     const filePath = caddy.getFilePath();
@@ -103,14 +103,14 @@ export class DocumentCaddyService {
       caddy.markReady();
 
       // Publish state change event
-      await this.publishStateChangeEvent(workspaceId, caddy, DocumentCaddyState.LOADING, DocumentCaddyState.READY);
+      await this.publishStateChangeEvent(_workspaceId, caddy, DocumentCaddyState.LOADING, DocumentCaddyState.READY);
 
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
       caddy.markError(errorMessage);
 
       // Publish error state event
-      await this.publishStateChangeEvent(workspaceId, caddy, DocumentCaddyState.LOADING, DocumentCaddyState.ERROR, errorMessage);
+      await this.publishStateChangeEvent(_workspaceId, caddy, DocumentCaddyState.LOADING, DocumentCaddyState.ERROR, errorMessage);
 
       throw error;
     } finally {
@@ -161,7 +161,7 @@ export class DocumentCaddyService {
     caddy: DocumentCaddy,
     newPosition: Position,
     newDimensions: Dimensions,
-    workspaceId: string
+    _workspaceId: string
   ): Promise<void> {
     if (!caddy.canInteract()) {
       throw new Error(`Document caddy cannot be updated: ${caddy.getId().toString()}`);
@@ -200,7 +200,7 @@ export class DocumentCaddyService {
    */
   async activateDocumentCaddy(
     caddy: DocumentCaddy,
-    workspaceId: string
+    _workspaceId: string
   ): Promise<void> {
     if (!caddy.canInteract()) {
       throw new Error(`Document caddy cannot be activated: ${caddy.getId().toString()}`);
@@ -345,13 +345,13 @@ export class DocumentCaddyService {
         return {
           allowed: caddy.canMove(),
           reason: caddy.canMove() ? undefined : `Document is in ${caddy.getState()} state`
-        };
+        } as { allowed: boolean; reason?: string };
 
       case 'resize':
         return {
           allowed: caddy.canResize(),
           reason: caddy.canResize() ? undefined : `Document is in ${caddy.getState()} state`
-        };
+        } as { allowed: boolean; reason?: string };
 
       case 'activate':
       case 'close':
@@ -359,7 +359,7 @@ export class DocumentCaddyService {
         return {
           allowed: caddy.canInteract(),
           reason: caddy.canInteract() ? undefined : `Document is in ${caddy.getState()} state`
-        };
+        } as { allowed: boolean; reason?: string };
 
       default:
         return {

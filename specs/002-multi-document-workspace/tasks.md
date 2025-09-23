@@ -87,15 +87,15 @@
 - [x] T029 [P] SQLite workspace repository in `src-tauri/src/domains/workspace/infrastructure/workspace_repository.rs`
 
 ### UI Components
-- [ ] T030 [P] WorkspaceCommandBar component in `frontend/src/domains/workspace/ui/components/WorkspaceCommandBar.tsx`
-- [ ] T031 [P] DocumentCaddy component in `frontend/src/domains/workspace/ui/components/DocumentCaddy.tsx`
-- [ ] T032 [P] LayoutModeButton component in `frontend/src/domains/workspace/ui/components/LayoutModeButton.tsx`
-- [ ] T033 MultiDocumentWorkspace container component in `frontend/src/domains/workspace/ui/containers/MultiDocumentWorkspace.tsx`
-- [ ] T034 Layout transition animations in `frontend/src/domains/workspace/ui/components/LayoutTransitions.tsx`
+- [x] T030 [P] WorkspaceCommandBar component in `frontend/src/domains/workspace/ui/components/WorkspaceCommandBar.tsx`
+- [x] T031 [P] DocumentCaddy component in `frontend/src/domains/workspace/ui/components/DocumentCaddy.tsx`
+- [x] T032 [P] LayoutModeButton component in `frontend/src/domains/workspace/ui/components/LayoutModeButton.tsx`
+- [x] T033 MultiDocumentWorkspace container component in `frontend/src/domains/workspace/ui/containers/MultiDocumentWorkspace.tsx`
+- [x] T034 Layout transition animations in `frontend/src/domains/workspace/ui/components/LayoutTransitions.tsx`
 
 ## Phase 3.4: Integration
-- [ ] T035 Connect WorkspaceService to Tauri commands in `frontend/src/domains/workspace/application/tauri-workspace-adapter.ts`
-- [ ] T036 Zustand store setup for workspace state in `frontend/src/domains/workspace/ui/stores/workspace-store.ts`
+- [x] T035 Connect WorkspaceService to Tauri commands in `frontend/src/domains/workspace/application/tauri-workspace-adapter.ts`
+- [x] T036 Zustand store setup for workspace state in `frontend/src/domains/workspace/ui/stores/workspace-store.ts`
 - [ ] T037 Event system integration for UI events in `frontend/src/domains/workspace/ui/hooks/useWorkspaceEvents.ts`
 - [ ] T038 File Explorer integration for document opening in `frontend/src/shared/file-explorer/workspace-integration.ts`
 - [ ] T039 Layout persistence and restoration in `frontend/src/domains/workspace/infrastructure/layout-persistence.ts`

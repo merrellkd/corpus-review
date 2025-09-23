@@ -3,10 +3,7 @@ import {
   LayoutMode,
   LayoutModeType,
   DocumentLayoutInfo,
-  DocumentLayoutResult,
-  StackedLayoutStrategy,
-  GridLayoutStrategy,
-  FreeformLayoutStrategy
+  DocumentLayoutResult
 } from '../domain/value-objects/layout-mode';
 import { DocumentCaddyId } from '../domain/value-objects/identifiers';
 
@@ -328,8 +325,8 @@ export class LayoutEngineService {
     currentPosition: Position,
     dimensions: Dimensions,
     workspaceSize: Dimensions,
-    placedRects: Array<{ x: number; y: number; width: number; height: number }>,
-    padding: number
+    _placedRects: Array<{ x: number; y: number; width: number; height: number }>,
+    _padding: number
   ): Position {
     // Simple strategy: try moving right, then down
     const stepSize = 50;
