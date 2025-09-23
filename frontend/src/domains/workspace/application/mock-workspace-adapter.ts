@@ -322,14 +322,48 @@ export class MockWorkspaceAdapter {
         doc.z_index = index + 1;
       });
     } else if (layoutMode === LayoutModeType.GRID) {
-      const cols = Math.ceil(Math.sqrt(workspace.documents.length));
-      workspace.documents.forEach((doc: any, index: number) => {
-        const row = Math.floor(index / cols);
-        const col = index % cols;
-        doc.position = { x: 50 + col * 420, y: 50 + row * 320 };
-        doc.dimensions = { width: 380, height: 280 };
-        doc.z_index = index + 1;
-      });
+      const docCount = workspace.documents.length;
+
+      if (docCount > 0) {
+        // Calculate optimal grid dimensions that most evenly match a square
+        const calculateGridDimensions = (count: number) => {
+          if (count <= 1) return { cols: 1, rows: 1 };
+          if (count <= 2) return { cols: 2, rows: 1 };
+          if (count <= 4) return { cols: 2, rows: 2 };
+          if (count <= 6) return { cols: 3, rows: 2 };
+          if (count <= 9) return { cols: 3, rows: 3 };
+
+          // For larger numbers, aim for roughly square layout
+          const cols = Math.ceil(Math.sqrt(count));
+          const rows = Math.ceil(count / cols);
+          return { cols, rows };
+        };
+
+        const { cols, rows } = calculateGridDimensions(docCount);
+
+        // Calculate cell dimensions with padding to fill entire workspace
+        const padding = 20;
+        const cellWidth = (workspace.workspace_size.width - padding * (cols + 1)) / cols;
+        const cellHeight = (workspace.workspace_size.height - padding * (rows + 1)) / rows;
+
+        // Ensure minimum dimensions
+        const minWidth = 200;
+        const minHeight = 150;
+        const finalCellWidth = Math.max(cellWidth, minWidth);
+        const finalCellHeight = Math.max(cellHeight, minHeight);
+
+        workspace.documents.forEach((doc: any, index: number) => {
+          const row = Math.floor(index / cols);
+          const col = index % cols;
+
+          const x = padding + col * (finalCellWidth + padding);
+          const y = padding + row * (finalCellHeight + padding);
+
+          doc.position = { x, y };
+          doc.dimensions = { width: finalCellWidth, height: finalCellHeight };
+          doc.z_index = index + 1;
+        });
+      }
     }
 
     console.log('Mock: Switched layout mode to', layoutMode);

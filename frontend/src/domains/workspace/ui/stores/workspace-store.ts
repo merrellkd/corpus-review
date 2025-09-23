@@ -531,6 +531,12 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
                   state.currentWorkspace.lastModified = new Date();
                 }
               });
+
+              // If we're in grid mode, recalculate the grid layout to accommodate the new document
+              const currentWorkspace = get().currentWorkspace;
+              if (currentWorkspace && currentWorkspace.layoutMode === LayoutModeType.GRID) {
+                await get().switchLayoutMode(LayoutModeType.GRID, 'user');
+              }
             } catch (error) {
               const handledError = handleWorkspaceError(error);
               set((state) => {
@@ -575,6 +581,12 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
                     state.currentWorkspace.lastModified = new Date();
                   }
                 });
+
+                // If we're in grid mode, recalculate the grid layout after removing the document
+                const currentWorkspace = get().currentWorkspace;
+                if (currentWorkspace && currentWorkspace.layoutMode === LayoutModeType.GRID) {
+                  await get().switchLayoutMode(LayoutModeType.GRID, 'user');
+                }
               }
             } catch (error) {
               const handledError = handleWorkspaceError(error);
