@@ -39,26 +39,26 @@
 - **Tests**: `frontend/tests/` for frontend tests, `src-tauri/tests/` for backend tests
 
 ## Phase 3.1: Setup
-- [ ] T001 Create Multi-Document Workspace domain structure in `frontend/src/domains/workspace/` and `src-tauri/src/domains/workspace/`
-- [ ] T002 Initialize workspace-specific dependencies in `frontend/package.json` (react-resizable-panels integration)
-- [ ] T003 [P] Configure workspace linting rules in `frontend/.eslintrc.js` for layout components
+- [x] T001 Create Multi-Document Workspace domain structure in `frontend/src/domains/workspace/` and `src-tauri/src/domains/workspace/`
+- [x] T002 Initialize workspace-specific dependencies in `frontend/package.json` (react-resizable-panels integration)
+- [x] T003 [P] Configure workspace linting rules in `frontend/.eslintrc.js` for layout components
 
 ## Phase 3.2: Tests First (TDD) ⚠️ MUST COMPLETE BEFORE 3.3
 **CRITICAL: These tests MUST be written and MUST FAIL before ANY implementation**
 
 ### Contract Tests [P]
-- [ ] T004 [P] Contract test create_workspace command in `src-tauri/tests/contract/test_workspace_commands.rs`
-- [ ] T005 [P] Contract test add_document_to_workspace command in `src-tauri/tests/contract/test_document_commands.rs`
-- [ ] T006 [P] Contract test switch_layout_mode command in `src-tauri/tests/contract/test_layout_commands.rs`
-- [ ] T007 [P] Contract test move_document and resize_document commands in `src-tauri/tests/contract/test_document_manipulation.rs`
-- [ ] T008 [P] UI events contract test for layout_mode_changed in `frontend/tests/contract/test_layout_events.test.ts`
-- [ ] T009 [P] UI events contract test for document_caddy lifecycle in `frontend/tests/contract/test_document_events.test.ts`
+- [x] T004 [P] Contract test create_workspace command in `src-tauri/tests/contract/test_workspace_commands.rs`
+- [x] T005 [P] Contract test add_document_to_workspace command in `src-tauri/tests/contract/test_document_commands.rs`
+- [x] T006 [P] Contract test switch_layout_mode command in `src-tauri/tests/contract/test_layout_commands.rs`
+- [x] T007 [P] Contract test move_document and resize_document commands in `src-tauri/tests/contract/test_document_manipulation.rs`
+- [x] T008 [P] UI events contract test for layout_mode_changed in `frontend/tests/contract/test_layout_events.test.ts`
+- [x] T009 [P] UI events contract test for document_caddy lifecycle in `frontend/tests/contract/test_document_events.test.ts`
 
 ### Integration Tests [P]
-- [ ] T010 [P] Layout mode switching integration test in `frontend/tests/integration/test_layout_switching.test.ts`
-- [ ] T011 [P] Document management workflow test in `frontend/tests/integration/test_document_workflow.test.ts`
-- [ ] T012 [P] Automatic freeform mode switching test in `frontend/tests/integration/test_auto_freeform.test.ts`
-- [ ] T013 [P] End-to-end researcher workflow test in `frontend/tests/integration/test_researcher_workflow.test.ts`
+- [x] T010 [P] Layout mode switching integration test in `frontend/tests/integration/test_layout_switching.test.ts`
+- [x] T011 [P] Document management workflow test in `frontend/tests/integration/test_document_workflow.test.ts`
+- [x] T012 [P] Automatic freeform mode switching test in `frontend/tests/integration/test_auto_freeform.test.ts`
+- [x] T013 [P] End-to-end researcher workflow test in `frontend/tests/integration/test_researcher_workflow.test.ts`
 
 ## Phase 3.3: Core Implementation (ONLY after tests are failing)
 

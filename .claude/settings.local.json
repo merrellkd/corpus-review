@@ -21,7 +21,9 @@
       "Bash(timeout 10s npm run dev:*)",
       "Bash(.specify/scripts/bash/setup-plan.sh:*)",
       "Bash(.specify/scripts/bash/update-agent-context.sh:*)",
-      "Bash(.specify/scripts/bash/check-task-prerequisites.sh:*)"
+      "Bash(.specify/scripts/bash/check-task-prerequisites.sh:*)",
+      "Bash(awk:*)",
+      "Bash(xargs -r kill -9)"
     ],
     "deny": [],
     "ask": []
