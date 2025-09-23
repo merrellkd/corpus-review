@@ -73,14 +73,14 @@ const stateFromSectionVisibility = (fileExplorerVisible: boolean, categoryExplor
 export const useUnifiedPanelState = create<UnifiedPanelState>()(
   devtools(
     (set, get) => ({
-      // Initial state
-      currentState: 'none',
+      // Initial state - show File Explorer by default
+      currentState: 'files-only',
       lastValidFilesCategories: {
         fileExplorerVisible: true,
         categoryExplorerVisible: false
       },
       timestamp: Date.now(),
-      ...computePropertiesFromState('none'),
+      ...computePropertiesFromState('files-only'),
 
       // Actions
       setState: (newState: PanelStateType) => {

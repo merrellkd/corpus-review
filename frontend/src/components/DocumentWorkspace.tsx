@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback, useRef } from 'react'
+import React, { useEffect, useCallback, useRef, useMemo } from 'react'
 import { useWorkspaceStore, workspaceSelectors } from '../domains/workspace/ui/stores/workspace-store'
 import { LayoutModeType } from '../domains/workspace/domain/value-objects/layout-mode'
 import { Position, Dimensions } from '../domains/workspace/domain/value-objects/geometry'
@@ -36,39 +36,28 @@ export const DocumentWorkspace: React.FC = () => {
     activateDocument(documentId)
   }, [activateDocument])
 
-  // Handle document movement with validation
+  // Handle document movement - allow positioning anywhere
   const handleDocumentMove = useCallback((documentId: string, position: Position) => {
     if (!currentWorkspace) return
 
-    // Validate position is within workspace bounds
-    const maxX = Math.max(0, currentWorkspace.workspaceDimensions.width - 200) // Minimum visible width
-    const maxY = Math.max(0, currentWorkspace.workspaceDimensions.height - 100) // Minimum visible height
-
-    const originalX = position.getX()
-    const originalY = position.getY()
-    const boundedX = Math.max(0, Math.min(originalX, maxX))
-    const boundedY = Math.max(0, Math.min(originalY, maxY))
-
     try {
-      const boundedPosition = Position.fromCoordinates(boundedX, boundedY)
-      moveDocument(documentId, boundedPosition)
+      // Allow documents to be positioned anywhere - scrollbars will handle overflow
+      moveDocument(documentId, position)
     } catch (error) {
       console.warn('Invalid position during document move:', error)
     }
   }, [moveDocument, currentWorkspace])
 
-  // Handle document resizing with validation
+  // Handle document resizing with minimum size validation
   const handleDocumentResize = useCallback((documentId: string, dimensions: Dimensions) => {
     if (!currentWorkspace) return
 
-    // Validate minimum and maximum dimensions
+    // Only enforce minimum dimensions - allow documents to be larger than workspace
     const minWidth = 200
     const minHeight = 150
-    const maxWidth = currentWorkspace.workspaceDimensions.width
-    const maxHeight = currentWorkspace.workspaceDimensions.height
 
-    const boundedWidth = Math.max(minWidth, Math.min(dimensions.getWidth(), maxWidth))
-    const boundedHeight = Math.max(minHeight, Math.min(dimensions.getHeight(), maxHeight))
+    const boundedWidth = Math.max(minWidth, dimensions.getWidth())
+    const boundedHeight = Math.max(minHeight, dimensions.getHeight())
 
     try {
       const boundedDimensions = Dimensions.fromValues(boundedWidth, boundedHeight)
@@ -88,10 +77,36 @@ export const DocumentWorkspace: React.FC = () => {
     updateDocumentTitle(documentId, newTitle)
   }, [updateDocumentTitle])
 
+  // Calculate container dimensions based on document positions
+  const containerDimensions = useMemo(() => {
+    // Handle case when workspace doesn't exist yet
+    if (!currentWorkspace) {
+      return { width: 1200, height: 800 }
+    }
+
+    // Calculate the actual space needed based on document positions
+    let maxX = currentWorkspace.workspaceDimensions.width
+    let maxY = currentWorkspace.workspaceDimensions.height
+
+    // Find the furthest document edges
+    documents.forEach(doc => {
+      const rightEdge = doc.position.x + doc.dimensions.width
+      const bottomEdge = doc.position.y + doc.dimensions.height
+      maxX = Math.max(maxX, rightEdge + 50) // Add some padding
+      maxY = Math.max(maxY, bottomEdge + 50)
+    })
+
+    return {
+      width: Math.max(maxX, currentWorkspace.workspaceDimensions.width),
+      height: Math.max(maxY, currentWorkspace.workspaceDimensions.height),
+    }
+  }, [documents, currentWorkspace])
+
   // Initialize demo workspace on mount
   useEffect(() => {
     if (!currentWorkspace) {
-      createWorkspace('Demo Research Workspace', LayoutModeType.FREEFORM, Dimensions.fromValues(1200, 800))
+      // Start with large default dimensions - the workspace will auto-resize to container
+      createWorkspace('Demo Research Workspace', LayoutModeType.FREEFORM, Dimensions.fromValues(2000, 1500))
         .catch(console.error)
     }
   }, [currentWorkspace, createWorkspace])
@@ -228,9 +243,9 @@ export const DocumentWorkspace: React.FC = () => {
     }
   }
 
-  // Get workspace container classes based on layout mode
+  // Get workspace container classes based on layout mode (for inner document container)
   const getWorkspaceClasses = () => {
-    const baseClasses = 'relative w-full h-full overflow-hidden bg-gray-50'
+    const baseClasses = 'relative'
 
     let workspaceClasses
     switch (currentWorkspace.layoutMode) {
@@ -252,13 +267,12 @@ export const DocumentWorkspace: React.FC = () => {
 
   // Get document container styles
   const getDocumentContainerStyle = (): React.CSSProperties => {
-    const style = {
-      width: currentWorkspace.workspaceDimensions.width,
-      height: currentWorkspace.workspaceDimensions.height,
+    return {
+      // Set size large enough to contain all documents
+      width: containerDimensions.width,
+      height: containerDimensions.height,
       position: 'relative' as const,
     }
-
-    return style
   }
 
   // Render empty state
@@ -349,15 +363,17 @@ export const DocumentWorkspace: React.FC = () => {
       />
 
       {/* Workspace Area */}
-      <div className="flex-1 relative">
+      <div
+        ref={workspaceRef}
+        className="flex-1 relative overflow-auto bg-gray-50"
+        data-testid={`workspace-${currentWorkspace.id}`}
+        role="application"
+        aria-label={`Multi-document workspace: ${currentWorkspace.name}`}
+        tabIndex={-1}
+      >
         <div
-          ref={workspaceRef}
           className={getWorkspaceClasses()}
           style={getDocumentContainerStyle()}
-          data-testid={`workspace-${currentWorkspace.id}`}
-          role="application"
-          aria-label={`Multi-document workspace: ${currentWorkspace.name}`}
-          tabIndex={-1}
         >
           {documents.length === 0 ? (
             renderEmptyState()
