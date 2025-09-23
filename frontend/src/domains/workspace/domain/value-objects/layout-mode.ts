@@ -124,6 +124,10 @@ export class StackedLayoutStrategy implements LayoutStrategy {
  * Grid layout strategy - documents arranged in responsive grid
  */
 export class GridLayoutStrategy implements LayoutStrategy {
+  private static readonly STABLE_CELL_WIDTH = 300;
+  private static readonly STABLE_CELL_HEIGHT = 250;
+  private static readonly GRID_PADDING = 20;
+
   calculateLayout(
     documents: DocumentLayoutInfo[],
     workspaceSize: Dimensions
@@ -133,25 +137,24 @@ export class GridLayoutStrategy implements LayoutStrategy {
 
     if (docCount === 0) return results;
 
-    // Calculate optimal grid dimensions
-    const { cols, rows } = this.calculateGridDimensions(docCount);
-
-    // Calculate cell dimensions with padding
-    const padding = 20;
-    const cellWidth = (workspaceSize.getWidth() - padding * (cols + 1)) / cols;
-    const cellHeight = (workspaceSize.getHeight() - padding * (rows + 1)) / rows;
-
+    // Use stable cell dimensions to minimize re-renders when adding documents
     const cellDimensions = Dimensions.fromValues(
-      Math.max(cellWidth, Dimensions.minimum().getWidth()),
-      Math.max(cellHeight, Dimensions.minimum().getHeight())
+      GridLayoutStrategy.STABLE_CELL_WIDTH,
+      GridLayoutStrategy.STABLE_CELL_HEIGHT
     );
 
-    documents.forEach((doc, index) => {
-      const row = Math.floor(index / cols);
-      const col = index % cols;
+    // Calculate how many columns fit in the workspace
+    const maxCols = Math.max(1, Math.floor(
+      (workspaceSize.getWidth() + GridLayoutStrategy.GRID_PADDING) /
+      (GridLayoutStrategy.STABLE_CELL_WIDTH + GridLayoutStrategy.GRID_PADDING)
+    ));
 
-      const x = padding + col * (cellDimensions.getWidth() + padding);
-      const y = padding + row * (cellDimensions.getHeight() + padding);
+    documents.forEach((doc, index) => {
+      const row = Math.floor(index / maxCols);
+      const col = index % maxCols;
+
+      const x = GridLayoutStrategy.GRID_PADDING + col * (GridLayoutStrategy.STABLE_CELL_WIDTH + GridLayoutStrategy.GRID_PADDING);
+      const y = GridLayoutStrategy.GRID_PADDING + row * (GridLayoutStrategy.STABLE_CELL_HEIGHT + GridLayoutStrategy.GRID_PADDING);
 
       results.push({
         id: doc.id,
@@ -177,18 +180,6 @@ export class GridLayoutStrategy implements LayoutStrategy {
     return 'grid-layout';
   }
 
-  private calculateGridDimensions(docCount: number): { cols: number; rows: number } {
-    if (docCount <= 1) return { cols: 1, rows: 1 };
-    if (docCount <= 2) return { cols: 2, rows: 1 };
-    if (docCount <= 4) return { cols: 2, rows: 2 };
-    if (docCount <= 6) return { cols: 3, rows: 2 };
-    if (docCount <= 9) return { cols: 3, rows: 3 };
-
-    // For larger numbers, aim for roughly square layout
-    const cols = Math.ceil(Math.sqrt(docCount));
-    const rows = Math.ceil(docCount / cols);
-    return { cols, rows };
-  }
 }
 
 /**

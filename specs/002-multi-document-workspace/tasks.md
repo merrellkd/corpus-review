@@ -96,9 +96,9 @@
 ## Phase 3.4: Integration
 - [x] T035 Connect WorkspaceService to Tauri commands in `frontend/src/domains/workspace/application/tauri-workspace-adapter.ts`
 - [x] T036 Zustand store setup for workspace state in `frontend/src/domains/workspace/ui/stores/workspace-store.ts`
-- [ ] T037 Event system integration for UI events in `frontend/src/domains/workspace/ui/hooks/useWorkspaceEvents.ts`
-- [ ] T038 File Explorer integration for document opening in `frontend/src/shared/file-explorer/workspace-integration.ts`
-- [ ] T039 Layout persistence and restoration in `frontend/src/domains/workspace/infrastructure/layout-persistence.ts`
+- [x] T037 Event system integration for UI events in `frontend/src/domains/workspace/ui/hooks/useWorkspaceEvents.ts`
+- [x] T038 File Explorer integration for document opening in `frontend/src/shared/file-explorer/workspace-integration.ts`
+- [x] T039 Layout persistence and restoration in `frontend/src/domains/workspace/infrastructure/layout-persistence.ts`
 
 ## Phase 3.5: Polish
 - [ ] T040 [P] Unit tests for layout algorithms in `frontend/tests/unit/test_layout_algorithms.test.ts`
