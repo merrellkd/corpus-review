@@ -7,6 +7,39 @@ import { LayoutModeType, DocumentLayoutResult } from '../../domain/value-objects
 import { DocumentCaddyState } from '../../domain/entities/document-caddy';
 import { WorkspaceService } from '../../application/workspace-service';
 import { TauriWorkspaceAdapter, TauriErrorHandler } from '../../application/tauri-workspace-adapter';
+import { createMockWorkspaceAdapter } from '../../application/mock-workspace-adapter';
+
+/**
+ * Detect if we're running in Tauri environment
+ */
+const isTauriEnvironment = (): boolean => {
+  return typeof window !== 'undefined' &&
+         window.__TAURI_IPC__ !== undefined;
+};
+
+/**
+ * Create appropriate workspace adapter based on environment
+ */
+const createWorkspaceAdapter = () => {
+  return isTauriEnvironment()
+    ? new TauriWorkspaceAdapter()
+    : createMockWorkspaceAdapter() as any; // Cast to match interface
+};
+
+/**
+ * Handle workspace errors for both environments
+ */
+const handleWorkspaceError = (error: unknown): Error => {
+  if (isTauriEnvironment()) {
+    return TauriErrorHandler.handleWorkspaceError(error);
+  } else {
+    // Simple error handling for mock environment
+    if (error instanceof Error) {
+      return error;
+    }
+    return new Error(`Workspace operation failed: ${error}`);
+  }
+};
 
 /**
  * Document state for UI
@@ -182,7 +215,7 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
             });
 
             try {
-              const adapter = new TauriWorkspaceAdapter();
+              const adapter = createWorkspaceAdapter();
               const response = await adapter.createWorkspace(name, layoutMode, dimensions);
 
               set((state) => {
@@ -199,7 +232,7 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
                 };
               });
             } catch (error) {
-              const handledError = TauriErrorHandler.handleWorkspaceError(error);
+              const handledError = handleWorkspaceError(error);
               set((state) => {
                 state.error = handledError.message;
               });
@@ -219,13 +252,13 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
             });
 
             try {
-              const adapter = new TauriWorkspaceAdapter();
+              const adapter = createWorkspaceAdapter();
               const response = await adapter.getWorkspaceState(workspaceId);
 
               const documents: Record<string, DocumentUIState> = {};
               const documentOrder: string[] = [];
 
-              response.documents.forEach((doc) => {
+              response.documents.forEach((doc: any) => {
                 documents[doc.document_id] = {
                   id: doc.document_id,
                   title: doc.title,
@@ -255,14 +288,14 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
                   workspaceDimensions: response.workspace_size,
                   documents,
                   documentOrder,
-                  activeDocumentId: response.documents.find(d => d.is_active)?.document_id,
+                  activeDocumentId: response.documents.find((d: any) => d.is_active)?.document_id,
                   isLoading: false,
                   isTransitioning: false,
                   lastModified: new Date(response.last_modified),
                 };
               });
             } catch (error) {
-              const handledError = TauriErrorHandler.handleWorkspaceError(error);
+              const handledError = handleWorkspaceError(error);
               set((state) => {
                 state.error = handledError.message;
               });
@@ -284,7 +317,7 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
             });
 
             try {
-              const adapter = new TauriWorkspaceAdapter();
+              const adapter = createWorkspaceAdapter();
               await adapter.saveWorkspaceState(get().currentWorkspace!.id);
 
               set((state) => {
@@ -293,7 +326,7 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
                 }
               });
             } catch (error) {
-              const handledError = TauriErrorHandler.handleWorkspaceError(error);
+              const handledError = handleWorkspaceError(error);
               set((state) => {
                 state.error = handledError.message;
               });
@@ -333,7 +366,7 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
 
           await get().trackOperation(async () => {
             try {
-              const adapter = new TauriWorkspaceAdapter();
+              const adapter = createWorkspaceAdapter();
               const response = await adapter.updateWorkspaceSize(
                 get().currentWorkspace!.id,
                 dimensions
@@ -345,7 +378,7 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
                   state.currentWorkspace.lastModified = new Date();
 
                   // Update document positions from layout results
-                  response.layout_results.forEach((result) => {
+                  response.layout_results.forEach((result: any) => {
                     if (state.currentWorkspace!.documents[result.document_id]) {
                       state.currentWorkspace!.documents[result.document_id].position = result.position;
                       state.currentWorkspace!.documents[result.document_id].dimensions = result.dimensions;
@@ -356,7 +389,7 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
                 }
               });
             } catch (error) {
-              const handledError = TauriErrorHandler.handleWorkspaceError(error);
+              const handledError = handleWorkspaceError(error);
               set((state) => {
                 state.error = handledError.message;
               });
@@ -378,7 +411,7 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
             });
 
             try {
-              const adapter = new TauriWorkspaceAdapter();
+              const adapter = createWorkspaceAdapter();
               const response = await adapter.switchLayoutMode(
                 get().currentWorkspace!.id,
                 mode,
@@ -391,7 +424,7 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
                   state.currentWorkspace.lastModified = new Date();
 
                   // Update document positions from layout results
-                  response.layout_results.forEach((result) => {
+                  response.layout_results.forEach((result: any) => {
                     if (state.currentWorkspace!.documents[result.document_id]) {
                       state.currentWorkspace!.documents[result.document_id].position = result.position;
                       state.currentWorkspace!.documents[result.document_id].dimensions = result.dimensions;
@@ -400,11 +433,17 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
                     }
                   });
 
-                  state.transitionState.animations = response.layout_results;
+                  state.transitionState.animations = response.layout_results.map((result: any) => ({
+                    id: DocumentCaddyId.fromString(result.document_id),
+                    position: Position.fromCoordinates(result.position.x, result.position.y),
+                    dimensions: Dimensions.fromValues(result.dimensions.width, result.dimensions.height),
+                    zIndex: result.z_index,
+                    isVisible: result.is_visible,
+                  }));
                 }
               });
             } catch (error) {
-              const handledError = TauriErrorHandler.handleWorkspaceError(error);
+              const handledError = handleWorkspaceError(error);
               set((state) => {
                 state.error = handledError.message;
                 state.transitionState.isTransitioning = false;
@@ -443,7 +482,7 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
             });
 
             try {
-              const adapter = new TauriWorkspaceAdapter();
+              const adapter = createWorkspaceAdapter();
               const response = await adapter.addDocument(
                 get().currentWorkspace!.id,
                 filePath,
@@ -479,7 +518,7 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
                 }
               });
             } catch (error) {
-              const handledError = TauriErrorHandler.handleWorkspaceError(error);
+              const handledError = handleWorkspaceError(error);
               set((state) => {
                 state.error = handledError.message;
               });
@@ -501,7 +540,7 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
             });
 
             try {
-              const adapter = new TauriWorkspaceAdapter();
+              const adapter = createWorkspaceAdapter();
               const removed = await adapter.removeDocument(
                 get().currentWorkspace!.id,
                 documentId
@@ -524,7 +563,7 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
                 });
               }
             } catch (error) {
-              const handledError = TauriErrorHandler.handleWorkspaceError(error);
+              const handledError = handleWorkspaceError(error);
               set((state) => {
                 state.error = handledError.message;
               });
@@ -542,7 +581,7 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
 
           await get().trackOperation(async () => {
             try {
-              const adapter = new TauriWorkspaceAdapter();
+              const adapter = createWorkspaceAdapter();
               await adapter.removeAllDocuments(get().currentWorkspace!.id);
 
               set((state) => {
@@ -554,7 +593,7 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
                 }
               });
             } catch (error) {
-              const handledError = TauriErrorHandler.handleWorkspaceError(error);
+              const handledError = handleWorkspaceError(error);
               set((state) => {
                 state.error = handledError.message;
               });
@@ -568,7 +607,7 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
 
           await get().trackOperation(async () => {
             try {
-              const adapter = new TauriWorkspaceAdapter();
+              const adapter = createWorkspaceAdapter();
               await adapter.activateDocument(get().currentWorkspace!.id, documentId);
 
               set((state) => {
@@ -588,7 +627,7 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
                 }
               });
             } catch (error) {
-              const handledError = TauriErrorHandler.handleWorkspaceError(error);
+              const handledError = handleWorkspaceError(error);
               set((state) => {
                 state.error = handledError.message;
               });
@@ -606,7 +645,7 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
             });
 
             try {
-              const adapter = new TauriWorkspaceAdapter();
+              const adapter = createWorkspaceAdapter();
               const response = await adapter.moveDocument(
                 get().currentWorkspace!.id,
                 documentId,
@@ -616,7 +655,7 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
               set((state) => {
                 if (state.currentWorkspace) {
                   // Update all affected documents from layout results
-                  response.layout_results.forEach((result) => {
+                  response.layout_results.forEach((result: any) => {
                     if (state.currentWorkspace!.documents[result.document_id]) {
                       state.currentWorkspace!.documents[result.document_id].position = result.position;
                       state.currentWorkspace!.documents[result.document_id].dimensions = result.dimensions;
@@ -634,7 +673,7 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
                 }
               });
             } catch (error) {
-              const handledError = TauriErrorHandler.handleWorkspaceError(error);
+              const handledError = handleWorkspaceError(error);
               set((state) => {
                 state.error = handledError.message;
               });
@@ -656,7 +695,7 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
             });
 
             try {
-              const adapter = new TauriWorkspaceAdapter();
+              const adapter = createWorkspaceAdapter();
               const response = await adapter.resizeDocument(
                 get().currentWorkspace!.id,
                 documentId,
@@ -666,7 +705,7 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
               set((state) => {
                 if (state.currentWorkspace) {
                   // Update all affected documents from layout results
-                  response.layout_results.forEach((result) => {
+                  response.layout_results.forEach((result: any) => {
                     if (state.currentWorkspace!.documents[result.document_id]) {
                       state.currentWorkspace!.documents[result.document_id].position = result.position;
                       state.currentWorkspace!.documents[result.document_id].dimensions = result.dimensions;
@@ -684,7 +723,7 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
                 }
               });
             } catch (error) {
-              const handledError = TauriErrorHandler.handleWorkspaceError(error);
+              const handledError = handleWorkspaceError(error);
               set((state) => {
                 state.error = handledError.message;
               });

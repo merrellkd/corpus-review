@@ -82,8 +82,10 @@ export const MultiDocumentWorkspace: React.FC<MultiDocumentWorkspaceProps> = ({
 
   const workspaceRef = useRef<HTMLDivElement>(null);
   const resizeObserverRef = useRef<ResizeObserver | null>(null);
+  const resizeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const lastResizeRef = useRef<{ width: number; height: number } | null>(null);
 
-  // Handle workspace resize observation
+  // Handle workspace resize observation with debouncing
   useEffect(() => {
     if (!workspaceRef.current || !onWorkspaceResize) {
       return;
@@ -93,12 +95,33 @@ export const MultiDocumentWorkspace: React.FC<MultiDocumentWorkspaceProps> = ({
       for (const entry of entries) {
         const { width, height } = entry.contentRect;
         if (width > 0 && height > 0) {
-          try {
-            const newDimensions = Dimensions.fromValues(width, height);
-            onWorkspaceResize(newDimensions);
-          } catch (error) {
-            console.warn('Invalid workspace dimensions during resize:', error);
+          // Check if dimensions actually changed significantly
+          const tolerance = 1; // 1px tolerance
+          const lastResize = lastResizeRef.current;
+
+          if (lastResize) {
+            const widthChanged = Math.abs(lastResize.width - width) > tolerance;
+            const heightChanged = Math.abs(lastResize.height - height) > tolerance;
+
+            if (!widthChanged && !heightChanged) {
+              return; // Skip if no significant change
+            }
           }
+
+          // Debounce the resize calls
+          if (resizeTimeoutRef.current) {
+            clearTimeout(resizeTimeoutRef.current);
+          }
+
+          resizeTimeoutRef.current = setTimeout(() => {
+            try {
+              const newDimensions = Dimensions.fromValues(width, height);
+              lastResizeRef.current = { width, height };
+              onWorkspaceResize(newDimensions);
+            } catch (error) {
+              console.warn('Invalid workspace dimensions during resize:', error);
+            }
+          }, 100); // 100ms debounce
         }
       }
     });
@@ -108,6 +131,9 @@ export const MultiDocumentWorkspace: React.FC<MultiDocumentWorkspaceProps> = ({
     return () => {
       if (resizeObserverRef.current) {
         resizeObserverRef.current.disconnect();
+      }
+      if (resizeTimeoutRef.current) {
+        clearTimeout(resizeTimeoutRef.current);
       }
     };
   }, [onWorkspaceResize]);
