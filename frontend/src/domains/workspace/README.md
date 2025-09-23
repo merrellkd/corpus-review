@@ -23,6 +23,17 @@ workspace/
     └── stores/         # State management (Zustand)
 ```
 
+## Integration Architecture
+
+**Note**: The Multi-Document Workspace functionality is integrated into the existing `DocumentWorkspace` component (`/src/components/DocumentWorkspace.tsx`) rather than creating a separate container component. This integration approach:
+
+- **Leverages existing patterns**: Reuses established component architecture
+- **Reduces duplication**: Avoids creating redundant container components
+- **Maintains separation**: Domain logic remains cleanly separated in the workspace domain
+- **Simplifies maintenance**: Single component to maintain for workspace functionality
+
+The `DocumentWorkspace` component imports and orchestrates all workspace domain functionality while maintaining clean architectural boundaries.
+
 ## Core Concepts
 
 ### Layout Modes
