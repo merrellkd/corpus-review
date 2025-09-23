@@ -81,10 +81,10 @@
 - [x] T025 DocumentCaddyService in `frontend/src/domains/workspace/application/document-caddy-service.ts`
 
 ### Infrastructure Layer
-- [ ] T026 [P] Workspace repository implementation in `frontend/src/domains/workspace/infrastructure/workspace-repository.ts`
-- [ ] T027 [P] State persistence service in `frontend/src/domains/workspace/infrastructure/state-persistence-service.ts`
-- [ ] T028 [P] Tauri workspace commands implementation in `src-tauri/src/domains/workspace/infrastructure/commands.rs`
-- [ ] T029 [P] SQLite workspace repository in `src-tauri/src/domains/workspace/infrastructure/workspace_repository.rs`
+- [x] T026 [P] Workspace repository implementation in `frontend/src/domains/workspace/infrastructure/workspace-repository.ts`
+- [x] T027 [P] State persistence service in `frontend/src/domains/workspace/infrastructure/state-persistence-service.ts`
+- [x] T028 [P] Tauri workspace commands implementation in `src-tauri/src/domains/workspace/infrastructure/commands.rs`
+- [x] T029 [P] SQLite workspace repository in `src-tauri/src/domains/workspace/infrastructure/workspace_repository.rs`
 
 ### UI Components
 - [ ] T030 [P] WorkspaceCommandBar component in `frontend/src/domains/workspace/ui/components/WorkspaceCommandBar.tsx`

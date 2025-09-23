@@ -352,7 +352,7 @@ export class WorkspaceService {
   async getWorkspaceStats(workspaceId: WorkspaceId): Promise<{
     documentCount: number;
     layoutMode: LayoutModeType;
-    activeDocumentId?: string;
+    activeDocumentId?: string | undefined;
     isEmpty: boolean;
     lastModified: Date;
   }> {
