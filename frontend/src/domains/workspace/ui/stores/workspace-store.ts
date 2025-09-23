@@ -864,7 +864,11 @@ export const workspaceSelectors = {
     if (!workspace?.activeDocumentId) return undefined;
     return workspace.documents[workspace.activeDocumentId];
   },
-  isLoading: (state: WorkspaceStore) => Object.values(state.operations).some(Boolean),
+  isLoading: (state: WorkspaceStore) => {
+    // Exclude interactive operations (moving/resizing) that shouldn't show global loading
+    const { movingDocument, resizingDocument, ...majorOperations } = state.operations;
+    return Object.values(majorOperations).some(Boolean);
+  },
   hasError: (state: WorkspaceStore) => !!state.error,
   documentCount: (state: WorkspaceStore) => state.currentWorkspace?.documentOrder.length || 0,
   layoutMode: (state: WorkspaceStore) => state.currentWorkspace?.layoutMode,
