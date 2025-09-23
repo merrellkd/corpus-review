@@ -6,6 +6,12 @@ import { WorkspaceCommandBar } from '../domains/workspace/ui/components/Workspac
 import { DocumentCaddy } from '../domains/workspace/ui/components/DocumentCaddy'
 
 export const DocumentWorkspace: React.FC = () => {
+  // Get state and actions from store
+  const currentWorkspace = useWorkspaceStore(workspaceSelectors.currentWorkspace)
+  const documents = useWorkspaceStore(workspaceSelectors.documentList)
+  const isLoading = useWorkspaceStore(workspaceSelectors.isLoading)
+  const hasError = useWorkspaceStore(workspaceSelectors.hasError)
+
   const {
     createWorkspace,
     loadWorkspace,
@@ -20,11 +26,6 @@ export const DocumentWorkspace: React.FC = () => {
     updateDocumentTitle,
     updateWorkspaceDimensions,
   } = useWorkspaceStore()
-
-  const currentWorkspace = useWorkspaceStore(workspaceSelectors.currentWorkspace)
-  const documents = useWorkspaceStore(workspaceSelectors.documentList)
-  const isLoading = useWorkspaceStore(workspaceSelectors.isLoading)
-  const hasError = useWorkspaceStore(workspaceSelectors.hasError)
 
   const workspaceRef = useRef<HTMLDivElement>(null)
   const resizeObserverRef = useRef<ResizeObserver | null>(null)
@@ -77,6 +78,69 @@ export const DocumentWorkspace: React.FC = () => {
     updateDocumentTitle(documentId, newTitle)
   }, [updateDocumentTitle])
 
+  const handleAddDocument = useCallback(async () => {
+    try {
+      // Demo: Add a sample document
+      const samplePaths = [
+        '/Users/demo/Documents/Research/research-notes.md',
+        '/Users/demo/Documents/Research/data-collection.pdf',
+        '/Users/demo/Documents/Research/interview-transcripts.docx',
+        '/Users/demo/Documents/Research/survey-results.xlsx',
+        '/Users/demo/Documents/Research/literature-review.md'
+      ]
+
+      const randomPath = samplePaths[Math.floor(Math.random() * samplePaths.length)]
+      await addDocument(randomPath)
+    } catch (error) {
+      console.error('Failed to add document:', error)
+    }
+  }, [addDocument])
+
+  const handleLayoutModeChange = useCallback(async (mode: LayoutModeType) => {
+    try {
+      await switchLayoutMode(mode)
+    } catch (error) {
+      console.error('Failed to switch layout mode:', error)
+    }
+  }, [switchLayoutMode])
+
+  const handleRemoveAllDocuments = useCallback(async () => {
+    try {
+      await removeAllDocuments()
+    } catch (error) {
+      console.error('Failed to remove all documents:', error)
+    }
+  }, [removeAllDocuments])
+
+  const handleSaveWorkspace = useCallback(async () => {
+    try {
+      await saveWorkspace()
+    } catch (error) {
+      console.error('Failed to save workspace:', error)
+    }
+  }, [saveWorkspace])
+
+  const handleLoadWorkspace = useCallback(async () => {
+    try {
+      if (currentWorkspace) {
+        await loadWorkspace(currentWorkspace.id)
+      }
+    } catch (error) {
+      console.error('Failed to load workspace:', error)
+    }
+  }, [loadWorkspace, currentWorkspace])
+
+  // Extract only position/dimension data to minimize recalculations
+  const documentBounds = useMemo(() => {
+    return documents.map(doc => ({
+      id: doc.id,
+      x: doc.position.x,
+      y: doc.position.y,
+      width: doc.dimensions.width,
+      height: doc.dimensions.height,
+    }))
+  }, [documents])
+
   // Calculate container dimensions based on document positions
   const containerDimensions = useMemo(() => {
     // Handle case when workspace doesn't exist yet
@@ -89,9 +153,9 @@ export const DocumentWorkspace: React.FC = () => {
     let maxY = currentWorkspace.workspaceDimensions.height
 
     // Find the furthest document edges
-    documents.forEach(doc => {
-      const rightEdge = doc.position.x + doc.dimensions.width
-      const bottomEdge = doc.position.y + doc.dimensions.height
+    documentBounds.forEach(doc => {
+      const rightEdge = doc.x + doc.width
+      const bottomEdge = doc.y + doc.height
       maxX = Math.max(maxX, rightEdge + 50) // Add some padding
       maxY = Math.max(maxY, bottomEdge + 50)
     })
@@ -100,7 +164,46 @@ export const DocumentWorkspace: React.FC = () => {
       width: Math.max(maxX, currentWorkspace.workspaceDimensions.width),
       height: Math.max(maxY, currentWorkspace.workspaceDimensions.height),
     }
-  }, [documents, currentWorkspace])
+  }, [documentBounds, currentWorkspace?.workspaceDimensions])
+
+  // Get document container styles - memoized
+  const documentContainerStyle = useMemo((): React.CSSProperties => {
+    if (!currentWorkspace) {
+      return { width: 1200, height: 800, position: 'relative' as const }
+    }
+    return {
+      // Set size large enough to contain all documents
+      width: containerDimensions.width,
+      height: containerDimensions.height,
+      position: 'relative' as const,
+    }
+  }, [containerDimensions, currentWorkspace])
+
+  // Render empty state - memoized
+  const renderEmptyState = useMemo(() => (
+    <div className="flex flex-col items-center justify-center h-full text-gray-500">
+      <div className="text-center max-w-md">
+        <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+        <h3 className="mt-4 text-lg font-medium text-gray-900">No documents</h3>
+        <p className="mt-2 text-sm text-gray-600">
+          Add documents to get started with your multi-document workspace.
+        </p>
+        <button
+          type="button"
+          onClick={handleAddDocument}
+          disabled={isLoading}
+          className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <svg className="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+          </svg>
+          Add Document
+        </button>
+      </div>
+    </div>
+  ), [handleAddDocument, isLoading])
 
   // Initialize demo workspace on mount
   useEffect(() => {
@@ -190,59 +293,6 @@ export const DocumentWorkspace: React.FC = () => {
     )
   }
 
-  const handleAddDocument = async () => {
-    try {
-      // Demo: Add a sample document
-      const samplePaths = [
-        '/Users/demo/Documents/Research/research-notes.md',
-        '/Users/demo/Documents/Research/data-collection.pdf',
-        '/Users/demo/Documents/Research/interview-transcripts.docx',
-        '/Users/demo/Documents/Research/survey-results.xlsx',
-        '/Users/demo/Documents/Research/literature-review.md'
-      ]
-
-      const randomPath = samplePaths[Math.floor(Math.random() * samplePaths.length)]
-      await addDocument(randomPath)
-    } catch (error) {
-      console.error('Failed to add document:', error)
-    }
-  }
-
-
-  const handleLayoutModeChange = async (mode: LayoutModeType) => {
-    try {
-      await switchLayoutMode(mode)
-    } catch (error) {
-      console.error('Failed to switch layout mode:', error)
-    }
-  }
-
-  const handleRemoveAllDocuments = async () => {
-    try {
-      await removeAllDocuments()
-    } catch (error) {
-      console.error('Failed to remove all documents:', error)
-    }
-  }
-
-  const handleSaveWorkspace = async () => {
-    try {
-      await saveWorkspace()
-    } catch (error) {
-      console.error('Failed to save workspace:', error)
-    }
-  }
-
-  const handleLoadWorkspace = async () => {
-    try {
-      if (currentWorkspace) {
-        await loadWorkspace(currentWorkspace.id)
-      }
-    } catch (error) {
-      console.error('Failed to load workspace:', error)
-    }
-  }
-
   // Get workspace container classes based on layout mode (for inner document container)
   const getWorkspaceClasses = () => {
     const baseClasses = 'relative'
@@ -264,42 +314,6 @@ export const DocumentWorkspace: React.FC = () => {
 
     return workspaceClasses
   }
-
-  // Get document container styles
-  const getDocumentContainerStyle = (): React.CSSProperties => {
-    return {
-      // Set size large enough to contain all documents
-      width: containerDimensions.width,
-      height: containerDimensions.height,
-      position: 'relative' as const,
-    }
-  }
-
-  // Render empty state
-  const renderEmptyState = () => (
-    <div className="flex flex-col items-center justify-center h-full text-gray-500">
-      <div className="text-center max-w-md">
-        <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-        </svg>
-        <h3 className="mt-4 text-lg font-medium text-gray-900">No documents</h3>
-        <p className="mt-2 text-sm text-gray-600">
-          Add documents to get started with your multi-document workspace.
-        </p>
-        <button
-          type="button"
-          onClick={handleAddDocument}
-          disabled={isLoading}
-          className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <svg className="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-          </svg>
-          Add Document
-        </button>
-      </div>
-    </div>
-  )
 
   // Render layout mode indicator
   const renderLayoutModeIndicator = () => (
@@ -373,10 +387,10 @@ export const DocumentWorkspace: React.FC = () => {
       >
         <div
           className={getWorkspaceClasses()}
-          style={getDocumentContainerStyle()}
+          style={documentContainerStyle}
         >
           {documents.length === 0 ? (
-            renderEmptyState()
+            renderEmptyState
           ) : (
             <>
               {/* Document Caddies */}

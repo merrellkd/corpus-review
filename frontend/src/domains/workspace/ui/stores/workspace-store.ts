@@ -865,8 +865,15 @@ export const workspaceSelectors = {
     return workspace.documents[workspace.activeDocumentId];
   },
   isLoading: (state: WorkspaceStore) => {
-    // Exclude interactive operations (moving/resizing) that shouldn't show global loading
-    const { movingDocument, resizingDocument, ...majorOperations } = state.operations;
+    // Only show global loading for major workspace operations
+    const {
+      movingDocument,
+      resizingDocument,
+      addingDocument,
+      removingDocument,
+      saving,
+      ...majorOperations
+    } = state.operations;
     return Object.values(majorOperations).some(Boolean);
   },
   hasError: (state: WorkspaceStore) => !!state.error,
