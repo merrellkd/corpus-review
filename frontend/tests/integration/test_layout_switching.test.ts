@@ -67,8 +67,8 @@ describe('Layout Switching Integration Tests', () => {
 
     const user = userEvent.setup();
 
-    // Mock MultiDocumentWorkspace component would be rendered here
-    const { container } = await renderMultiDocumentWorkspace({
+    // Mock DocumentWorkspace component would be rendered here
+    const { container } = await renderDocumentWorkspace({
       initialLayoutMode: 'stacked',
       documents: mockDocuments
     });
@@ -100,7 +100,7 @@ describe('Layout Switching Integration Tests', () => {
     });
 
     // Verify grid layout styles are applied
-    const workspace = screen.getByTestId('multi-document-workspace');
+    const workspace = screen.getByTestId('document-workspace');
     expect(workspace).toHaveClass('grid-layout');
 
     // Verify mockWorkspaceStore.switchLayoutMode was called
@@ -110,7 +110,7 @@ describe('Layout Switching Integration Tests', () => {
   it('should switch from Grid to Freeform mode and preserve positions', async () => {
     const user = userEvent.setup();
 
-    const { container } = await renderMultiDocumentWorkspace({
+    const { container } = await renderDocumentWorkspace({
       initialLayoutMode: 'grid',
       documents: mockDocuments
     });
@@ -136,7 +136,7 @@ describe('Layout Switching Integration Tests', () => {
     });
 
     // Verify freeform layout styles are applied
-    const workspace = screen.getByTestId('multi-document-workspace');
+    const workspace = screen.getByTestId('document-workspace');
     expect(workspace).toHaveClass('freeform-layout');
 
     expect(mockWorkspaceStore.switchLayoutMode).toHaveBeenCalledWith('freeform');
@@ -151,7 +151,7 @@ describe('Layout Switching Integration Tests', () => {
       position: { x: index * 150, y: index * 100 }
     }));
 
-    const { container } = await renderMultiDocumentWorkspace({
+    const { container } = await renderDocumentWorkspace({
       initialLayoutMode: 'freeform',
       documents: freeformDocuments
     });
@@ -178,7 +178,7 @@ describe('Layout Switching Integration Tests', () => {
     });
 
     // Verify stacked layout styles are applied
-    const workspace = screen.getByTestId('multi-document-workspace');
+    const workspace = screen.getByTestId('document-workspace');
     expect(workspace).toHaveClass('stacked-layout');
 
     expect(mockWorkspaceStore.switchLayoutMode).toHaveBeenCalledWith('stacked');
@@ -187,7 +187,7 @@ describe('Layout Switching Integration Tests', () => {
   it('should show smooth transitions between layout modes', async () => {
     const user = userEvent.setup();
 
-    const { container } = await renderMultiDocumentWorkspace({
+    const { container } = await renderDocumentWorkspace({
       initialLayoutMode: 'stacked',
       documents: mockDocuments
     });
@@ -198,13 +198,13 @@ describe('Layout Switching Integration Tests', () => {
 
     // During transition, workspace should have transitioning class
     await waitFor(() => {
-      const workspace = screen.getByTestId('multi-document-workspace');
+      const workspace = screen.getByTestId('document-workspace');
       expect(workspace).toHaveClass('layout-transitioning');
     });
 
     // After transition, transitioning class should be removed
     await waitFor(() => {
-      const workspace = screen.getByTestId('multi-document-workspace');
+      const workspace = screen.getByTestId('document-workspace');
       expect(workspace).not.toHaveClass('layout-transitioning');
       expect(workspace).toHaveClass('grid-layout');
     }, { timeout: 1000 });
@@ -213,7 +213,7 @@ describe('Layout Switching Integration Tests', () => {
   it('should preserve document state across layout changes', async () => {
     const user = userEvent.setup();
 
-    const { container } = await renderMultiDocumentWorkspace({
+    const { container } = await renderDocumentWorkspace({
       initialLayoutMode: 'stacked',
       documents: mockDocuments
     });
@@ -253,7 +253,7 @@ describe('Layout Switching Integration Tests', () => {
     const user = userEvent.setup();
     const singleDocument = [mockDocuments[0]];
 
-    const { container } = await renderMultiDocumentWorkspace({
+    const { container } = await renderDocumentWorkspace({
       initialLayoutMode: 'stacked',
       documents: singleDocument
     });
@@ -286,7 +286,7 @@ describe('Layout Switching Integration Tests', () => {
   it('should visually indicate the currently active layout mode', async () => {
     const user = userEvent.setup();
 
-    const { container } = await renderMultiDocumentWorkspace({
+    const { container } = await renderDocumentWorkspace({
       initialLayoutMode: 'stacked',
       documents: mockDocuments
     });
@@ -320,12 +320,12 @@ describe('Layout Switching Integration Tests', () => {
   });
 });
 
-// Placeholder function that simulates rendering the MultiDocumentWorkspace component
+// Placeholder function that simulates rendering the DocumentWorkspace component
 // This will be replaced with actual component when implemented
-async function renderMultiDocumentWorkspace(props: any): Promise<any> {
+async function renderDocumentWorkspace(props: any): Promise<any> {
   // This function intentionally fails to make the test fail
   // Once the actual component is implemented, this should be replaced with:
-  // return render(<MultiDocumentWorkspace {...props} />);
+  // return render(<DocumentWorkspace {...props} />);
 
-  throw new Error('MultiDocumentWorkspace component not implemented yet');
+  throw new Error('DocumentWorkspace component integration not implemented yet');
 }
