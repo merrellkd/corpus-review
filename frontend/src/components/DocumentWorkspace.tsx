@@ -78,24 +78,6 @@ export const DocumentWorkspace: React.FC = () => {
     updateDocumentTitle(documentId, newTitle)
   }, [updateDocumentTitle])
 
-  const handleAddDocument = useCallback(async () => {
-    try {
-      // Demo: Add a sample document
-      const samplePaths = [
-        '/Users/demo/Documents/Research/research-notes.md',
-        '/Users/demo/Documents/Research/data-collection.pdf',
-        '/Users/demo/Documents/Research/interview-transcripts.docx',
-        '/Users/demo/Documents/Research/survey-results.xlsx',
-        '/Users/demo/Documents/Research/literature-review.md'
-      ]
-
-      const randomPath = samplePaths[Math.floor(Math.random() * samplePaths.length)]
-      await addDocument(randomPath)
-    } catch (error) {
-      console.error('Failed to add document:', error)
-    }
-  }, [addDocument])
-
   const handleLayoutModeChange = useCallback(async (mode: LayoutModeType) => {
     try {
       await switchLayoutMode(mode)
@@ -188,22 +170,11 @@ export const DocumentWorkspace: React.FC = () => {
         </svg>
         <h3 className="mt-4 text-lg font-medium text-gray-900">No documents</h3>
         <p className="mt-2 text-sm text-gray-600">
-          Add documents to get started with your multi-document workspace.
+          Your workspace is ready. Documents can be added through other parts of the application.
         </p>
-        <button
-          type="button"
-          onClick={handleAddDocument}
-          disabled={isLoading}
-          className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <svg className="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-          </svg>
-          Add Document
-        </button>
       </div>
     </div>
-  ), [handleAddDocument, isLoading])
+  ), [])
 
   // Initialize demo workspace on mount
   useEffect(() => {
@@ -368,7 +339,6 @@ export const DocumentWorkspace: React.FC = () => {
         currentLayoutMode={currentWorkspace.layoutMode}
         documentCount={documents.length}
         onLayoutModeChange={handleLayoutModeChange}
-        onAddDocument={handleAddDocument}
         onRemoveAllDocuments={handleRemoveAllDocuments}
         onSaveWorkspace={handleSaveWorkspace}
         onLoadWorkspace={handleLoadWorkspace}
