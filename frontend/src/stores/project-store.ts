@@ -326,7 +326,6 @@ export const useProjectStore = create<ProjectStore>()(
               get().emitEvent('error-occurred', {
                 error: errorMessage,
                 context: 'createProject',
-                originalError: error instanceof Error ? error.message : String(error),
               });
 
               // Re-throw with the improved error message so the form can display it

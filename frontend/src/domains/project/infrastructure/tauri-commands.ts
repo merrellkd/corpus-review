@@ -6,7 +6,7 @@
  * conversion and type safety.
  */
 
-import { invoke } from '@tauri-apps/api/tauri';
+import { invoke } from '@tauri-apps/api/core';
 import type {
   ProjectDto,
   ProjectListDto,
@@ -40,7 +40,26 @@ class ProjectCommandError extends Error {
 }
 
 const handleTauriError = (command: string) => (error: unknown): never => {
-  const message = typeof error === 'string' ? error : 'Unknown error occurred';
+  let message = 'Unknown error occurred';
+
+  if (typeof error === 'string') {
+    message = error;
+  } else if (error && typeof error === 'object') {
+    // Try to extract message from various error formats
+    const errorObj = error as any;
+    if (errorObj.message && typeof errorObj.message === 'string') {
+      message = errorObj.message;
+    } else if (errorObj.error && typeof errorObj.error === 'string') {
+      message = errorObj.error;
+    } else if (errorObj.toString && typeof errorObj.toString === 'function') {
+      const stringified = errorObj.toString();
+      if (stringified !== '[object Object]') {
+        message = stringified;
+      }
+    }
+  }
+
+  console.error(`Tauri command '${command}' failed:`, error);
   throw new ProjectCommandError(message, command, error);
 };
 
@@ -367,8 +386,18 @@ export const extractErrorMessage = (error: unknown): string => {
     return error;
   }
 
-  if (error && typeof error === 'object' && 'message' in error) {
-    return String((error as any).message);
+  if (error && typeof error === 'object') {
+    const errorObj = error as any;
+    if (errorObj.message && typeof errorObj.message === 'string') {
+      return errorObj.message;
+    } else if (errorObj.error && typeof errorObj.error === 'string') {
+      return errorObj.error;
+    } else if (errorObj.toString && typeof errorObj.toString === 'function') {
+      const stringified = errorObj.toString();
+      if (stringified !== '[object Object]') {
+        return stringified;
+      }
+    }
   }
 
   return 'An unknown error occurred';

@@ -39,9 +39,17 @@ async fn main() {
     let builder = tauri::Builder::default()
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_fs::init())
+        .plugin(tauri_plugin_dialog::init())
         // TODO: Re-enable workspace service once RepositoryFactory is implemented
         // .manage(workspace_service)
         .setup(|app| {
+            // Enable developer tools in development mode
+            #[cfg(debug_assertions)]
+            {
+                let window = app.get_webview_window("main").unwrap();
+                window.open_devtools();
+            }
+
             // Initialize project management state asynchronously
             let app_handle = app.handle().clone();
             tauri::async_runtime::spawn(async move {

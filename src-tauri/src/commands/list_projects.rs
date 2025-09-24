@@ -92,25 +92,44 @@ pub async fn list_projects_paged(
 /// Tauri command to search projects by name pattern
 ///
 /// This command allows users to find projects by searching for partial
-/// name matches, returning results ordered by relevance.
+/// name matches, returning results ordered by relevance with pagination.
 #[tauri::command]
 pub async fn search_projects(
-    pattern: String,
+    query: String,
+    offset: Option<usize>,
+    limit: Option<usize>,
     app: AppHandle,
     state: State<'_, AppState>,
-) -> Result<Vec<ProjectDto>, String> {
+) -> Result<ProjectListDto, String> {
     // Record command execution
     StateManager::record_command(&app).await;
 
-    tracing::debug!("Searching projects with pattern: '{}'", pattern);
+    let offset = offset.unwrap_or(0);
+    let limit = limit.unwrap_or(50);
+
+    tracing::debug!("Searching projects with query: '{}', offset: {}, limit: {}", query, offset, limit);
 
     // Execute the business logic through the application service
-    let result = state.project_service().search_projects(&pattern).await;
+    let result = state.project_service().search_projects(&query).await;
 
     match result {
         Ok(projects) => {
-            tracing::info!("Found {} projects matching pattern '{}'", projects.len(), pattern);
-            Ok(projects)
+            tracing::info!("Found {} projects matching query '{}'", projects.len(), query);
+
+            // Apply pagination to results
+            let total_count = projects.len();
+            let start = offset.min(total_count);
+            let end = (offset + limit).min(total_count);
+            let page_projects = projects[start..end].to_vec();
+
+            // Create paginated response using DTOs directly
+            Ok(ProjectListDto {
+                projects: page_projects,
+                total_count,
+                offset,
+                limit,
+                has_more: end < total_count,
+            })
         }
         Err(app_error) => {
             if app_error.should_log() {

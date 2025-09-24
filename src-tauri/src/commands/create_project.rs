@@ -32,8 +32,10 @@ pub async fn create_project(
     }
 
     // Execute the business logic through the application service
+    tracing::debug!("Executing create_project through application service");
     let result = state.project_service().create_project(request).await;
 
+    tracing::debug!("Create project result: {:?}", result.is_ok());
     match result {
         Ok(project_dto) => {
             // Record successful project creation
@@ -99,10 +101,20 @@ pub async fn check_project_name_availability(
 
     tracing::debug!("Checking name availability: {}", name);
 
-    state.project_service()
+    let result = state.project_service()
         .is_name_available(&name)
-        .await
-        .map_err(|e| e.user_message())
+        .await;
+
+    match &result {
+        Ok(available) => {
+            tracing::debug!("Name availability check result: {} -> {}", name, available);
+        }
+        Err(e) => {
+            tracing::error!("Name availability check failed: {} -> {}", name, e.message);
+        }
+    }
+
+    result.map_err(|e| e.user_message())
 }
 
 /// Get project creation statistics

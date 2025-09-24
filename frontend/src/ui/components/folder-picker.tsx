@@ -6,7 +6,7 @@
  */
 
 import React, { useState, useCallback, useEffect } from 'react';
-import { open } from '@tauri-apps/api/dialog';
+import { open } from '@tauri-apps/plugin-dialog';
 import { FolderPath } from '../../domains/project';
 
 // ====================
