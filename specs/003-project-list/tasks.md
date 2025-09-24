@@ -36,47 +36,47 @@
 - **Tests**: `tests/` for integration tests, inline for unit tests
 
 ## Phase 3.1: Setup
-- [ ] T001 Create Tauri + React project structure with DDD folder organization
-- [ ] T002 Initialize Rust dependencies (tauri, sqlx, uuid, thiserror, serde, chrono) in src-tauri/Cargo.toml
-- [ ] T003 Initialize React dependencies (react, typescript, vite, zustand, zod, react-hook-form) in package.json
-- [ ] T004 [P] Configure TypeScript strict mode in tsconfig.json
-- [ ] T005 [P] Configure Rust clippy and rustfmt in src-tauri/Cargo.toml
-- [ ] T006 Create SQLite database schema with projects table in src-tauri/migrations/001_create_projects.sql
+- [x] T001 Create Tauri + React project structure with DDD folder organization
+- [x] T002 Initialize Rust dependencies (tauri, sqlx, uuid, thiserror, serde, chrono) in src-tauri/Cargo.toml
+- [x] T003 Initialize React dependencies (react, typescript, vite, zustand, zod, react-hook-form) in package.json
+- [x] T004 [P] Configure TypeScript strict mode in tsconfig.json
+- [x] T005 [P] Configure Rust clippy and rustfmt in src-tauri/Cargo.toml
+- [x] T006 Create SQLite database schema with projects table in src-tauri/migrations/001_create_projects.sql
 
 ## Phase 3.2: Tests First (TDD) ⚠️ MUST COMPLETE BEFORE 3.3
 **CRITICAL: These tests MUST be written and MUST FAIL before ANY implementation**
-- [ ] T007 [P] Contract test create_project command in src-tauri/src/commands/tests/test_create_project.rs
-- [ ] T008 [P] Contract test list_projects command in src-tauri/src/commands/tests/test_list_projects.rs
-- [ ] T009 [P] Contract test delete_project command in src-tauri/src/commands/tests/test_delete_project.rs
-- [ ] T010 [P] Contract test open_project command in src-tauri/src/commands/tests/test_open_project.rs
-- [ ] T011 [P] Integration test project creation scenario in tests/integration/test_project_creation.rs
-- [ ] T012 [P] Integration test project list display in tests/integration/test_project_list.rs
-- [ ] T013 [P] Integration test project deletion in tests/integration/test_project_deletion.rs
-- [ ] T014 [P] Integration test validation scenarios in tests/integration/test_validation.rs
+- [x] T007 [P] Contract test create_project command in src-tauri/src/commands/tests/test_create_project.rs
+- [x] T008 [P] Contract test list_projects command in src-tauri/src/commands/tests/test_list_projects.rs
+- [x] T009 [P] Contract test delete_project command in src-tauri/src/commands/tests/test_delete_project.rs
+- [x] T010 [P] Contract test open_project command in src-tauri/src/commands/tests/test_open_project.rs
+- [x] T011 [P] Integration test project creation scenario in tests/integration/test_project_creation.rs
+- [x] T012 [P] Integration test project list display in tests/integration/test_project_list.rs
+- [x] T013 [P] Integration test project deletion in tests/integration/test_project_deletion.rs
+- [x] T014 [P] Integration test validation scenarios in tests/integration/test_validation.rs
 
 ## Phase 3.3: Core Implementation (Domain Layer) - ONLY after tests are failing
-- [ ] T015 [P] ProjectId value object in src-tauri/src/domain/value_objects/project_id.rs
-- [ ] T016 [P] ProjectName value object in src-tauri/src/domain/value_objects/project_name.rs
-- [ ] T017 [P] FolderPath value object in src-tauri/src/domain/value_objects/folder_path.rs
-- [ ] T018 [P] ProjectNote value object in src-tauri/src/domain/value_objects/project_note.rs
-- [ ] T019 [P] CreatedAt value object in src-tauri/src/domain/value_objects/created_at.rs
-- [ ] T020 Project aggregate root in src-tauri/src/domain/aggregates/project.rs
-- [ ] T021 [P] ProjectError domain error enum in src-tauri/src/domain/errors/project_error.rs
-- [ ] T022 ProjectRepository trait in src-tauri/src/domain/repositories/project_repository.rs
+- [x] T015 [P] ProjectId value object in src-tauri/src/domain/project/value_objects/project_id.rs
+- [x] T016 [P] ProjectName value object in src-tauri/src/domain/project/value_objects/project_name.rs
+- [x] T017 [P] FolderPath value object in src-tauri/src/domain/project/value_objects/folder_path.rs
+- [x] T018 [P] ProjectNote value object in src-tauri/src/domain/project/value_objects/project_note.rs
+- [x] T019 [P] CreatedAt value object in src-tauri/src/domain/project/value_objects/created_at.rs
+- [x] T020 Project aggregate root in src-tauri/src/domain/project/aggregates/project.rs
+- [x] T021 [P] ProjectError domain error enum in src-tauri/src/domain/project/errors/project_error.rs
+- [x] T022 ProjectRepository trait in src-tauri/src/domain/project/repositories/project_repository.rs
 
 ## Phase 3.4: Infrastructure Layer
-- [ ] T023 SQLite ProjectRepository implementation in src-tauri/src/infrastructure/repositories/sqlite_project_repository.rs
-- [ ] T024 Database connection setup in src-tauri/src/infrastructure/database/connection.rs
-- [ ] T025 [P] ProjectDto data transfer object in src-tauri/src/infrastructure/dtos/project_dto.rs
-- [ ] T026 [P] CreateProjectRequest DTO in src-tauri/src/infrastructure/dtos/create_project_request.rs
-- [ ] T027 [P] AppError mapping in src-tauri/src/infrastructure/errors/app_error.rs
+- [x] T023 SQLite ProjectRepository implementation in src-tauri/src/infrastructure/repositories/sqlite_project_repository.rs
+- [x] T024 Database connection setup in src-tauri/src/infrastructure/database/connection.rs
+- [x] T025 [P] ProjectDto data transfer object in src-tauri/src/infrastructure/dtos/project_dto.rs
+- [x] T026 [P] CreateProjectRequest DTO in src-tauri/src/infrastructure/dtos/create_project_request.rs
+- [x] T027 [P] AppError mapping in src-tauri/src/infrastructure/errors/app_error.rs
 
 ## Phase 3.5: Application Layer
-- [ ] T028 ProjectService application service in src-tauri/src/application/services/project_service.rs
-- [ ] T029 Application state setup in src-tauri/src/application/app_state.rs
+- [x] T028 ProjectService application service in src-tauri/src/application/services/project_service.rs
+- [x] T029 Application state setup in src-tauri/src/application/app_state.rs
 
 ## Phase 3.6: Tauri Commands
-- [ ] T030 create_project command handler in src-tauri/src/commands/create_project.rs
+- [x] T030 create_project command handler in src-tauri/src/commands/create_project.rs
 - [ ] T031 list_projects command handler in src-tauri/src/commands/list_projects.rs
 - [ ] T032 delete_project command handler in src-tauri/src/commands/delete_project.rs
 - [ ] T033 open_project command handler in src-tauri/src/commands/open_project.rs

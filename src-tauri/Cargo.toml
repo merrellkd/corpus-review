@@ -38,3 +38,10 @@ custom-protocol = ["tauri/custom-protocol"]
 [[bin]]
 name = "corpus-review"
 path = "src/main.rs"
+
+[lints.clippy]
+all = "warn"
+pedantic = "warn"
+nursery = "warn"
+unwrap_used = "warn"
+expect_used = "warn"
