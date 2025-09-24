@@ -2,7 +2,7 @@ This document will be fed to the spec-kit /specify command (see https://github.c
 
 # Feature: System Integration Architecture
 
-This document defines how the Project List, Document Derivatives Management System, File Metadata Extraction System, and Reports Management System work together to provide unified search, discovery, and file organization capabilities for corpus analysis workflows.
+This document defines how the Project List, Document Derivatives Management System, File Metadata Extraction System, and Reports Management System work together to provide unified search, discovery, and file organization capabilities for Corpus Review workflows.
 
 ## System Architecture Overview
 
@@ -37,21 +37,21 @@ This document defines how the Project List, Document Derivatives Management Syst
 
   /derivatives/               (managed by Document Derivatives System)
     /doc1-family/
-      extracted.corpus
-      summary-cost-analysis.corpus
-      anonymized.corpus
+      extracted.det
+      summary-cost-analysis.det
+      anonymized.det
       _metadata.json
     /doc2-family/
-      extracted.corpus
-      summary-findings.corpus
+      extracted.det
+      summary-findings.det
       _metadata.json
 
   /reports/                   (managed by Reports Management System)
     /analysis/
-      case-findings.corpus
-      final-report.corpus
+      case-findings.det
+      final-report.det
     /deliverables/
-      client-summary.corpus
+      client-summary.det
 ```
 
 ## Unified Search and Discovery
@@ -61,7 +61,7 @@ This document defines how the Project List, Document Derivatives Management Syst
 The search system indexes content from all four systems:
 
 - **Original Files**: Content and metadata from source documents (File Metadata Extraction System)
-- **Derivatives**: Full-text search across all .corpus files (Document Derivatives System)
+- **Derivatives**: Full-text search across all .det files (Document Derivatives System)
 - **Reports**: Analysis findings and conclusions (Reports Management System)
 - **Project Metadata**: Project names, descriptions, folder paths (Project List Management)
 
@@ -75,6 +75,7 @@ The search system indexes content from all four systems:
 ### Search Result Organization
 
 Search results are organized by:
+
 1. **Document Families**: Group results by original document and its derivatives
 2. **Content Type**: Separate results for originals, extractions, summaries, reports
 3. **Relevance**: Rank by search term relevance and document relationships
@@ -86,13 +87,14 @@ Search results are organized by:
 
 1. **Intake**: Original files added to `/source/` folder (Project List Management)
 2. **Processing**: Metadata extracted and cached (File Metadata Extraction System)
-3. **Extraction**: `.corpus` files created in `/derivatives/` (Document Derivatives System)
+3. **Extraction**: `.det` files created in `/derivatives/` (Document Derivatives System)
 4. **Analysis**: Derivative documents created as needed (Document Derivatives System)
 5. **Reporting**: Final reports generated in `/reports/` (Reports Management System)
 
 ### Immutable Source Mode Coordination
 
 When Immutable Source Mode is enabled across all systems:
+
 - **Source files**: Never modified, only read for extraction
 - **Derivatives**: All document transformations stored in `/derivatives/`
 - **Reports**: All analysis outputs stored in `/reports/`
@@ -101,6 +103,7 @@ When Immutable Source Mode is enabled across all systems:
 ### File Status Tracking
 
 Unified status tracking across all systems:
+
 - **Original**: Available, processing, processed, error
 - **Extracted**: Not started, in progress, completed, needs correction
 - **Derivatives**: None, partial, complete, updated
@@ -118,7 +121,7 @@ Unified status tracking across all systems:
 ### Document Processing Flow
 
 1. **File Metadata Extraction**: Detects new files in source folder
-2. **Document Derivatives**: Creates document family folder and extracted.corpus
+2. **Document Derivatives**: Creates document family folder and extracted.det
 3. **File Metadata Extraction**: Updates metadata with extraction status and relationships
 4. **Search Integration**: Indexes new content for search and discovery
 
@@ -205,4 +208,4 @@ Unified status tracking across all systems:
 - **Processing Chain Accuracy**: Verify complete processing history tracking
 - **Status Propagation**: Ensure status updates propagate across systems
 
-This integration architecture ensures all four systems work cohesively to provide a comprehensive corpus analysis platform while maintaining clear separation of concerns and efficient data flow.
+This integration architecture ensures all four systems work cohesively to provide a comprehensive Corpus Review platform while maintaining clear separation of concerns and efficient data flow.
