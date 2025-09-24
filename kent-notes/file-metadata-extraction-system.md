@@ -23,7 +23,7 @@ This system handles local metadata extraction and processing for all file types 
 ### Document Files (Word, RTF, PDF, Markdown, Excel)
 
 - **Content Extraction**: Extract text content from Word (.doc, .docx), RTF (.rtf), PDF, Markdown (.md), Excel (.xls, .xlsx)
-- **Format Conversion**: Convert extracted content to .corpus format (TipTap/ProseMirror JSON)
+- **Format Conversion**: Convert extracted content to .det format (TipTap/ProseMirror JSON)
 - **Structure Preservation**: Maintain document structure, formatting, and layout where possible
 - **Metadata Extraction**: File system metadata (size, dates), document properties, embedded metadata
 - **Error Handling**: Track extraction quality and any processing errors for manual correction
@@ -37,9 +37,9 @@ This system handles local metadata extraction and processing for all file types 
 
 ## Document Extraction and Derivative Creation
 
-### .corpus File Generation
+### .det File Generation
 
-- **Base Extraction**: Create extracted.corpus file from original documents
+- **Base Extraction**: Create extracted.det file from original documents
 - **TipTap/ProseMirror Format**: Standard JSON format for all extracted content
 - **Metadata Embedding**: Include extraction metadata, source references, and processing information
 - **Quality Tracking**: Monitor extraction accuracy and flag areas needing manual correction
@@ -86,7 +86,7 @@ This system handles local metadata extraction and processing for all file types 
 
 ### File System Coordination
 
-- Coordinate with Document Derivatives System for _metadata.json files in document families
+- Coordinate with Document Derivatives System for \_metadata.json files in document families
 - Maintain consistent metadata between database and file system storage
 - Support for both database queries and file system browsing of relationships
 - Efficient indexing for search across original files, derivatives, and metadata
@@ -102,7 +102,7 @@ This system handles local metadata extraction and processing for all file types 
 
 ### Extraction Process Coordination
 
-- Create base `extracted.corpus` files in document family folders managed by Document Derivatives System
+- Create base `extracted.det` files in document family folders managed by Document Derivatives System
 - Initialize `_metadata.json` files with extraction metadata and processing information
 - Update processing status as extraction completes for each document
 

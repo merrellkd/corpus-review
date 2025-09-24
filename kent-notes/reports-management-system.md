@@ -36,7 +36,7 @@ Given the corpus analysis nature of this application, we will implement a hybrid
 
 - If no reports folder is specified, create a `_corpus_analysis` subfolder within the source directory
 - Report editing uses TipTap editor with ProseMirror backend
-- Report files use `.corpus` extension for consistency with document format standards
+- Report files use `.det` extension for consistency with document format standards
 - Coordinate with Document Derivatives System for referencing source documents and derivatives in reports
 
 ## User Interface Requirements
@@ -80,4 +80,4 @@ Given the corpus analysis nature of this application, we will implement a hybrid
 - Reports can reference specific derivatives without duplicating content
 - Unified search across reports and derivatives
 - Traceability links from analysis conclusions to source materials
-- Consistent file format (.corpus) for both reports and derivatives
+- Consistent file format (.det) for both reports and derivatives

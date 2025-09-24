@@ -21,7 +21,7 @@ Given the corpus analysis nature of this application, we will implement a hybrid
 - Reports folder (optional). This should bring up a system folder picker
 - If no reports folder is specified, create a `_corpus_analysis` subfolder within the source directory
 - Our file editing uses TipTap editor with ProseMirror backend
-- Extracted/converted files use `.corpus` extension to distinguish from originals
+- Extracted/converted files use `.det` extension to distinguish from originals
 - Support extraction from: Word (.doc, .docx), RTF (.rtf), PDF, Markdown (.md), Excel (.xls, .xlsx)
 - Support local metadata extraction from: Audio (.mp3, .wav, .flac, .aac, .ogg, .m4a), Video (.mp4, .avi, .mov, .mkv, .webm, .wmv), and any other file types in corpus (no data transmission across network)
 
