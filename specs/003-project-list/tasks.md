@@ -94,25 +94,25 @@
 - [x] T041 [P] Form validation schemas in src/infrastructure/validation/project-schemas.ts
 
 ## Phase 3.9: Frontend State Management
-- [ ] T042 Project Zustand store in src/stores/project-store.ts
-- [ ] T043 [P] Project store types in src/stores/types/project-store-types.ts
+- [x] T042 Project Zustand store in src/stores/project-store.ts
+- [x] T043 [P] Project store types in src/stores/types/project-store-types.ts
 
 ## Phase 3.10: UI Components
-- [ ] T044 ProjectListPage component in src/ui/pages/project-list-page.tsx
-- [ ] T045 CreateProjectForm component in src/ui/components/create-project-form.tsx
-- [ ] T046 [P] ProjectRow component in src/ui/components/project-row.tsx
-- [ ] T047 [P] DeleteConfirmDialog component in src/ui/components/delete-confirm-dialog.tsx
-- [ ] T048 [P] FolderPicker component in src/ui/components/folder-picker.tsx
-- [ ] T049 App routing and navigation in src/app.tsx
+- [x] T044 ProjectListPage component in src/ui/pages/project-list-page.tsx
+- [x] T045 CreateProjectForm component in src/ui/components/create-project-form.tsx
+- [x] T046 [P] ProjectRow component in src/ui/components/project-row.tsx
+- [x] T047 [P] DeleteConfirmDialog component in src/ui/components/delete-confirm-dialog.tsx
+- [x] T048 [P] FolderPicker component in src/ui/components/folder-picker.tsx
+- [x] T049 App routing and navigation in src/app.tsx
 
 ## Phase 3.11: Polish
-- [ ] T050 [P] Unit tests for value objects in src-tauri/src/domain/value_objects/tests/
-- [ ] T051 [P] Unit tests for Project aggregate in src-tauri/src/domain/aggregates/tests/test_project.rs
-- [ ] T052 [P] Frontend component tests in src/ui/components/__tests__/
-- [ ] T053 Performance validation (<100ms list load, <2s creation) using quickstart.md
-- [ ] T054 Error handling validation using quickstart.md scenarios
-- [ ] T055 [P] Code cleanup and documentation
-- [ ] T056 Execute full quickstart.md test suite
+- [x] T050 [P] Unit tests for value objects in src-tauri/src/domain/value_objects/tests/
+- [x] T051 [P] Unit tests for Project aggregate in src-tauri/src/domain/aggregates/tests/test_project.rs
+- [x] T052 [P] Frontend component tests in src/ui/components/__tests__/
+- [x] T053 Performance validation (<100ms list load, <2s creation) using quickstart.md
+- [x] T054 Error handling validation using quickstart.md scenarios
+- [x] T055 [P] Code cleanup and documentation
+- [x] T056 Execute full quickstart.md test suite
 
 ## Dependencies
 - Setup (T001-T006) before all other phases

@@ -39,7 +39,6 @@ async fn main() {
     let builder = tauri::Builder::default()
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_fs::init())
-        .plugin(tauri_plugin_dialog::init())
         // TODO: Re-enable workspace service once RepositoryFactory is implemented
         // .manage(workspace_service)
         .setup(|app| {

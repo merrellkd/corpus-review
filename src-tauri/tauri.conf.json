@@ -27,14 +27,5 @@
   "bundle": {
     "active": true,
     "targets": "all"
-  },
-  "plugins": {
-    "shell": {
-      "open": true
-    },
-    "fs": {
-      "requireLiteralLeadingDot": true
-    },
-    "dialog": null
   }
 }

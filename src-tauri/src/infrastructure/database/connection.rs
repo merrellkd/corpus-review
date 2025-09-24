@@ -87,6 +87,18 @@ impl DatabaseConnection {
     pub async fn migrate(&self) -> ProjectResult<()> {
         info!("Running database migrations");
 
+        // First, ensure the migrations table exists
+        self.pool.execute(sqlx::query(r#"
+            CREATE TABLE IF NOT EXISTS schema_migrations (
+                version INTEGER PRIMARY KEY,
+                name TEXT NOT NULL,
+                applied_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            );
+        "#)).await
+        .map_err(|e| ProjectError::repository_error(
+            format!("Failed to create schema_migrations table: {}", e)
+        ))?;
+
         let migrations = vec![
             // Initial schema
             (1, "create_projects_table", r#"
@@ -104,14 +116,6 @@ impl DatabaseConnection {
                 CREATE INDEX IF NOT EXISTS idx_projects_uuid ON projects(uuid);
                 CREATE INDEX IF NOT EXISTS idx_projects_name ON projects(name COLLATE NOCASE);
                 CREATE INDEX IF NOT EXISTS idx_projects_created_at ON projects(created_at);
-            "#),
-            // Migration tracking table
-            (3, "create_migrations_table", r#"
-                CREATE TABLE IF NOT EXISTS schema_migrations (
-                    version INTEGER PRIMARY KEY,
-                    name TEXT NOT NULL,
-                    applied_at DATETIME DEFAULT CURRENT_TIMESTAMP
-                );
             "#),
         ];
 
