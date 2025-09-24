@@ -2,7 +2,7 @@ This document will be fed to the spec-kit /specify command (see https://github.c
 
 # Feature: Document Derivatives Management System
 
-This system manages the complete document lifecycle from immutable source files through extracted versions to various derivative documents, supporting corpus analysis workflows where documents undergo multiple transformations while preserving relationships and traceability.
+This system manages the complete document lifecycle from immutable source files through extracted versions to various derivative documents, supporting Corpus Review workflows where documents undergo multiple transformations while preserving relationships and traceability.
 
 ## Document Lifecycle Overview
 

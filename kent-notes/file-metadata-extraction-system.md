@@ -2,7 +2,7 @@ This document will be fed to the spec-kit /specify command (see https://github.c
 
 # Feature: File Metadata Extraction System
 
-This system handles local metadata extraction and processing for all file types in a corpus analysis project, with emphasis on maintaining user privacy through local-only processing. It coordinates with the Document Derivatives Management System to track relationships between original files, extracted versions, and derivatives.
+This system handles local metadata extraction and processing for all file types in a Corpus Review project, with emphasis on maintaining user privacy through local-only processing. It coordinates with the Document Derivatives Management System to track relationships between original files, extracted versions, and derivatives.
 
 ## Supported File Types and Extraction
 

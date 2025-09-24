@@ -6,53 +6,59 @@
 **Input**: User description: "This document @kent-notes/project-list-description.md started out as just documenting the attributes of the Project List feature, but may have veered into territory that really should be in a different feature. How do you recommend we split it up?"
 
 ## Execution Flow (main)
+
 ```
 1. Parse user description from Input
-   ’ If empty: ERROR "No feature description provided"
+   ï¿½ If empty: ERROR "No feature description provided"
 2. Extract key concepts from description
-   ’ Identify: actors, actions, data, constraints
+   ï¿½ Identify: actors, actions, data, constraints
 3. For each unclear aspect:
-   ’ Mark with [NEEDS CLARIFICATION: specific question]
+   ï¿½ Mark with [NEEDS CLARIFICATION: specific question]
 4. Fill User Scenarios & Testing section
-   ’ If no clear user flow: ERROR "Cannot determine user scenarios"
+   ï¿½ If no clear user flow: ERROR "Cannot determine user scenarios"
 5. Generate Functional Requirements
-   ’ Each requirement must be testable
-   ’ Mark ambiguous requirements
+   ï¿½ Each requirement must be testable
+   ï¿½ Mark ambiguous requirements
 6. Identify Key Entities (if data involved)
 7. Run Review Checklist
-   ’ If any [NEEDS CLARIFICATION]: WARN "Spec has uncertainties"
-   ’ If implementation details found: ERROR "Remove tech details"
+   ï¿½ If any [NEEDS CLARIFICATION]: WARN "Spec has uncertainties"
+   ï¿½ If implementation details found: ERROR "Remove tech details"
 8. Return: SUCCESS (spec ready for planning)
 ```
 
 ---
 
-## ¡ Quick Guidelines
+## ï¿½ Quick Guidelines
+
 -  Focus on WHAT users need and WHY
 - L Avoid HOW to implement (no tech stack, APIs, code structure)
 - =e Written for business stakeholders, not developers
 
 ---
 
-## User Scenarios & Testing *(mandatory)*
+## User Scenarios & Testing _(mandatory)_
 
 ### Primary User Story
+
 As a corpus analyst, I need to create and manage research projects so I can organize my analysis work around specific document collections, keeping source materials and analysis outputs properly organized.
 
 ### Acceptance Scenarios
-1. **Given** I'm starting a new corpus analysis, **When** I create a project with name and source folder, **Then** the system stores my project and allows me to access it later
+
+1. **Given** I'm starting a new Corpus Review, **When** I create a project with name and source folder, **Then** the system stores my project and allows me to access it later
 2. **Given** I have multiple projects, **When** I view the project list, **Then** I can see all projects with their key information and search/filter them
 3. **Given** I have an existing project, **When** I need to modify project settings, **Then** I can edit the project name, description, and folder paths
 4. **Given** I want to remove a project, **When** I delete it, **Then** the system offers options to preserve or remove generated files while never deleting original source files
 
 ### Edge Cases
+
 - What happens when specified source folder no longer exists or is inaccessible?
 - How does system handle duplicate project names?
 - What occurs when user tries to create project with invalid folder permissions?
 
-## Requirements *(mandatory)*
+## Requirements _(mandatory)_
 
 ### Functional Requirements
+
 - **FR-001**: System MUST allow users to create new projects with required name and source folder path
 - **FR-002**: System MUST validate source folder exists and is accessible during project creation
 - **FR-003**: System MUST store project metadata persistently across application sessions
@@ -66,22 +72,26 @@ As a corpus analyst, I need to create and manage research projects so I can orga
 - **FR-011**: System MUST track creation and modification timestamps for each project
 - **FR-012**: System MUST prevent creation of projects with empty or invalid names
 
-### Key Entities *(include if feature involves data)*
-- **Project**: Represents a corpus analysis workspace containing name, description, source folder path, optional reports folder path, creation/modification timestamps, and project settings
+### Key Entities _(include if feature involves data)_
+
+- **Project**: Represents a Corpus Review workspace containing name, description, source folder path, optional reports folder path, creation/modification timestamps, and project settings
 - **Project Settings**: Configuration options including immutable source mode toggle and other project-specific preferences
 
 ---
 
 ## Review & Acceptance Checklist
-*GATE: Automated checks run during main() execution*
+
+_GATE: Automated checks run during main() execution_
 
 ### Content Quality
+
 - [ ] No implementation details (languages, frameworks, APIs)
 - [ ] Focused on user value and business needs
 - [ ] Written for non-technical stakeholders
 - [ ] All mandatory sections completed
 
 ### Requirement Completeness
+
 - [ ] No [NEEDS CLARIFICATION] markers remain
 - [ ] Requirements are testable and unambiguous
 - [ ] Success criteria are measurable
@@ -91,7 +101,8 @@ As a corpus analyst, I need to create and manage research projects so I can orga
 ---
 
 ## Execution Status
-*Updated by main() during processing*
+
+_Updated by main() during processing_
 
 - [x] User description parsed
 - [x] Key concepts extracted

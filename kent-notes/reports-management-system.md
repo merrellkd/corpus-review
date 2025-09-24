@@ -13,7 +13,7 @@ This system specifically handles **analysis reports and findings**, which are di
 
 ## Architectural Decision: Reports Folder Strategy
 
-Given the corpus analysis nature of this application, we will implement a hybrid approach coordinating with the derivatives system:
+Given the Corpus Review nature of this application, we will implement a hybrid approach coordinating with the derivatives system:
 
 1. **Default Behavior**: Reports folder is optional but recommended, works alongside dedicated `/derivatives/` folder
 2. **Immutable Source Mode**: When selected, source files remain untouched and all analysis outputs go to separate reports folder
