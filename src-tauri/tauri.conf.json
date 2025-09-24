@@ -10,7 +10,24 @@
   },
   "app": {
     "security": {
-      "csp": null
+      "csp": null,
+      "capabilities": [
+        {
+          "identifier": "main-capability",
+          "description": "Capability for main window",
+          "windows": ["main"],
+          "permissions": [
+            "core:default",
+            "shell:default",
+            "fs:default",
+            "dialog:default",
+            "dialog:allow-open",
+            "fs:allow-read-dir",
+            "fs:allow-read-file",
+            "fs:allow-exists"
+          ]
+        }
+      ]
     },
     "windows": [
       {
@@ -20,21 +37,14 @@
         "width": 1200,
         "height": 800,
         "minWidth": 800,
-        "minHeight": 600
+        "minHeight": 600,
+        "center": true
       }
-    ]
+    ],
+    "withGlobalTauri": false
   },
   "bundle": {
     "active": true,
     "targets": "all"
-  },
-  "plugins": {
-    "shell": {
-      "open": true
-    },
-    "fs": {
-      "requireLiteralLeadingDot": true
-    },
-    "dialog": null
   }
 }

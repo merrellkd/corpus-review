@@ -1,4 +1,4 @@
-import { invoke } from '@tauri-apps/api/tauri';
+import { invoke } from '@tauri-apps/api/core';
 import { Workspace } from '../domain/aggregates/workspace';
 import { WorkspaceId } from '../domain/value-objects/identifiers';
 import { Position, Dimensions } from '../domain/value-objects/geometry';
