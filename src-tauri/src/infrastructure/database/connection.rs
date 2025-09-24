@@ -1,10 +1,10 @@
 use sqlx::sqlite::{SqlitePool, SqlitePoolOptions, SqliteConnectOptions};
-use sqlx::{ConnectOptions, Executor};
+use sqlx::{ConnectOptions, Executor, Row};
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::time::Duration;
 use tokio::fs;
-use tracing::{info, warn, error};
+use tracing::{info, error};
 
 use crate::domain::project::{ProjectError, ProjectResult};
 
@@ -12,6 +12,7 @@ use crate::domain::project::{ProjectError, ProjectResult};
 ///
 /// Handles database initialization, connection pooling, migrations,
 /// and health monitoring for the application's SQLite database.
+#[derive(Debug)]
 pub struct DatabaseConnection {
     pool: Arc<SqlitePool>,
     database_path: PathBuf,
@@ -58,7 +59,7 @@ impl DatabaseConnection {
             .max_lifetime(Some(Duration::from_secs(1800))) // 30 minutes
             .connect_with(connection_options)
             .await
-            .map_err(|e| ProjectError::DatabaseConnection)?;
+            .map_err(|_| ProjectError::DatabaseConnection)?;
 
         let connection = DatabaseConnection {
             pool: Arc::new(pool),
@@ -218,7 +219,7 @@ impl DatabaseConnection {
         };
 
         if !is_connected {
-            error!("Database health check failed: {:?}", connectivity_result.unwrap_err());
+            error!("Database health check failed");
         }
 
         Ok(health)
@@ -226,8 +227,8 @@ impl DatabaseConnection {
 
     /// Get detailed database statistics
     async fn get_database_stats(&self) -> ProjectResult<DatabaseStats> {
-        let page_count_query = "SELECT COUNT(*) as page_count FROM pragma_page_count()";
-        let page_size_query = "SELECT COUNT(*) as page_size FROM pragma_page_size()";
+        let page_count_query = "PRAGMA page_count";
+        let page_size_query = "PRAGMA page_size";
         let user_tables_query = r#"
             SELECT COUNT(*) as table_count
             FROM sqlite_master
@@ -249,10 +250,10 @@ impl DatabaseConnection {
             .await
             .map_err(|e| ProjectError::repository_error(format!("Failed to get table count: {}", e)))?;
 
-        let page_count: i64 = page_count_row.try_get("page_count")
+        let page_count: i64 = page_count_row.try_get(0)
             .map_err(|e| ProjectError::repository_error(format!("Failed to parse page count: {}", e)))?;
 
-        let page_size: i64 = page_size_row.try_get("page_size")
+        let page_size: i64 = page_size_row.try_get(0)
             .map_err(|e| ProjectError::repository_error(format!("Failed to parse page size: {}", e)))?;
 
         let table_count: i64 = tables_row.try_get("table_count")

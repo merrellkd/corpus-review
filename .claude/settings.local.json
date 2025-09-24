@@ -27,7 +27,11 @@
       "Bash(pkill:*)",
       "Bash(rm:*)",
       "Bash(npm run typecheck:*)",
-      "WebSearch"
+      "WebSearch",
+      "Bash(cargo build:*)",
+      "Bash(tree:*)",
+      "Bash(find:*)",
+      "Bash(npm run:*)"
     ],
     "deny": [],
     "ask": []

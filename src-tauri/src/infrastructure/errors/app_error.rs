@@ -1,5 +1,4 @@
 use serde::{Deserialize, Serialize};
-use tauri::ipc::InvokeError;
 
 use crate::domain::project::ProjectError;
 use crate::infrastructure::dtos::{
@@ -326,12 +325,8 @@ impl From<ProjectDtoError> for AppError {
     }
 }
 
-/// Convert AppError to Tauri InvokeError for Tauri commands
-impl From<AppError> for InvokeError {
-    fn from(error: AppError) -> Self {
-        InvokeError::from_anyhow(anyhow::anyhow!(error.message))
-    }
-}
+// Note: InvokeError conversion is handled automatically by Tauri
+// when commands return Result<T, String>
 
 /// Result type for application operations
 pub type AppResult<T> = Result<T, AppError>;

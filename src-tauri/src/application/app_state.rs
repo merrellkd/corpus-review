@@ -13,7 +13,6 @@ use crate::application::services::project_service::ProjectService;
 /// This struct holds all the shared state and services that need to be
 /// available throughout the application lifetime. It provides a clean
 /// dependency injection mechanism for Tauri commands.
-#[derive(Debug)]
 pub struct AppState {
     /// Database connection manager
     database: Arc<DatabaseConnection>,
@@ -51,7 +50,7 @@ pub struct AppMetadata {
 }
 
 /// Health check result
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct HealthCheckResult {
     pub timestamp: chrono::DateTime<chrono::Utc>,
     pub database_healthy: bool,
@@ -319,7 +318,7 @@ impl StateManager {
     }
 
     /// Get app state from Tauri state
-    pub fn get_app_state(app: &AppHandle) -> &AppState {
+    pub fn get_app_state(app: &AppHandle) -> State<'_, AppState> {
         app.state::<AppState>()
     }
 
@@ -333,8 +332,7 @@ impl StateManager {
 /// Tauri command for getting application status
 #[tauri::command]
 pub async fn get_app_status(state: State<'_, AppState>) -> Result<AppStatus, String> {
-    state.get_status().await
-        .map_err(|e| e.message)
+    Ok(state.get_status().await)
 }
 
 /// Tauri command for performing health check

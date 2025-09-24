@@ -77,21 +77,21 @@
 
 ## Phase 3.6: Tauri Commands
 - [x] T030 create_project command handler in src-tauri/src/commands/create_project.rs
-- [ ] T031 list_projects command handler in src-tauri/src/commands/list_projects.rs
-- [ ] T032 delete_project command handler in src-tauri/src/commands/delete_project.rs
-- [ ] T033 open_project command handler in src-tauri/src/commands/open_project.rs
-- [ ] T034 Command module registration in src-tauri/src/commands/mod.rs
-- [ ] T035 Tauri app setup with commands in src-tauri/src/main.rs
+- [x] T031 list_projects command handler in src-tauri/src/commands/list_projects.rs
+- [x] T032 delete_project command handler in src-tauri/src/commands/delete_project.rs
+- [x] T033 open_project command handler in src-tauri/src/commands/open_project.rs
+- [x] T034 Command module registration in src-tauri/src/commands/mod.rs
+- [x] T035 Tauri app setup with commands in src-tauri/src/main.rs
 
 ## Phase 3.7: Frontend Domain Models
-- [ ] T036 [P] TypeScript Project interface in src/domain/entities/project.ts
-- [ ] T037 [P] ProjectId branded type in src/domain/value-objects/project-id.ts
-- [ ] T038 [P] CreateProjectData interface in src/domain/dtos/create-project-data.ts
-- [ ] T039 [P] AppError interface in src/domain/errors/app-error.ts
+- [x] T036 [P] TypeScript Project interface in src/domain/entities/project.ts
+- [x] T037 [P] ProjectId branded type in src/domain/value-objects/project-id.ts
+- [x] T038 [P] CreateProjectData interface in src/domain/dtos/create-project-data.ts
+- [x] T039 [P] AppError interface in src/domain/errors/app-error.ts
 
 ## Phase 3.8: Frontend Infrastructure
-- [ ] T040 Tauri API adapter in src/infrastructure/tauri/project-api.ts
-- [ ] T041 [P] Form validation schemas in src/infrastructure/validation/project-schemas.ts
+- [x] T040 Tauri API adapter in src/infrastructure/tauri/project-api.ts
+- [x] T041 [P] Form validation schemas in src/infrastructure/validation/project-schemas.ts
 
 ## Phase 3.9: Frontend State Management
 - [ ] T042 Project Zustand store in src/stores/project-store.ts

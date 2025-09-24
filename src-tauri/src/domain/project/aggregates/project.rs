@@ -73,7 +73,7 @@ impl Project {
             .map_err(ProjectError::InvalidNote)?;
 
         let timestamp = CreatedAt::from_string(created_at)
-            .map_err(|_| ProjectError::InvalidTimestamp)?;
+            .map_err(ProjectError::InvalidTimestamp)?;
 
         Ok(Project {
             id: project_id,

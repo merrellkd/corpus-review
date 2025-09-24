@@ -67,9 +67,10 @@ impl ProjectDto {
 
     /// Get a display-friendly summary
     pub fn display_summary(&self) -> String {
+        let unknown = "Unknown".to_string();
         let folder_name = self.source_folder_name
             .as_ref()
-            .unwrap_or(&"Unknown".to_string());
+            .unwrap_or(&unknown);
 
         let note_suffix = self.note_preview
             .as_ref()
