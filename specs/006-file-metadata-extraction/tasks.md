@@ -59,55 +59,55 @@
 
 **CRITICAL: These tests MUST be written and MUST FAIL before ANY implementation**
 
-- [ ] T019 [P] Contract test scan_project_documents in `src-tauri/tests/contract/test_scan_project_documents.rs`
-- [ ] T020 [P] Contract test get_document_details in `src-tauri/tests/contract/test_get_document_details.rs`
-- [ ] T021 [P] Contract test start_document_extraction in `src-tauri/tests/contract/test_start_document_extraction.rs`
-- [ ] T022 [P] Contract test get_extraction_status in `src-tauri/tests/contract/test_get_extraction_status.rs`
-- [ ] T023 [P] Contract test cancel_extraction in `src-tauri/tests/contract/test_cancel_extraction.rs`
-- [ ] T024 [P] Contract test get_extracted_document in `src-tauri/tests/contract/test_get_extracted_document.rs`
-- [ ] T025 [P] Contract test save_extracted_document in `src-tauri/tests/contract/test_save_extracted_document.rs`
-- [ ] T026 [P] Contract test get_original_document_preview in `src-tauri/tests/contract/test_get_original_document_preview.rs`
-- [ ] T027 [P] Integration test PDF extraction workflow in `src-tauri/tests/integration/test_pdf_extraction_workflow.rs`
-- [ ] T028 [P] Integration test DOCX structure preservation in `src-tauri/tests/integration/test_docx_structure_preservation.rs`
-- [ ] T029 [P] Integration test Markdown conversion in `src-tauri/tests/integration/test_markdown_conversion.rs`
-- [ ] T030 [P] Integration test DocumentCaddy dual-mode operation in `src/tests/integration/test_document_caddy_dual_mode.test.ts`
+- [x] T019 [P] Contract test scan_project_documents in `src-tauri/tests/contract/test_scan_project_documents.rs`
+- [x] T020 [P] Contract test get_document_details in `src-tauri/tests/contract/test_get_document_details.rs`
+- [x] T021 [P] Contract test start_document_extraction in `src-tauri/tests/contract/test_start_document_extraction.rs`
+- [x] T022 [P] Contract test get_extraction_status in `src-tauri/tests/contract/test_get_extraction_status.rs`
+- [x] T023 [P] Contract test cancel_extraction in `src-tauri/tests/contract/test_cancel_extraction.rs`
+- [x] T024 [P] Contract test get_extracted_document in `src-tauri/tests/contract/test_get_extracted_document.rs`
+- [x] T025 [P] Contract test save_extracted_document in `src-tauri/tests/contract/test_save_extracted_document.rs`
+- [x] T026 [P] Contract test get_original_document_preview in `src-tauri/tests/contract/test_get_original_document_preview.rs`
+- [x] T027 [P] Integration test PDF extraction workflow in `src-tauri/tests/integration/test_pdf_extraction_workflow.rs`
+- [x] T028 [P] Integration test DOCX structure preservation in `src-tauri/tests/integration/test_docx_structure_preservation.rs`
+- [x] T029 [P] Integration test Markdown conversion in `src-tauri/tests/integration/test_markdown_conversion.rs`
+- [x] T030 [P] Integration test DocumentCaddy dual-mode operation in `src/tests/integration/test_document_caddy_dual_mode.test.ts`
 
 ## Phase 3.4: Infrastructure Layer (ONLY after tests are failing)
 
-- [ ] T031 [P] SQLite DocumentRepository implementation in `src-tauri/src/infrastructure/repositories/sqlite_document_repository.rs`
-- [ ] T032 [P] SQLite ExtractionRepository implementation in `src-tauri/src/infrastructure/repositories/sqlite_extraction_repository.rs`
-- [ ] T033 [P] SQLite ExtractedDocumentRepository implementation in `src-tauri/src/infrastructure/repositories/sqlite_extracted_document_repository.rs`
-- [ ] T034 [P] PDF text extraction parser in `src-tauri/src/infrastructure/parsers/pdf_parser.rs`
-- [ ] T035 [P] DOCX structure extraction parser in `src-tauri/src/infrastructure/parsers/docx_parser.rs`
-- [ ] T036 [P] Markdown to ProseMirror converter in `src-tauri/src/infrastructure/parsers/markdown_parser.rs`
-- [ ] T037 [P] ProseMirror JSON serializer in `src-tauri/src/infrastructure/serializers/prosemirror_serializer.rs`
-- [ ] T038 File system service for .det files in `src-tauri/src/infrastructure/services/file_system_service.rs`
+- [x] T031 [P] SQLite DocumentRepository implementation in `src-tauri/src/infrastructure/repositories/sqlite_document_repository.rs`
+- [x] T032 [P] SQLite ExtractionRepository implementation in `src-tauri/src/infrastructure/repositories/sqlite_extraction_repository.rs`
+- [x] T033 [P] SQLite ExtractedDocumentRepository implementation in `src-tauri/src/infrastructure/repositories/sqlite_extracted_document_repository.rs`
+- [x] T034 [P] PDF text extraction parser in `src-tauri/src/infrastructure/parsers/pdf_parser.rs`
+- [x] T035 [P] DOCX structure extraction parser in `src-tauri/src/infrastructure/parsers/docx_parser.rs`
+- [x] T036 [P] Markdown to ProseMirror converter in `src-tauri/src/infrastructure/parsers/markdown_parser.rs`
+- [x] T037 [P] ProseMirror JSON serializer in `src-tauri/src/infrastructure/serializers/prosemirror_serializer.rs`
+- [x] T038 File system service for .det files in `src-tauri/src/infrastructure/services/file_system_service.rs`
 
 ## Phase 3.5: Application Layer
 
-- [ ] T039 [P] DocumentService in `src-tauri/src/application/services/document_service.rs`
-- [ ] T040 [P] ExtractionService in `src-tauri/src/application/services/extraction_service.rs`
-- [ ] T041 [P] DTOs module in `src-tauri/src/application/dtos/mod.rs`
-- [ ] T042 Error handling and mapping in `src-tauri/src/application/errors/extraction_error.rs`
+- [x] T039 [P] DocumentService in `src-tauri/src/application/services/document_service.rs`
+- [x] T040 [P] ExtractionService in `src-tauri/src/application/services/extraction_service.rs`
+- [x] T041 [P] DTOs module in `src-tauri/src/application/dtos/mod.rs`
+- [x] T042 Error handling and mapping in `src-tauri/src/application/errors/extraction_error.rs`
 
 ## Phase 3.6: Tauri Command Layer
 
-- [ ] T043 scan_project_documents command in `src-tauri/src/commands/document_commands.rs`
-- [ ] T044 get_document_details command in `src-tauri/src/commands/document_commands.rs`
-- [ ] T045 start_document_extraction command in `src-tauri/src/commands/extraction_commands.rs`
-- [ ] T046 get_extraction_status command in `src-tauri/src/commands/extraction_commands.rs`
-- [ ] T047 cancel_extraction command in `src-tauri/src/commands/extraction_commands.rs`
-- [ ] T048 get_extracted_document command in `src-tauri/src/commands/extracted_document_commands.rs`
-- [ ] T049 save_extracted_document command in `src-tauri/src/commands/extracted_document_commands.rs`
-- [ ] T050 get_original_document_preview command in `src-tauri/src/commands/document_preview_commands.rs`
+- [x] T043 scan_project_documents command in `src-tauri/src/commands/document_commands.rs`
+- [x] T044 get_document_details command in `src-tauri/src/commands/document_commands.rs`
+- [x] T045 start_document_extraction command in `src-tauri/src/commands/extraction_commands.rs`
+- [x] T046 get_extraction_status command in `src-tauri/src/commands/extraction_commands.rs`
+- [x] T047 cancel_extraction command in `src-tauri/src/commands/extraction_commands.rs`
+- [x] T048 get_extracted_document command in `src-tauri/src/commands/extracted_document_commands.rs`
+- [x] T049 save_extracted_document command in `src-tauri/src/commands/extracted_document_commands.rs`
+- [x] T050 get_original_document_preview command in `src-tauri/src/commands/document_preview_commands.rs`
 
 ## Phase 3.7: Frontend Integration
 
-- [ ] T051 [P] ExtractionStore slice in `src/stores/extraction-store.ts`
-- [ ] T052 [P] Tauri API client for extraction commands in `src/infrastructure/tauri-extraction-api.ts`
-- [ ] T053 DocumentCaddy dual-mode enhancement in `src/domains/workspace/ui/components/DocumentCaddy.tsx`
-- [ ] T054 ExtractionStatusIndicator component in `src/domains/workspace/ui/components/ExtractionStatusIndicator.tsx`
-- [ ] T055 Extract button integration in workspace file browser in `src/domains/workspace/ui/components/FileList.tsx`
+- [x] T051 [P] ExtractionStore slice in `src/stores/extraction-store.ts`
+- [x] T052 [P] Tauri API client for extraction commands in `src/infrastructure/tauri-extraction-api.ts`
+- [x] T053 DocumentCaddy dual-mode enhancement in `src/domains/workspace/ui/components/DocumentCaddy.tsx`
+- [x] T054 ExtractionStatusIndicator component in `src/domains/workspace/ui/components/ExtractionStatusIndicator.tsx`
+- [x] T055 Extract button integration in workspace file browser in `src/domains/workspace/ui/components/FileList.tsx`
 
 ## Dependencies
 

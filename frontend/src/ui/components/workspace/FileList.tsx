@@ -1,5 +1,8 @@
 import React from 'react';
 import { DirectoryListingDto, FileEntryDto, WorkspaceDtoUtils, ViewMode } from '../../../domains/workspace/application/dtos/workspace-dtos';
+import { ExtractionDtoUtils } from '../../../domains/workspace/application/dtos/extraction-dtos';
+import { ExtractionStatusIndicator } from '../../../domains/workspace/ui/components/ExtractionStatusIndicator';
+import { useExtractionStore, useExtractionActions, useExtractionSelectors } from '../../../domains/extraction/stores/extraction-store';
 
 /**
  * Props for the FileList component
@@ -14,11 +17,17 @@ export interface FileListProps {
   /** View mode for displaying files */
   viewMode: ViewMode;
 
+  /** Current project ID for extraction operations */
+  projectId: string;
+
   /** Callback when a folder is double-clicked */
   onFolderDoubleClick: (folderName: string) => void;
 
   /** Callback when a file selection changes */
   onFileSelect: (fileName: string, selected: boolean) => void;
+
+  /** Callback when a file is opened for viewing/editing */
+  onFileOpen?: (fileName: string, filePath: string) => void;
 }
 
 /**
@@ -31,9 +40,27 @@ export const FileList: React.FC<FileListProps> = ({
   directoryListing,
   selectedFiles,
   viewMode,
+  projectId,
   onFolderDoubleClick,
   onFileSelect,
+  onFileOpen,
 }) => {
+  // Extraction store
+  const {
+    documents,
+    isLoading,
+    error
+  } = useExtractionStore();
+
+  const { scanDocuments, startExtraction } = useExtractionActions();
+  const { getDocumentById, getExtractionForDocument } = useExtractionSelectors();
+
+  // Scan documents when component mounts or projectId changes
+  React.useEffect(() => {
+    if (projectId) {
+      scanDocuments(projectId);
+    }
+  }, [projectId, scanDocuments]);
   // Early return if directoryListing is not available
   if (!directoryListing || !directoryListing.entries) {
     return (
@@ -53,6 +80,9 @@ export const FileList: React.FC<FileListProps> = ({
       // Double click
       if (WorkspaceDtoUtils.isDirectory(entry)) {
         onFolderDoubleClick(entry.name);
+      } else {
+        // Double-click on file to open
+        handleFileDoubleClick(entry);
       }
     } else {
       // Single click - toggle selection
@@ -71,11 +101,19 @@ export const FileList: React.FC<FileListProps> = ({
     }
 
     const extension = WorkspaceDtoUtils.getExtension(entry);
+    const isExtractable = isFileExtractable(entry);
+
     switch (extension) {
       case 'txt':
       case 'md':
+      case 'markdown':
       case 'readme':
-        return '📄';
+        return isExtractable ? '📝' : '📄'; // Enhanced icon for extractable markdown
+      case 'pdf':
+        return isExtractable ? '📚' : '📕'; // Enhanced icon for extractable PDF
+      case 'docx':
+      case 'doc':
+        return isExtractable ? '📃' : '📄'; // Enhanced icon for extractable DOCX
       case 'js':
       case 'ts':
       case 'jsx':
@@ -88,8 +126,6 @@ export const FileList: React.FC<FileListProps> = ({
       case 'html':
       case 'css':
         return '🌐';
-      case 'pdf':
-        return '📕';
       case 'png':
       case 'jpg':
       case 'jpeg':
@@ -126,6 +162,77 @@ export const FileList: React.FC<FileListProps> = ({
     }
   };
 
+  // Extraction helper functions
+  const isFileExtractable = (entry: FileEntryDto): boolean => {
+    if (WorkspaceDtoUtils.isDirectory(entry)) return false;
+
+    const extension = WorkspaceDtoUtils.getExtension(entry);
+    return ExtractionDtoUtils.isExtractableExtension(extension) &&
+           (entry.size ? ExtractionDtoUtils.isFileSizeWithinLimits(entry.size) : true);
+  };
+
+  const getDocumentForFile = (entry: FileEntryDto) => {
+    return Array.from(documents.values()).find(doc =>
+      doc.filePath === entry.path || doc.fileName === entry.name
+    );
+  };
+
+  const getExtractionStatusForFile = (entry: FileEntryDto) => {
+    const document = getDocumentForFile(entry);
+    return document ? getExtractionForDocument(document.documentId) : null;
+  };
+
+  const handleExtractClick = async (entry: FileEntryDto, event: React.MouseEvent) => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const document = getDocumentForFile(entry);
+    if (document) {
+      await startExtraction(document.documentId);
+    }
+  };
+
+  const handleFileDoubleClick = (entry: FileEntryDto) => {
+    if (onFileOpen) {
+      onFileOpen(entry.name, entry.path);
+    }
+  };
+
+  const renderExtractionControls = (entry: FileEntryDto) => {
+    if (!isFileExtractable(entry)) return null;
+
+    const document = getDocumentForFile(entry);
+    const extractionStatusInfo = getExtractionStatusForFile(entry);
+    const extractionStatus = extractionStatusInfo?.status || null;
+
+    return (
+      <div className="file-entry__extraction-controls">
+        <ExtractionStatusIndicator
+          status={extractionStatus}
+          compact={true}
+          showTooltip={true}
+          onClick={() => {
+            if (document && ExtractionDtoUtils.canStartExtraction(extractionStatus)) {
+              startExtraction(document.documentId);
+            }
+          }}
+        />
+
+        {ExtractionDtoUtils.canStartExtraction(extractionStatus) && (
+          <button
+            className="file-entry__extract-button"
+            onClick={(e) => handleExtractClick(entry, e)}
+            disabled={isLoading}
+            title={`Extract ${entry.name}`}
+            aria-label={`Extract document ${entry.name}`}
+          >
+            {ExtractionDtoUtils.getExtractionButtonText(extractionStatus)}
+          </button>
+        )}
+      </div>
+    );
+  };
+
   const renderListView = () => (
     <div className="file-list file-list--list">
       <div className="file-list__header">
@@ -133,6 +240,7 @@ export const FileList: React.FC<FileListProps> = ({
         <div className="file-list__header-cell file-list__header-cell--size">Size</div>
         <div className="file-list__header-cell file-list__header-cell--modified">Modified</div>
         <div className="file-list__header-cell file-list__header-cell--type">Type</div>
+        <div className="file-list__header-cell file-list__header-cell--extraction">Status</div>
         <div className="file-list__header-cell file-list__header-cell--select"></div>
       </div>
 
@@ -144,9 +252,10 @@ export const FileList: React.FC<FileListProps> = ({
           return (
             <div
               key={entry.path}
-              className={`file-entry file-entry--list ${isSelected ? 'file-entry--selected' : ''} ${isDirectory ? 'file-entry--directory' : 'file-entry--file'}`}
+              className={`file-entry file-entry--list ${isSelected ? 'file-entry--selected' : ''} ${isDirectory ? 'file-entry--directory' : 'file-entry--file'} ${isFileExtractable(entry) ? 'file-entry--extractable' : ''}`}
               onClick={(e) => handleEntryClick(entry, e)}
-              title={isDirectory ? `Double-click to open ${entry.name}` : entry.name}
+              title={isDirectory ? `Double-click to open ${entry.name}` :
+                     isFileExtractable(entry) ? `${entry.name} - Extractable document` : entry.name}
             >
               <div className="file-entry__cell file-entry__cell--name">
                 <span className="file-entry__icon">{getFileIcon(entry)}</span>
@@ -163,6 +272,10 @@ export const FileList: React.FC<FileListProps> = ({
 
               <div className="file-entry__cell file-entry__cell--type">
                 {isDirectory ? 'Folder' : (WorkspaceDtoUtils.getExtension(entry) || 'File').toUpperCase()}
+              </div>
+
+              <div className="file-entry__cell file-entry__cell--extraction">
+                {renderExtractionControls(entry)}
               </div>
 
               <div className="file-entry__cell file-entry__cell--select">
@@ -190,9 +303,10 @@ export const FileList: React.FC<FileListProps> = ({
           return (
             <div
               key={entry.path}
-              className={`file-entry file-entry--grid ${isSelected ? 'file-entry--selected' : ''} ${isDirectory ? 'file-entry--directory' : 'file-entry--file'}`}
+              className={`file-entry file-entry--grid ${isSelected ? 'file-entry--selected' : ''} ${isDirectory ? 'file-entry--directory' : 'file-entry--file'} ${isFileExtractable(entry) ? 'file-entry--extractable' : ''}`}
               onClick={(e) => handleEntryClick(entry, e)}
-              title={isDirectory ? `Double-click to open ${entry.name}` : entry.name}
+              title={isDirectory ? `Double-click to open ${entry.name}` :
+                     isFileExtractable(entry) ? `${entry.name} - Extractable document` : entry.name}
             >
               <div className="file-entry__checkbox">
                 <input
@@ -217,6 +331,8 @@ export const FileList: React.FC<FileListProps> = ({
                   {formatModifiedTime(entry.modified)}
                 </div>
               </div>
+
+              {renderExtractionControls(entry)}
             </div>
           );
         })}

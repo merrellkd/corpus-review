@@ -204,6 +204,7 @@ export const WorkspacePage: React.FC<WorkspacePageProps> = ({
           directoryListing={currentWorkspace?.directoryListing}
           selectedFiles={selectedFiles}
           viewMode={viewMode}
+          projectId={currentWorkspace?.projectId || ''}
           onFolderDoubleClick={handleFolderDoubleClick}
           onFileSelect={handleFileSelect}
         />

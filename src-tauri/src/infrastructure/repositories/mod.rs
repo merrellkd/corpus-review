@@ -2,8 +2,14 @@ pub mod workspace_layout_repository;
 pub mod file_system_repository;
 pub mod mock_project_repository;
 pub mod sqlite_project_repository;
+pub mod sqlite_document_repository;
+pub mod sqlite_extraction_repository;
+pub mod sqlite_extracted_document_repository;
 
 pub use workspace_layout_repository::SqlxWorkspaceLayoutRepository;
 pub use file_system_repository::TauriFileSystemRepository;
 pub use mock_project_repository::MockProjectRepository;
 pub use sqlite_project_repository::SqliteProjectRepository;
+pub use sqlite_document_repository::SqliteDocumentRepository;
+pub use sqlite_extraction_repository::SqliteExtractionRepository;
+pub use sqlite_extracted_document_repository::SqliteExtractedDocumentRepository;

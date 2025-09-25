@@ -174,6 +174,12 @@ impl AppState {
         self.workspace_navigation_service.clone()
     }
 
+    /// Get the document service (placeholder - not yet implemented)
+    /// This method panics intentionally to indicate the service is not ready
+    pub fn document_service(&self) -> ! {
+        panic!("DocumentService not yet implemented - this is expected during development")
+    }
+
     /// Get application metadata (read-only)
     pub async fn metadata(&self) -> AppMetadata {
         self.metadata.read().await.clone()

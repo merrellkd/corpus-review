@@ -36,6 +36,11 @@ impl ProjectId {
         &self.0
     }
 
+    /// Get the string value of this ProjectId (alias for value)
+    pub fn as_str(&self) -> &str {
+        &self.0
+    }
+
     /// Extract just the UUID part (without the proj_ prefix)
     pub fn uuid_part(&self) -> &str {
         self.0.strip_prefix("proj_").unwrap_or(&self.0)

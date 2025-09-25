@@ -108,6 +108,11 @@ async fn main() {
             commands::workspace_commands::navigate_to_folder,
             commands::workspace_commands::navigate_to_parent,
 
+            // File metadata extraction commands
+            commands::extraction_commands::start_document_extraction,
+            commands::extraction_commands::get_extraction_status,
+            commands::extraction_commands::cancel_extraction,
+
             // Application state commands
             application::app_state::get_app_status,
             application::app_state::health_check

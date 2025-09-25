@@ -2,9 +2,17 @@ import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { DocumentCaddyId } from '../../domain/value-objects/identifiers';
 import { Position, Dimensions } from '../../domain/value-objects/geometry';
 import { DocumentCaddyState } from '../../domain/entities/document-caddy';
+import { OriginalDocument, ExtractedDocument, DocumentPreview, ExtractionStatus, DocumentId } from '../../../extraction/types';
+import { useExtractionStore, useExtractionActions, useExtractionSelectors } from '../../../extraction/stores/extraction-store';
+import { DocumentViewer } from '../../../extraction/ui/components/DocumentViewer';
+import { TipTapEditor } from '../../../extraction/ui/components/TipTapEditor';
+import { ModeToggle, ModeStatus } from '../../../extraction/ui/components/ModeToggle';
+import { ExtractionStatusIndicator, ExtractButton } from '../../../extraction/ui/components/ExtractionStatusIndicator';
+
+type DocumentMode = 'view' | 'edit';
 
 /**
- * Props for the DocumentCaddy component
+ * Enhanced props for the DocumentCaddy component with dual-mode support
  */
 export interface DocumentCaddyProps {
   id: string;
@@ -25,6 +33,11 @@ export interface DocumentCaddyProps {
   onClose: (id: string) => void;
   onTitleChange?: (id: string, newTitle: string) => void;
   className?: string;
+  // New dual-mode props
+  document?: OriginalDocument | ExtractedDocument;
+  mode?: DocumentMode;
+  onModeToggle?: (mode: DocumentMode) => void;
+  onSave?: (content: object) => Promise<void>;
 }
 
 /**
@@ -50,15 +63,29 @@ export const DocumentCaddy: React.FC<DocumentCaddyProps> = ({
   onClose,
   onTitleChange,
   className = '',
+  // New dual-mode props
+  document,
+  mode,
+  onModeToggle,
+  onSave
 }) => {
   const [isDragging, setIsDragging] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [editedTitle, setEditedTitle] = useState(title);
+  const [currentMode, setCurrentMode] = useState<DocumentMode>(mode || 'view');
+  const [isSaving, setIsSaving] = useState(false);
+  const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  const [contentChanged, setContentChanged] = useState(false);
 
   // Local state for immediate visual feedback during drag/resize
   const [localPosition, setLocalPosition] = useState<{ x: number; y: number } | null>(null);
   const [localDimensions, setLocalDimensions] = useState<{ width: number; height: number } | null>(null);
+
+  // Extraction store hooks
+  const { currentDocument, currentPreview, isLoading, error } = useExtractionStore();
+  const { openDocument, openPreview, saveDocument, startExtraction, clearError } = useExtractionActions();
+  const { getDocumentById, getExtractionForDocument, getProgressForDocument } = useExtractionSelectors();
 
   const caddyRef = useRef<HTMLDivElement>(null);
   const titleInputRef = useRef<HTMLInputElement>(null);
@@ -71,6 +98,26 @@ export const DocumentCaddy: React.FC<DocumentCaddyProps> = ({
   useEffect(() => {
     setEditedTitle(title);
   }, [title]);
+
+  // Update current mode when prop changes
+  useEffect(() => {
+    if (mode !== undefined) {
+      setCurrentMode(mode);
+    }
+  }, [mode]);
+
+  // Load document content based on current mode and document
+  useEffect(() => {
+    if (!document) return;
+
+    if (currentMode === 'edit' && 'documentId' in document) {
+      // Load extracted document for editing
+      openDocument(document.documentId as DocumentId);
+    } else if (currentMode === 'view' && 'documentId' in document) {
+      // Load original document preview
+      openPreview(document.documentId as DocumentId);
+    }
+  }, [currentMode, document, openDocument, openPreview]);
 
 
   // Focus title input when editing starts
@@ -137,8 +184,8 @@ export const DocumentCaddy: React.FC<DocumentCaddyProps> = ({
     };
 
     const handleMouseUp = () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
+      window.document.removeEventListener('mousemove', handleMouseMove);
+      window.document.removeEventListener('mouseup', handleMouseUp);
       if (rafIdRef.current) {
         cancelAnimationFrame(rafIdRef.current);
         rafIdRef.current = null;
@@ -152,8 +199,8 @@ export const DocumentCaddy: React.FC<DocumentCaddyProps> = ({
       setLocalPosition(null);
     };
 
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', handleMouseUp);
+    window.document.addEventListener('mousemove', handleMouseMove);
+    window.document.addEventListener('mouseup', handleMouseUp);
   }, [isDraggable, isEditingTitle, state, onActivate, id, position.x, position.y, onMove]);
 
   const handleResizeMouseDown = useCallback((e: React.MouseEvent) => {
@@ -208,8 +255,8 @@ export const DocumentCaddy: React.FC<DocumentCaddyProps> = ({
     };
 
     const handleMouseUp = () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
+      window.document.removeEventListener('mousemove', handleMouseMove);
+      window.document.removeEventListener('mouseup', handleMouseUp);
       if (rafIdRef.current) {
         cancelAnimationFrame(rafIdRef.current);
         rafIdRef.current = null;
@@ -223,8 +270,8 @@ export const DocumentCaddy: React.FC<DocumentCaddyProps> = ({
       setLocalDimensions(null);
     };
 
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', handleMouseUp);
+    window.document.addEventListener('mousemove', handleMouseMove);
+    window.document.addEventListener('mouseup', handleMouseUp);
   }, [isResizable, state, dimensions.width, dimensions.height, onResize, id]);
 
   // Old useEffect-based mouse handling removed - now handled directly in mouse down events
@@ -234,6 +281,53 @@ export const DocumentCaddy: React.FC<DocumentCaddyProps> = ({
       setIsEditingTitle(true);
     }
   }, [onTitleChange, state]);
+
+  // Handle mode switching
+  const handleModeToggle = useCallback((newMode: DocumentMode) => {
+    if (contentChanged && currentMode === 'edit' && onSave) {
+      // Prompt to save changes before switching modes
+      const shouldSave = window.confirm('You have unsaved changes. Do you want to save before switching modes?');
+      if (shouldSave) {
+        handleSave().then(() => {
+          setCurrentMode(newMode);
+          if (onModeToggle) onModeToggle(newMode);
+        });
+        return;
+      }
+    }
+    setCurrentMode(newMode);
+    setContentChanged(false);
+    if (onModeToggle) onModeToggle(newMode);
+  }, [contentChanged, currentMode, onSave, onModeToggle]);
+
+  // Handle document saving
+  const handleSave = useCallback(async () => {
+    if (!currentDocument || !onSave || currentMode !== 'edit') return;
+
+    try {
+      setIsSaving(true);
+      await onSave(currentDocument.tiptapContent);
+      setLastSaved(new Date());
+      setContentChanged(false);
+    } catch (error) {
+      console.error('Failed to save document:', error);
+      // Error is handled by the store
+    } finally {
+      setIsSaving(false);
+    }
+  }, [currentDocument, onSave, currentMode]);
+
+  // Handle content changes in the editor
+  const handleContentChange = useCallback((content: object) => {
+    setContentChanged(true);
+    // The content change will be handled by the TipTap editor
+  }, []);
+
+  // Handle extraction start
+  const handleStartExtraction = useCallback(() => {
+    if (!document || !('documentId' in document)) return;
+    startExtraction(document.documentId as DocumentId);
+  }, [document, startExtraction]);
 
   const handleTitleSubmit = useCallback(() => {
     if (onTitleChange && editedTitle.trim() && editedTitle.trim() !== title) {
@@ -262,6 +356,24 @@ export const DocumentCaddy: React.FC<DocumentCaddyProps> = ({
   }, [onClose, id]);
 
   const getStateIndicator = () => {
+    // Show extraction status if we have document information
+    if (document && 'documentId' in document) {
+      const extraction = getExtractionForDocument(document.documentId as DocumentId);
+      const progress = getProgressForDocument(document.documentId as DocumentId);
+
+      if (extraction || progress) {
+        return (
+          <ExtractionStatusIndicator
+            status={extraction?.status || progress?.status || ExtractionStatus.None}
+            progress={progress}
+            size="sm"
+            showLabel={false}
+          />
+        );
+      }
+    }
+
+    // Fallback to original state indicators
     switch (state) {
       case DocumentCaddyState.LOADING:
         return (
@@ -384,6 +496,34 @@ export const DocumentCaddy: React.FC<DocumentCaddyProps> = ({
         <div className="flex items-center space-x-2 flex-shrink-0">
           {getStateIndicator()}
 
+          {/* Mode Status */}
+          {document && (
+            <ModeStatus
+              mode={currentMode}
+              hasExtraction={document && 'hasExtraction' in document ? document.hasExtraction : true}
+              isExtracting={document && 'documentId' in document ? getProgressForDocument(document.documentId as DocumentId)?.status === ExtractionStatus.Processing : false}
+            />
+          )}
+
+          {/* Save Status */}
+          {currentMode === 'edit' && (
+            <div className="text-xs text-gray-500">
+              {isSaving ? (
+                <span className="flex items-center space-x-1">
+                  <svg className="animate-spin h-3 w-3" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  <span>Saving...</span>
+                </span>
+              ) : contentChanged ? (
+                <span className="text-yellow-600">Unsaved</span>
+              ) : lastSaved ? (
+                <span className="text-green-600">Saved {lastSaved.toLocaleTimeString()}</span>
+              ) : null}
+            </div>
+          )}
+
           <button
             onClick={handleCloseClick}
             className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-200 rounded"
@@ -397,28 +537,50 @@ export const DocumentCaddy: React.FC<DocumentCaddyProps> = ({
         </div>
       </div>
 
-      {/* Content Area */}
-      <div className="p-4 flex-1 overflow-hidden">
-        {state === DocumentCaddyState.ERROR && errorMessage ? (
-          <div className="text-red-600 text-sm">
-            <p className="font-medium">Error loading document:</p>
-            <p className="mt-1">{errorMessage}</p>
-          </div>
-        ) : state === DocumentCaddyState.READY ? (
-          <div className="text-gray-600 text-sm">
-            <p className="mb-2">Document: {filePath}</p>
-            <div className="bg-gray-100 p-3 rounded text-xs">
-              <p>Document content would be rendered here</p>
-              <p className="mt-1 text-gray-500">
-                Implementation would include PDF viewer, text editor, or other document-specific rendering
-              </p>
+      {/* Mode Toggle and Controls */}
+      {document && 'documentId' in document && (
+        <div className="px-4 py-2 border-b border-gray-200 bg-gray-50">
+          <div className="flex items-center justify-between">
+            <ModeToggle
+              currentMode={currentMode}
+              onModeChange={handleModeToggle}
+              canEdit={(document as OriginalDocument).hasExtraction || false}
+              canView={true}
+              disabled={isLoading || isSaving}
+            />
+
+            <div className="flex items-center space-x-2">
+              {/* Extract Button */}
+              {!(document as OriginalDocument).hasExtraction && currentMode === 'view' && (
+                <ExtractButton
+                  onExtract={handleStartExtraction}
+                  isExtracting={getProgressForDocument(document.documentId as DocumentId)?.status === ExtractionStatus.Processing}
+                  size="sm"
+                />
+              )}
+
+              {/* Manual Save Button for Edit Mode */}
+              {currentMode === 'edit' && onSave && (
+                <button
+                  onClick={handleSave}
+                  disabled={!contentChanged || isSaving}
+                  className={`px-3 py-1 text-sm rounded-md font-medium transition-colors ${
+                    !contentChanged || isSaving
+                      ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                      : 'bg-blue-600 text-white hover:bg-blue-700'
+                  }`}
+                >
+                  {isSaving ? 'Saving...' : 'Save'}
+                </button>
+              )}
             </div>
           </div>
-        ) : (
-          <div className="flex items-center justify-center h-32 text-gray-400">
-            <span>Loading document content...</span>
-          </div>
-        )}
+        </div>
+      )}
+
+      {/* Content Area */}
+      <div className="flex-1 overflow-hidden">
+        {renderDocumentContent()}
       </div>
 
       {/* Resize Handle */}
@@ -441,6 +603,119 @@ export const DocumentCaddy: React.FC<DocumentCaddyProps> = ({
       )}
     </div>
   );
+
+  // Helper function to render document content based on mode and state
+  function renderDocumentContent() {
+    // Handle error states
+    if (state === DocumentCaddyState.ERROR && errorMessage) {
+      return (
+        <div className="p-4 text-red-600 text-sm">
+          <p className="font-medium">Error loading document:</p>
+          <p className="mt-1">{errorMessage}</p>
+        </div>
+      );
+    }
+
+    if (error) {
+      return (
+        <div className="p-4 text-red-600 text-sm">
+          <p className="font-medium">Error:</p>
+          <p className="mt-1">{error}</p>
+          <button
+            onClick={clearError}
+            className="mt-2 text-blue-600 hover:text-blue-800 underline"
+          >
+            Clear Error
+          </button>
+        </div>
+      );
+    }
+
+    // Handle loading states
+    if (isLoading || state === DocumentCaddyState.LOADING) {
+      return (
+        <div className="flex items-center justify-center h-64 text-gray-400">
+          <div className="text-center">
+            <svg className="animate-spin h-8 w-8 mx-auto mb-2" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span>Loading document content...</span>
+          </div>
+        </div>
+      );
+    }
+
+    // If no document is provided, show legacy content
+    if (!document) {
+      return (
+        <div className="p-4 text-gray-600 text-sm">
+          <p className="mb-2">Document: {filePath}</p>
+          <div className="bg-gray-100 p-3 rounded text-xs">
+            <p>Document content would be rendered here</p>
+            <p className="mt-1 text-gray-500">
+              Implementation would include PDF viewer, text editor, or other document-specific rendering
+            </p>
+          </div>
+        </div>
+      );
+    }
+
+    // Render based on current mode
+    if (currentMode === 'edit') {
+      // Edit mode - show TipTap editor with extracted content
+      if (!currentDocument) {
+        return (
+          <div className="flex items-center justify-center h-64 text-gray-400">
+            <div className="text-center">
+              <div className="text-4xl mb-2">📝</div>
+              <p>No extracted content available</p>
+              <p className="text-sm mt-1">Extract the document first to enable editing</p>
+            </div>
+          </div>
+        );
+      }
+
+      return (
+        <div className="h-full">
+          <TipTapEditor
+            content={currentDocument.tiptapContent}
+            onChange={handleContentChange}
+            onSave={handleSave}
+            placeholder="Start editing the extracted content..."
+            editable={true}
+            showWordCount={true}
+            autoSave={true}
+            autoSaveDelay={3000}
+            className="h-full"
+          />
+        </div>
+      );
+    } else {
+      // View mode - show original document preview
+      if (!currentPreview) {
+        return (
+          <div className="flex items-center justify-center h-64 text-gray-400">
+            <div className="text-center">
+              <div className="text-4xl mb-2">👁️</div>
+              <p>No preview available</p>
+              <p className="text-sm mt-1">Preview could not be generated for this document</p>
+            </div>
+          </div>
+        );
+      }
+
+      return (
+        <div className="h-full">
+          <DocumentViewer
+            preview={currentPreview}
+            className="h-full"
+            onError={(error) => console.error('Document viewer error:', error)}
+          />
+        </div>
+      );
+    }
+  }
 };
 
 export default DocumentCaddy;

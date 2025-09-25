@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 use crate::domain::project::ProjectError;
+use crate::application::errors::ExtractionError;
 use crate::infrastructure::dtos::{
     CreateProjectRequestError, UpdateProjectRequestError, DeleteProjectRequestError, ProjectDtoError
 };
@@ -320,6 +321,260 @@ impl From<ProjectDtoError> for AppError {
             ProjectDtoError::InvalidTimestamp => AppError::validation_error(
                 "Invalid timestamp format",
                 None
+            ),
+        }
+    }
+}
+
+/// Convert application ExtractionError to AppError
+impl From<ExtractionError> for AppError {
+    fn from(error: ExtractionError) -> Self {
+        match error {
+            // Not found errors
+            ExtractionError::ProjectNotFound { project_id } => AppError::new(
+                "PROJECT_NOT_FOUND",
+                "Project not found",
+                Some(format!("Project ID: {}", project_id)),
+                false,
+                true,
+            ),
+            ExtractionError::DocumentNotFound { document_id } => AppError::new(
+                "DOCUMENT_NOT_FOUND",
+                "Document not found",
+                Some(format!("Document ID: {}", document_id)),
+                false,
+                true,
+            ),
+            ExtractionError::ExtractionNotFound { extraction_id } => AppError::new(
+                "EXTRACTION_NOT_FOUND",
+                "Extraction not found",
+                Some(format!("Extraction ID: {}", extraction_id)),
+                false,
+                true,
+            ),
+            ExtractionError::ExtractedDocumentNotFound { extracted_document_id } => AppError::new(
+                "EXTRACTED_DOCUMENT_NOT_FOUND",
+                "Extracted document not found",
+                Some(format!("Extracted Document ID: {}", extracted_document_id)),
+                false,
+                true,
+            ),
+
+            // State errors
+            ExtractionError::ExtractionInProgress { document_id, current_extraction_id } => AppError::new(
+                "EXTRACTION_IN_PROGRESS",
+                "Document extraction is already in progress",
+                Some(format!("Document ID: {}, Current Extraction: {}", document_id, current_extraction_id)),
+                true,
+                true,
+            ),
+            ExtractionError::ExtractionNotCompleted { document_id, current_status } => AppError::new(
+                "EXTRACTION_NOT_COMPLETED",
+                "Document extraction has not completed successfully",
+                Some(format!("Document ID: {}, Status: {}", document_id, current_status)),
+                true,
+                true,
+            ),
+            ExtractionError::ExtractionNotCancellable { extraction_id, current_status, reason } => AppError::new(
+                "EXTRACTION_NOT_CANCELLABLE",
+                "Extraction cannot be cancelled in current state",
+                Some(format!("Extraction ID: {}, Status: {}, Reason: {}", extraction_id, current_status, reason)),
+                false,
+                true,
+            ),
+
+            // File validation errors
+            ExtractionError::UnsupportedFileType { file_path, file_extension, supported_types } => {
+                let ext_msg = file_extension.as_deref().unwrap_or("unknown");
+                let supported = supported_types.join(", ");
+                AppError::new(
+                    "UNSUPPORTED_FILE_TYPE",
+                    "File type not supported for extraction",
+                    Some(format!("File: {}, Extension: {}, Supported: {}", file_path, ext_msg, supported)),
+                    false,
+                    true,
+                )
+            },
+            ExtractionError::FileTooLarge { file_path, file_size_bytes, max_size_bytes } => AppError::new(
+                "FILE_TOO_LARGE",
+                "File exceeds maximum size limit for extraction",
+                Some(format!("File: {}, Size: {} bytes, Max: {} bytes", file_path, file_size_bytes, max_size_bytes)),
+                false,
+                true,
+            ),
+
+            // File access errors
+            ExtractionError::FileNotAccessible { file_path, reason } => AppError::new(
+                "FILE_NOT_ACCESSIBLE",
+                "Cannot read or access the specified file",
+                Some(format!("File: {}, Reason: {}", file_path, reason)),
+                true,
+                true,
+            ),
+            ExtractionError::FileSystemError { operation, path, reason } => {
+                let path_info = path.as_deref().unwrap_or("N/A");
+                AppError::new(
+                    "FILE_SYSTEM_ERROR",
+                    "Error accessing file system",
+                    Some(format!("Operation: {}, Path: {}, Reason: {}", operation, path_info, reason)),
+                    true,
+                    true,
+                )
+            },
+
+            // Content errors
+            ExtractionError::InvalidContent { extracted_document_id, validation_error } => AppError::new(
+                "INVALID_CONTENT",
+                "Content does not match expected format",
+                Some(format!("Document ID: {}, Error: {}", extracted_document_id, validation_error)),
+                true,
+                true,
+            ),
+            ExtractionError::ContentCorrupted { document_id, extraction_method, corruption_details } => {
+                let method_info = extraction_method.as_deref().unwrap_or("unknown");
+                AppError::new(
+                    "CONTENT_CORRUPTED",
+                    "Document content is corrupted or unreadable",
+                    Some(format!("Document ID: {}, Method: {}, Details: {}", document_id, method_info, corruption_details)),
+                    false,
+                    true,
+                )
+            },
+            ExtractionError::ContentParsingError { document_id, parser_type, error_details } => AppError::new(
+                "CONTENT_PARSING_ERROR",
+                "Error during content parsing or conversion",
+                Some(format!("Document ID: {}, Parser: {}, Error: {}", document_id, parser_type, error_details)),
+                true,
+                true,
+            ),
+
+            // Processing errors
+            ExtractionError::ExtractionFailed { extraction_id, document_id, extraction_method, failure_reason } => {
+                let method_info = extraction_method.as_deref().unwrap_or("unknown");
+                AppError::new(
+                    "EXTRACTION_FAILED",
+                    "Extraction process failed during execution",
+                    Some(format!("Extraction ID: {}, Document ID: {}, Method: {}, Reason: {}", extraction_id, document_id, method_info, failure_reason)),
+                    true,
+                    true,
+                )
+            },
+            ExtractionError::OcrProcessingFailed { document_id, page_number, ocr_error } => {
+                let page_info = page_number.map(|p| format!("Page: {}, ", p)).unwrap_or_default();
+                AppError::new(
+                    "OCR_PROCESSING_FAILED",
+                    "OCR processing failed for image-based PDF extraction",
+                    Some(format!("Document ID: {}, {}Error: {}", document_id, page_info, ocr_error)),
+                    true,
+                    true,
+                )
+            },
+            ExtractionError::DocxParsingFailed { document_id, parsing_stage, error_details } => AppError::new(
+                "DOCX_PARSING_FAILED",
+                "DOCX structure extraction failed",
+                Some(format!("Document ID: {}, Stage: {}, Error: {}", document_id, parsing_stage, error_details)),
+                true,
+                true,
+            ),
+            ExtractionError::MarkdownConversionFailed { document_id, conversion_error } => AppError::new(
+                "MARKDOWN_CONVERSION_FAILED",
+                "Markdown conversion failed",
+                Some(format!("Document ID: {}, Error: {}", document_id, conversion_error)),
+                true,
+                true,
+            ),
+
+            // Validation errors
+            ExtractionError::ValidationError { parameter, value, validation_rule } => AppError::validation_error(
+                "Request parameters failed validation",
+                Some(format!("Parameter: {}, Value: {}, Rule: {}", parameter, value, validation_rule))
+            ),
+            ExtractionError::InvalidIdFormat { id, expected_prefix } => AppError::validation_error(
+                "Invalid ID format",
+                Some(format!("ID: {}, Expected format: {}_[UUID]", id, expected_prefix))
+            ),
+
+            // System errors
+            ExtractionError::DatabaseError { operation, table, error_details } => {
+                let table_info = table.as_deref().unwrap_or("N/A");
+                AppError::database_error(format!("Operation: {}, Table: {}, Error: {}", operation, table_info, error_details))
+            },
+            ExtractionError::ExtractionTimeout { extraction_id, timeout_seconds } => AppError::new(
+                "EXTRACTION_TIMEOUT",
+                "Extraction operation timed out",
+                Some(format!("Extraction ID: {}, Timeout: {} seconds", extraction_id, timeout_seconds)),
+                true,
+                true,
+            ),
+            ExtractionError::ResourceExhausted { resource_type, current_usage, limit } => {
+                let usage_info = match (current_usage, limit) {
+                    (Some(usage), Some(limit)) => format!("Usage: {}, Limit: {}", usage, limit),
+                    _ => "Usage information unavailable".to_string(),
+                };
+                AppError::new(
+                    "RESOURCE_EXHAUSTED",
+                    "System resource exhausted",
+                    Some(format!("Resource: {}, {}", resource_type, usage_info)),
+                    true,
+                    false,
+                )
+            },
+            ExtractionError::DependencyError { dependency_name, operation, error_message } => AppError::new(
+                "DEPENDENCY_ERROR",
+                "External dependency failed",
+                Some(format!("Service: {}, Operation: {}, Error: {}", dependency_name, operation, error_message)),
+                true,
+                false,
+            ),
+
+            // Concurrency errors
+            ExtractionError::ResourceLocked { resource_type, resource_id, lock_holder } => {
+                let holder_info = lock_holder.as_deref().unwrap_or("unknown");
+                AppError::new(
+                    "RESOURCE_LOCKED",
+                    "Resource is locked by another process",
+                    Some(format!("Type: {}, ID: {}, Holder: {}", resource_type, resource_id, holder_info)),
+                    true,
+                    true,
+                )
+            },
+            ExtractionError::VersionConflict { extracted_document_id, expected_version, actual_version } => {
+                let version_info = match (expected_version, actual_version) {
+                    (Some(expected), Some(actual)) => format!("Expected: {}, Actual: {}", expected, actual),
+                    _ => "Version information unavailable".to_string(),
+                };
+                AppError::new(
+                    "VERSION_CONFLICT",
+                    "Version conflict detected during save",
+                    Some(format!("Document ID: {}, {}", extracted_document_id, version_info)),
+                    true,
+                    true,
+                )
+            },
+
+            // Configuration errors
+            ExtractionError::ConfigurationError { setting_name, error_description } => AppError::new(
+                "CONFIGURATION_ERROR",
+                "Required configuration is missing or invalid",
+                Some(format!("Setting: {}, Error: {}", setting_name, error_description)),
+                false,
+                false,
+            ),
+            ExtractionError::ServiceNotInitialized { service_name } => AppError::new(
+                "SERVICE_NOT_INITIALIZED",
+                "Extraction service is not properly initialized",
+                Some(format!("Service: {}", service_name)),
+                false,
+                false,
+            ),
+
+            // Unknown errors
+            ExtractionError::UnexpectedError { context, error_message } => AppError::new(
+                "UNEXPECTED_ERROR",
+                "An unexpected error occurred during extraction",
+                Some(format!("Context: {}, Error: {}", context, error_message)),
+                true,
+                true,
             ),
         }
     }

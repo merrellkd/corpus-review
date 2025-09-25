@@ -139,6 +139,12 @@ impl ProseMirrorJson {
             .map_err(|e| ProseMirrorJsonError::SerializationError(e.to_string()))
     }
 
+    /// Creates ProseMirrorJson from JSON string
+    pub fn from_json_string(json: &str) -> Result<Self, ProseMirrorJsonError> {
+        serde_json::from_str(json)
+            .map_err(|e| ProseMirrorJsonError::DeserializationError(e.to_string()))
+    }
+
     /// Adds content to this node (if it supports content)
     pub fn add_content(&mut self, child: ProseMirrorJson) -> Result<(), ProseMirrorJsonError> {
         if self.text.is_some() {
