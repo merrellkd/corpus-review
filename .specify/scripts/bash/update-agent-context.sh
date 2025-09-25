@@ -8,10 +8,10 @@ CLAUDE_FILE="$REPO_ROOT/CLAUDE.md"; GEMINI_FILE="$REPO_ROOT/GEMINI.md"; COPILOT_
 AGENT_TYPE="$1"
 [ -f "$NEW_PLAN" ] || { echo "ERROR: No plan.md found at $NEW_PLAN"; exit 1; }
 echo "=== Updating agent context files for feature $CURRENT_BRANCH ==="
-NEW_LANG=$(grep "^**Language/Version**: " "$NEW_PLAN" 2>/dev/null | head -1 | sed 's/^**Language\/Version**: //' | grep -v "NEEDS CLARIFICATION" || echo "")
-NEW_FRAMEWORK=$(grep "^**Primary Dependencies**: " "$NEW_PLAN" 2>/dev/null | head -1 | sed 's/^**Primary Dependencies**: //' | grep -v "NEEDS CLARIFICATION" || echo "")
-NEW_DB=$(grep "^**Storage**: " "$NEW_PLAN" 2>/dev/null | head -1 | sed 's/^**Storage**: //' | grep -v "N/A" | grep -v "NEEDS CLARIFICATION" || echo "")
-NEW_PROJECT_TYPE=$(grep "^**Project Type**: " "$NEW_PLAN" 2>/dev/null | head -1 | sed 's/^**Project Type**: //' || echo "")
+NEW_LANG=$(grep "^Language/Version: " "$NEW_PLAN" 2>/dev/null | head -1 | sed 's/^Language\/Version: //' | grep -v "NEEDS CLARIFICATION" || echo "")
+NEW_FRAMEWORK=$(grep "^Primary Dependencies: " "$NEW_PLAN" 2>/dev/null | head -1 | sed 's/^Primary Dependencies: //' | grep -v "NEEDS CLARIFICATION" || echo "")
+NEW_DB=$(grep "^Storage: " "$NEW_PLAN" 2>/dev/null | head -1 | sed 's/^Storage: //' | grep -v "N/A" | grep -v "NEEDS CLARIFICATION" || echo "")
+NEW_PROJECT_TYPE=$(grep "^Project Type: " "$NEW_PLAN" 2>/dev/null | head -1 | sed 's/^Project Type: //' || echo "")
 update_agent_file() { local target_file="$1" agent_name="$2"; echo "Updating $agent_name context file: $target_file"; local temp_file=$(mktemp); if [ ! -f "$target_file" ]; then
   echo "Creating new $agent_name context file..."; if [ -f "$REPO_ROOT/.specify/templates/agent-file-template.md" ]; then cp "$REPO_ROOT/.specify/templates/agent-file-template.md" "$temp_file"; else echo "ERROR: Template not found"; return 1; fi;
   sed -i.bak "s/\[PROJECT NAME\]/$(basename $REPO_ROOT)/" "$temp_file"; sed -i.bak "s/\[DATE\]/$(date +%Y-%m-%d)/" "$temp_file"; sed -i.bak "s/\[EXTRACTED FROM ALL PLAN.MD FILES\]/- $NEW_LANG + $NEW_FRAMEWORK ($CURRENT_BRANCH)/" "$temp_file";

@@ -1,0 +1,356 @@
+# Tauri Commands Contract: File Metadata Extraction
+
+info:
+  title: File Metadata Extraction Commands
+  description: Tauri backend commands for document extraction and processing
+  version: 1.0.0
+
+commands:
+  # Document Discovery and Management
+  scan_project_documents:
+    description: Scan project workspace for supported document files
+    parameters:
+      project_id:
+        type: string
+        pattern: "^proj_[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+        required: true
+    returns:
+      type: array
+      items:
+        $ref: "#/components/schemas/OriginalDocumentDto"
+    errors:
+      - ProjectNotFound
+      - FileSystemError
+      - ValidationError
+
+  get_document_details:
+    description: Get detailed information about a specific document
+    parameters:
+      document_id:
+        type: string
+        pattern: "^doc_[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+        required: true
+    returns:
+      $ref: "#/components/schemas/DocumentDetailsDto"
+    errors:
+      - DocumentNotFound
+      - ValidationError
+
+  # Extraction Operations
+  start_document_extraction:
+    description: Begin extracting content from a document
+    parameters:
+      document_id:
+        type: string
+        pattern: "^doc_[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+        required: true
+      force_reextract:
+        type: boolean
+        default: false
+    returns:
+      $ref: "#/components/schemas/ExtractionStatusDto"
+    errors:
+      - DocumentNotFound
+      - ExtractionInProgress
+      - UnsupportedFileType
+      - FileTooLarge
+      - ValidationError
+
+  get_extraction_status:
+    description: Check the status of a document extraction
+    parameters:
+      extraction_id:
+        type: string
+        pattern: "^ext_[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+        required: true
+    returns:
+      $ref: "#/components/schemas/ExtractionStatusDto"
+    errors:
+      - ExtractionNotFound
+      - ValidationError
+
+  cancel_extraction:
+    description: Cancel an in-progress extraction
+    parameters:
+      extraction_id:
+        type: string
+        pattern: "^ext_[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+        required: true
+    returns:
+      type: boolean
+    errors:
+      - ExtractionNotFound
+      - ExtractionNotCancellable
+      - ValidationError
+
+  # Extracted Document Operations
+  get_extracted_document:
+    description: Retrieve extracted document content for editing
+    parameters:
+      document_id:
+        type: string
+        pattern: "^doc_[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+        required: true
+    returns:
+      $ref: "#/components/schemas/ExtractedDocumentDto"
+    errors:
+      - DocumentNotFound
+      - ExtractionNotCompleted
+      - ValidationError
+
+  save_extracted_document:
+    description: Save changes to extracted document content
+    parameters:
+      extracted_document_id:
+        type: string
+        pattern: "^det_[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+        required: true
+      tiptap_content:
+        type: object
+        required: true
+        description: "TipTap/ProseMirror JSON content"
+    returns:
+      $ref: "#/components/schemas/SaveResultDto"
+    errors:
+      - ExtractedDocumentNotFound
+      - InvalidContent
+      - FileSystemError
+      - ValidationError
+
+  # Viewing Operations
+  get_original_document_preview:
+    description: Get preview/metadata for original document viewing
+    parameters:
+      document_id:
+        type: string
+        pattern: "^doc_[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+        required: true
+    returns:
+      $ref: "#/components/schemas/DocumentPreviewDto"
+    errors:
+      - DocumentNotFound
+      - FileNotAccessible
+      - ValidationError
+
+components:
+  schemas:
+    OriginalDocumentDto:
+      type: object
+      properties:
+        document_id:
+          type: string
+          pattern: "^doc_[0-9a-f-]{36}$"
+        project_id:
+          type: string
+          pattern: "^proj_[0-9a-f-]{36}$"
+        file_path:
+          type: string
+        file_name:
+          type: string
+        file_size_bytes:
+          type: integer
+          format: int64
+        file_type:
+          type: string
+          enum: ["PDF", "DOCX", "Markdown"]
+        created_at:
+          type: string
+          format: date-time
+        modified_at:
+          type: string
+          format: date-time
+        has_extraction:
+          type: boolean
+        extraction_status:
+          type: string
+          enum: ["None", "Pending", "Processing", "Completed", "Error"]
+          nullable: true
+
+    DocumentDetailsDto:
+      allOf:
+        - $ref: "#/components/schemas/OriginalDocumentDto"
+        - type: object
+          properties:
+            checksum:
+              type: string
+            extraction_history:
+              type: array
+              items:
+                $ref: "#/components/schemas/ExtractionHistoryDto"
+
+    ExtractionHistoryDto:
+      type: object
+      properties:
+        extraction_id:
+          type: string
+        started_at:
+          type: string
+          format: date-time
+        completed_at:
+          type: string
+          format: date-time
+          nullable: true
+        status:
+          type: string
+          enum: ["Pending", "Processing", "Completed", "Error"]
+        error_message:
+          type: string
+          nullable: true
+        processing_duration_ms:
+          type: integer
+          nullable: true
+
+    ExtractionStatusDto:
+      type: object
+      properties:
+        extraction_id:
+          type: string
+        document_id:
+          type: string
+        status:
+          type: string
+          enum: ["Pending", "Processing", "Completed", "Error"]
+        extraction_method:
+          type: string
+          enum: ["PdfTextExtraction", "PdfOcrExtraction", "DocxStructureExtraction", "MarkdownConversion"]
+          nullable: true
+        started_at:
+          type: string
+          format: date-time
+        completed_at:
+          type: string
+          format: date-time
+          nullable: true
+        error_message:
+          type: string
+          nullable: true
+        progress_percentage:
+          type: integer
+          minimum: 0
+          maximum: 100
+          nullable: true
+
+    ExtractedDocumentDto:
+      type: object
+      properties:
+        extracted_document_id:
+          type: string
+          pattern: "^det_[0-9a-f-]{36}$"
+        original_document_id:
+          type: string
+          pattern: "^doc_[0-9a-f-]{36}$"
+        extracted_file_path:
+          type: string
+        tiptap_content:
+          type: object
+          description: "TipTap/ProseMirror JSON structure"
+        extraction_method:
+          type: string
+        extracted_at:
+          type: string
+          format: date-time
+        content_preview:
+          type: string
+        word_count:
+          type: integer
+        character_count:
+          type: integer
+
+    DocumentPreviewDto:
+      type: object
+      properties:
+        document_id:
+          type: string
+        file_name:
+          type: string
+        file_type:
+          type: string
+          enum: ["PDF", "DOCX", "Markdown"]
+        file_size_bytes:
+          type: integer
+        preview_content:
+          type: string
+          description: "HTML or text preview for read-only viewing"
+        page_count:
+          type: integer
+          nullable: true
+        metadata:
+          type: object
+          additionalProperties: true
+
+    SaveResultDto:
+      type: object
+      properties:
+        success:
+          type: boolean
+        extracted_document_id:
+          type: string
+        saved_at:
+          type: string
+          format: date-time
+        word_count:
+          type: integer
+        character_count:
+          type: integer
+        error_message:
+          type: string
+          nullable: true
+
+  errors:
+    ProjectNotFound:
+      code: "PROJECT_NOT_FOUND"
+      message: "Project with specified ID does not exist"
+
+    DocumentNotFound:
+      code: "DOCUMENT_NOT_FOUND"
+      message: "Document with specified ID does not exist"
+
+    ExtractionNotFound:
+      code: "EXTRACTION_NOT_FOUND"
+      message: "Extraction with specified ID does not exist"
+
+    ExtractedDocumentNotFound:
+      code: "EXTRACTED_DOCUMENT_NOT_FOUND"
+      message: "Extracted document with specified ID does not exist"
+
+    ExtractionInProgress:
+      code: "EXTRACTION_IN_PROGRESS"
+      message: "Document extraction is already in progress"
+
+    ExtractionNotCompleted:
+      code: "EXTRACTION_NOT_COMPLETED"
+      message: "Document extraction has not completed successfully"
+
+    ExtractionNotCancellable:
+      code: "EXTRACTION_NOT_CANCELLABLE"
+      message: "Extraction cannot be cancelled in current state"
+
+    UnsupportedFileType:
+      code: "UNSUPPORTED_FILE_TYPE"
+      message: "File type not supported for extraction"
+
+    FileTooLarge:
+      code: "FILE_TOO_LARGE"
+      message: "File exceeds maximum size limit (10MB)"
+
+    FileNotAccessible:
+      code: "FILE_NOT_ACCESSIBLE"
+      message: "Cannot read or access the specified file"
+
+    InvalidContent:
+      code: "INVALID_CONTENT"
+      message: "Content does not match expected TipTap/ProseMirror format"
+
+    FileSystemError:
+      code: "FILE_SYSTEM_ERROR"
+      message: "Error accessing file system"
+
+    ValidationError:
+      code: "VALIDATION_ERROR"
+      message: "Request parameters failed validation"
+
+naming_conventions:
+  commands: snake_case
+  parameters: snake_case
+  responses: camelCase (via serde rename_all)
+  errors: PascalCase codes
