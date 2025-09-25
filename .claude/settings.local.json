@@ -33,7 +33,15 @@
       "Bash(find:*)",
       "Bash(npm run:*)",
       "Bash(FEATURE_DIR=\"/Users/kdm/projects/digital-ext/CORPUS_REVIEW/specs/003-project-list\" .specify/scripts/bash/check-implementation-prerequisites.sh --json)",
-      "Bash(timeout 10s npm run tauri:dev)"
+      "Bash(timeout 10s npm run tauri:dev)",
+      "Bash(sort:*)",
+      "Bash(xargs sed:*)",
+      "Bash(xargs perl:*)",
+      "Bash(xargs file:*)",
+      "Bash(xargs rm:*)",
+      "Bash(timeout 15s npm run dev)",
+      "Read(//Users/kdm/Library/Application Support/corpus-review/**)",
+      "Bash(sqlite3:*)"
     ],
     "deny": [],
     "ask": []

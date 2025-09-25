@@ -11,9 +11,10 @@ import { DocumentWorkspace } from './DocumentWorkspace'
 
 export interface ProjectWorkspaceProps {
   projectId: string
+  onBackToProjects?: () => void
 }
 
-export const ProjectWorkspace: React.FC<ProjectWorkspaceProps> = ({ projectId }) => {
+export const ProjectWorkspace: React.FC<ProjectWorkspaceProps> = ({ projectId, onBackToProjects }) => {
   const {
     currentProject,
     workspaceLayout,
@@ -49,7 +50,8 @@ export const ProjectWorkspace: React.FC<ProjectWorkspaceProps> = ({ projectId })
       <div className="flex items-center justify-center h-screen bg-gray-50" data-testid="workspace-container">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading workspace</p>
+          <p className="text-gray-600">Loading project files...</p>
+          <p className="text-sm text-gray-500 mt-2">Accessing file system</p>
         </div>
       </div>
     )
@@ -85,7 +87,10 @@ export const ProjectWorkspace: React.FC<ProjectWorkspaceProps> = ({ projectId })
       {/* Top Header - Project title and settings */}
       <div className="h-14 bg-white border-b border-gray-200 flex items-center justify-between px-4">
         <div className="flex items-center space-x-4">
-          <button className="text-blue-600 hover:text-blue-800 text-sm">
+          <button
+            onClick={onBackToProjects}
+            className="text-blue-600 hover:text-blue-800 text-sm"
+          >
             Return to Project List
           </button>
           <div className="text-gray-300">|</div>

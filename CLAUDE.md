@@ -1,8 +1,8 @@
-# Claude Code Context: Corpus Review - Project List Management
+# Claude Code Context: Corpus Review - Project List Management + Workspace Navigation
 
-## Current Feature: Project List Management (MVP)
+## Current Feature: Project Workspace Navigation (MVP)
 
-**Branch**: `003-project-list-see`
+**Branch**: `004-workspace-navigation-kent`
 **Status**: Design phase complete, ready for implementation
 
 ## Tech Stack
@@ -22,136 +22,120 @@
 ```
 src-tauri/src/
  domain/          # Pure business logic, zero dependencies
-   aggregates/  # Project aggregate
-   entities/    # Project entity
-   value_objects/  # ProjectId, ProjectName, etc.
-   repositories/   # ProjectRepository trait
+   aggregates/  # DirectoryListing aggregate
+   entities/    # FileEntry entity
+   value_objects/  # WorkspaceContext, file paths
+   repositories/   # WorkspaceRepository trait
  application/     # Services orchestrating domain
- infrastructure/ # Repository implementations, SQLite
+ infrastructure/ # Repository implementations, file system access
  commands/       # Tauri command handlers
 
 src/
  domain/         # TypeScript domain models
  application/    # Application services
  infrastructure/ # Tauri API adapters
- ui/            # React components
- stores/        # Zustand stores
+ ui/            # React components (WorkspacePage, FileList)
+ stores/        # Zustand workspace store slice
 ```
 
 ## Key Domain Concepts
 
-### Project Entity
+### Workspace Entities
 
-- **ProjectId**: Prefixed UUID (`proj_xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`)
-- **ProjectName**: 1-255 characters, trimmed, required
-- **FolderPath**: Must exist on filesystem, validated directory
-- **ProjectNote**: Optional, max 1000 characters, trimmed, for project descriptions
-- **CreatedAt**: UTC timestamp
+- **WorkspaceContext**: Value object containing project context and navigation state
+- **FileEntry**: Entity representing file/folder with metadata (name, path, size, modified)
+- **DirectoryListing**: Aggregate root managing file collections with navigation operations
 
 ### Business Rules (Domain Layer)
 
-1. Project names must be unique and non-empty
-2. Source folders must exist and be accessible
-3. Project notes are optional but limited to 1000 characters when provided
-4. All projects can be deleted (MVP - no constraints)
-5. Projects displayed in creation order (newest first)
+1. Navigation must stay within project source folder boundaries
+2. Empty directories must be handled gracefully
+3. File metadata includes name, type, size, and modification date
+4. Navigation state persists during workspace session
+5. Source folder accessibility validated before workspace loading
 
 ## Implementation Contracts
 
 ### Tauri Commands (Snake Case)
 
-- `create_project(name: String, source_folder: String, note: Option<String>) -> Result<ProjectDto, AppError>`
-- `list_projects() -> Result<Vec<ProjectDto>, AppError>`
-- `delete_project(project_id: String) -> Result<(), AppError>`
-- `open_project(project_id: String) -> Result<ProjectDto, AppError>`
+- `open_workspace(project_id: String) -> Result<WorkspaceDto, AppError>`
+- `list_directory(workspace_project_id: String, directory_path: String) -> Result<DirectoryListingDto, AppError>`
+- `navigate_to_folder(workspace_project_id: String, folder_name: String, current_path: String) -> Result<WorkspaceDto, AppError>`
+- `navigate_to_parent(workspace_project_id: String, current_path: String) -> Result<WorkspaceDto, AppError>`
 
 ### Error Handling
 
 ```rust
-pub enum AppError {
-    ValidationError { field: String, message: String },
-    FileSystemError { message: String },
-    DatabaseError { message: String },
-    NotFound { resource: String, id: String },
+pub enum WorkspaceError {
+    SourceFolderNotFound(String),
+    SourceFolderAccessDenied(String),
+    InvalidPath(String),
+    NavigationBoundaryViolation(String),
+    DirectoryListingFailed(String),
 }
-
-// New validation cases include:
-// - "Project note too long (max 1000 characters)" for note field
-```
-
-## Database Schema
-
-```sql
-CREATE TABLE projects (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  uuid TEXT UNIQUE NOT NULL,  -- ProjectId
-  name TEXT NOT NULL CHECK(length(name) > 0 AND length(name) <= 255),
-  source_folder TEXT NOT NULL,
-  note TEXT CHECK(length(note) <= 1000), -- Optional project description
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-);
 ```
 
 ## UI Components Needed
 
-1. **ProjectListPage**: Main page showing projects table with note column
-2. **CreateProjectForm**: Form with name input + folder picker + optional note textarea
-3. **ProjectRow**: Individual project display with name, folder, note, and Open/Delete actions
-4. **DeleteConfirmDialog**: Confirmation modal for deletion
-5. **FolderPicker**: Native dialog integration component
+1. **WorkspacePage**: Main workspace container with project context
+2. **ProjectHeader**: Project name and source folder display
+3. **FileList**: File/folder listing with metadata and navigation
+4. **NavigationBreadcrumb**: Current path indicator
+5. **BackToProjectsButton**: Return navigation to project list
 
 ## State Management Pattern
 
 ```typescript
-interface ProjectStore {
-  projects: Project[];
+interface WorkspaceStore {
+  currentWorkspace: WorkspaceContext | null;
+  directoryListing: DirectoryListing | null;
   isLoading: boolean;
   error: string | null;
 
-  loadProjects: () => Promise<void>;
-  createProject: (data: CreateProjectData) => Promise<void>; // Now includes optional note
-  deleteProject: (id: string) => Promise<void>;
+  openWorkspace: (projectId: string) => Promise<void>;
+  navigateToFolder: (folderName: string) => Promise<void>;
+  navigateToParent: () => Promise<void>;
+  returnToProjects: () => void;
   clearError: () => void;
-}
-
-interface CreateProjectData {
-  name: string;
-  sourceFolder: string;
-  note?: string; // Optional field
 }
 ```
 
 ## File Locations
 
-- **Spec**: `specs/003-project-list-see/spec.md`
-- **Design**: `specs/003-project-list-see/data-model.md`
-- **Contracts**: `specs/003-project-list-see/contracts/`
-- **Tests**: `specs/003-project-list-see/quickstart.md`
+- **Spec**: `specs/004-workspace-navigation-kent/spec.md`
+- **Design**: `specs/004-workspace-navigation-kent/data-model.md`
+- **Contracts**: `specs/004-workspace-navigation-kent/contracts/`
+- **Tests**: `specs/004-workspace-navigation-kent/quickstart.md`
 
-## Implementation Priority
+## Integration with Project List
 
-1. Domain entities and value objects (Rust + TypeScript)
-2. Repository interface and SQLite implementation
-3. Tauri commands with error handling
-4. UI components and Zustand store
-5. Form validation and folder picker integration
-6. Testing and validation
+- Extends existing project list with "Open Project" action
+- Receives ProjectId from project selection
+- Uses existing project data (name, source folder) from SQLite
+- Maintains project context throughout workspace session
+- "Back to Projects" returns to project list view
+
+## Performance Requirements
+
+- <2s workspace loading for <100 files
+- <500ms folder navigation between directories
+- <1s file listing refresh
+- Graceful handling of 1000+ files with loading states
 
 ## Constitutional Compliance Checklist
 
--  Domain layer has zero infrastructure dependencies
--  Prefixed UUIDs for all domain identifiers
--  TypeScript strict mode compilation required
--  Repository pattern isolates database access
--  Error handling follows structured pattern
+-  Domain layer has zero infrastructure dependencies
+-  WorkspaceRepository pattern isolates file system access
+-  Prefixed UUIDs for workspace identifiers (reuses ProjectId)
+-  TypeScript strict mode compilation required
+-  Error handling follows structured AppError pattern
 
 ## Recent Changes
 
-- Created feature specification with 13 functional requirements (added note field - FR-013)
-- Updated domain model to include optional ProjectNote value object (max 1000 chars)
-- Enhanced API contracts to include note field in create_project command and all DTOs
-- Updated database schema to include note column with length constraint
-- Extended quickstart test scenarios to cover note field validation and display
-- Added note field validation error handling (NoteTooLong error type)
+- Created workspace navigation feature specification
+- Generated data model with WorkspaceContext, FileEntry, and DirectoryListing entities
+- Designed Tauri commands for file system navigation with security boundaries
+- Created comprehensive quickstart test scenarios for all functional requirements
+- Established performance constraints and error handling patterns
 
-**Last Updated**: 2025-09-24
+**Last Updated**: 2025-09-25

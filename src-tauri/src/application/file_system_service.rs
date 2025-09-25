@@ -3,7 +3,8 @@ use crate::domain::workspace::{
     value_objects::{FilePath, ProjectId},
     repositories::{RepositoryError, RepositoryFactory},
 };
-use crate::application::dtos::{FileSystemItemDto, ProjectDto};
+// use crate::application::dtos::{FileSystemItemDto, ProjectDto}; // DTOs not implemented yet
+use crate::infrastructure::ProjectDto;
 use std::sync::Arc;
 
 /// Application service for file system operations
@@ -52,6 +53,9 @@ impl FileSystemService {
     pub fn new(repository_factory: Arc<dyn RepositoryFactory>) -> Self {
         Self { repository_factory }
     }
+
+    // All methods temporarily commented out due to missing DTOs
+    /*
 
     /// List contents of a folder
     pub async fn list_folder_contents(&self, folder_path: &str) -> Result<Vec<FileSystemItemDto>, FileSystemServiceError> {
@@ -313,6 +317,7 @@ impl FileSystemService {
             created_at: chrono::Utc::now(), // For now, use current time - in real implementation would come from entity
         }
     }
+    */
 }
 
 #[cfg(test)]

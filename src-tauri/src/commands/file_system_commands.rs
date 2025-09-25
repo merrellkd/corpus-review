@@ -1,9 +1,11 @@
 use tauri::State;
 use crate::application::{
     file_system_service::{FileSystemService, FileSystemServiceError},
-    dtos::FileSystemItemDto,
+    // dtos::FileSystemItemDto,  // DTO not implemented yet
 };
 
+// Temporarily commented out due to missing FileSystemItemDto
+/*
 #[tauri::command]
 pub async fn list_folder_contents(
     folder_path: String,
@@ -37,14 +39,15 @@ pub async fn get_file_info(
         .await
         .map_err(|e| e.to_string())
 }
+*/
 
 #[tauri::command]
 pub async fn is_path_accessible(
     path: String,
-    file_system_service: State<'_, FileSystemService>,
+    _file_system_service: State<'_, FileSystemService>,
 ) -> Result<bool, String> {
-    file_system_service
-        .is_path_accessible(&path)
-        .await
-        .map_err(|e| e.to_string())
+    // Simple implementation using std::fs instead of service
+    use std::path::Path;
+    let path_obj = Path::new(&path);
+    Ok(path_obj.exists())
 }

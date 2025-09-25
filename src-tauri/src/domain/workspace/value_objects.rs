@@ -3,6 +3,9 @@ use uuid::Uuid;
 use std::path::PathBuf;
 use std::fmt::{self, Display};
 
+pub mod workspace_context;
+pub use workspace_context::WorkspaceContext;
+
 /// FilePath value object - represents an absolute filesystem path
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
 pub struct FilePath {

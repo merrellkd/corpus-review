@@ -1,4 +1,7 @@
 use async_trait::async_trait;
+
+pub mod workspace_repository;
+pub use workspace_repository::*;
 use crate::domain::workspace::entities::{
     workspace_layout::WorkspaceLayout,
     file_system_item::FileSystemItem,

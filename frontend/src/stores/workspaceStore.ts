@@ -1,48 +1,38 @@
 import { create } from 'zustand'
 import { devtools } from 'zustand/middleware'
+import { invoke } from '@tauri-apps/api/core'
+import { WorkspaceDto, DirectoryListingDto } from '../domains/workspace/application/dtos/workspace-dtos'
+import { WorkspaceAdapter, FileSystemItem, WorkspaceLayout } from '../adapters/workspace-dto-adapter'
 
-// Development mode detection - always use mock data in dev mode
-const isDevelopment = true // Simplified for now
+// Backend integration enabled - use real file system data
+const isDevelopment = false // Real backend integration enabled
 
-// Types (simplified)
+// Types (simplified) - matches backend ProjectDto
 interface Project {
   id: string
   name: string
   source_folder: string
-  reports_folder: string
+  source_folder_name?: string
+  note?: string
+  note_preview?: string
+  note_line_count?: number
   created_at: string
-}
-
-interface WorkspaceLayout {
-  id: string
-  project_id: string
-  file_explorer_visible: boolean
-  category_explorer_visible: boolean
-  search_panel_visible: boolean
-  document_workspace_visible: boolean
-  explorer_width: number
-  workspace_width: number
-  last_modified: string
-}
-
-interface FileSystemItem {
-  name: string
-  path: string
-  parent_path: string
-  item_type: string
-  size: number
-  formatted_size: string
   is_accessible: boolean
-  last_modified: string
 }
+
+
 
 // Mock data for development
 const mockProject: Project = {
   id: 'project_550e8400-e29b-41d4-a716-446655440000',
   name: 'Sample Research Project',
   source_folder: '/Users/demo/Documents/Research/Source',
-  reports_folder: '/Users/demo/Documents/Research/Reports',
-  created_at: '2024-01-15T10:30:00Z'
+  source_folder_name: 'Source',
+  note: 'This is a sample research project for testing purposes.',
+  note_preview: 'This is a sample research project...',
+  note_line_count: 1,
+  created_at: '2024-01-15T10:30:00Z',
+  is_accessible: true
 }
 
 const mockLayout: WorkspaceLayout = {
@@ -228,6 +218,9 @@ interface WorkspaceState {
   // Actions
   loadProject: (projectId: string) => Promise<void>
   loadFolderContents: (folderPath: string) => Promise<void>
+  navigateToFolder: (folderName: string) => Promise<void>
+  navigateToParent: () => Promise<void>
+  refreshFiles: () => Promise<void>
   createDocumentCaddy: (filePath: string) => void
   updateDocumentCaddy: (caddyId: string, updates: Partial<DocumentCaddy>) => void
   searchFiles: (query: string) => Promise<void>
@@ -249,27 +242,132 @@ export const useWorkspaceStore = create<WorkspaceState>()(
       documentCaddies: [],
 
       // Actions
-      loadProject: async (_projectId: string) => {
+      loadProject: async (projectId: string) => {
         set({ isLoading: true, error: null })
 
         try {
-          // For development, use mock data
-          if (isDevelopment) {
-            await new Promise(resolve => setTimeout(resolve, 100)) // Simulate loading
-            set({
-              currentProject: mockProject,
-              workspaceLayout: mockLayout,
-              currentPath: mockProject.source_folder,
-              fileExplorerItems: mockFiles,
-              isLoading: false
-            })
-          } else {
-            // In production, make actual API calls here
-            set({ error: 'API integration not implemented yet', isLoading: false })
-          }
-        } catch (error) {
+          // Get project details first
+          const project = await invoke<Project>('open_project', { id: projectId })
+
+          // Open workspace using real backend
+          const workspace = await invoke<WorkspaceDto>('open_workspace_navigation', {
+            projectId: project.id,
+            projectName: project.name,
+            sourceFolder: project.source_folder
+          })
+
+          // Debug: Log what we actually received
+          console.log('Backend workspace response:', workspace)
+          console.log('Workspace directoryListing:', workspace.directoryListing)
+
+          // Convert backend DTOs to store format using adapter
+          const adaptedWorkspace = WorkspaceAdapter.adaptWorkspace(workspace)
+
+          // Create or load workspace layout for the project
+          const workspaceLayout = WorkspaceAdapter.createDefaultLayout(project.id)
+
           set({
-            error: error instanceof Error ? error.message : 'Unknown error',
+            currentProject: project,
+            workspaceLayout,
+            currentPath: adaptedWorkspace.currentPath,
+            fileExplorerItems: adaptedWorkspace.fileExplorerItems,
+            isLoading: false
+          })
+        } catch (error) {
+          const friendlyMessage = WorkspaceAdapter.adaptError(error instanceof Error ? error : new Error('Unknown error'))
+
+          set({
+            error: friendlyMessage,
+            isLoading: false
+          })
+        }
+      },
+
+      navigateToFolder: async (folderName: string) => {
+        const current = get()
+        if (!current.currentProject) return
+
+        set({ isLoading: true, error: null })
+
+        try {
+          const workspace = await invoke<WorkspaceDto>('navigate_to_folder', {
+            projectId: current.currentProject.id,
+            projectName: current.currentProject.name,
+            sourceFolder: current.currentProject.source_folder,
+            currentPath: current.currentPath,
+            folderName: folderName
+          })
+
+          const adaptedWorkspace = WorkspaceAdapter.adaptWorkspace(workspace)
+
+          set({
+            currentPath: adaptedWorkspace.currentPath,
+            fileExplorerItems: adaptedWorkspace.fileExplorerItems,
+            isLoading: false
+          })
+        } catch (error) {
+          const friendlyMessage = WorkspaceAdapter.adaptError(error instanceof Error ? error : new Error('Navigation failed'))
+          set({
+            error: `Failed to navigate to ${folderName}: ${friendlyMessage}`,
+            isLoading: false
+          })
+        }
+      },
+
+      navigateToParent: async () => {
+        const current = get()
+        if (!current.currentProject) return
+
+        set({ isLoading: true, error: null })
+
+        try {
+          const workspace = await invoke<WorkspaceDto>('navigate_to_parent', {
+            projectId: current.currentProject.id,
+            projectName: current.currentProject.name,
+            sourceFolder: current.currentProject.source_folder,
+            currentPath: current.currentPath
+          })
+
+          const adaptedWorkspace = WorkspaceAdapter.adaptWorkspace(workspace)
+
+          set({
+            currentPath: adaptedWorkspace.currentPath,
+            fileExplorerItems: adaptedWorkspace.fileExplorerItems,
+            isLoading: false
+          })
+        } catch (error) {
+          const friendlyMessage = WorkspaceAdapter.adaptError(error instanceof Error ? error : new Error('Navigation failed'))
+          set({
+            error: `Failed to navigate to parent: ${friendlyMessage}`,
+            isLoading: false
+          })
+        }
+      },
+
+      refreshFiles: async () => {
+        const current = get()
+        if (!current.currentProject) return
+
+        set({ isLoading: true, error: null })
+
+        try {
+          const directoryListing = await invoke<DirectoryListingDto>('list_directory', {
+            projectId: current.currentProject.id,
+            projectName: current.currentProject.name,
+            sourceFolder: current.currentProject.source_folder,
+            currentPath: current.currentPath
+          })
+
+          const fileItems = WorkspaceAdapter.adaptDirectoryListing(directoryListing, current.currentPath)
+
+          set({
+            fileExplorerItems: fileItems,
+            isLoading: false
+          })
+        } catch (error) {
+          const friendlyMessage = WorkspaceAdapter.adaptError(error instanceof Error ? error : new Error('Refresh failed'))
+          set({
+            error: `Failed to refresh files: ${friendlyMessage}`,
             isLoading: false
           })
         }
