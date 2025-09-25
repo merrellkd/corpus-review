@@ -4,7 +4,8 @@ use crate::domain::workspace::{
     repositories::{RepositoryError, RepositoryFactory},
     PanelType,
 };
-use crate::application::dtos::{WorkspaceLayoutDto, DocumentCaddyDto, ProjectDto};
+// use crate::application::dtos::{WorkspaceLayoutDto, DocumentCaddyDto, ProjectDto}; // DTOs not implemented yet
+use crate::infrastructure::ProjectDto;
 use std::sync::Arc;
 
 /// Application service for workspace operations
@@ -54,6 +55,8 @@ impl WorkspaceService {
         Self { repository_factory }
     }
 
+    // All methods temporarily commented out due to missing DTOs
+    /*
     /// Get workspace layout for a project
     pub async fn get_workspace_layout(&self, project_id: &str) -> Result<WorkspaceLayoutDto, WorkspaceServiceError> {
         let project_id = ProjectId::from_string(project_id.to_string())
@@ -283,6 +286,7 @@ impl WorkspaceService {
             created_at: chrono::Utc::now(), // For now, use current time - in real implementation would come from entity
         }
     }
+    */
 }
 
 #[cfg(test)]

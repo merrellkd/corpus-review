@@ -67,54 +67,54 @@
 - [x] T019 [P] Create FileEntry TypeScript interface in src/domain/entities/file-entry.ts
 
 ### Aggregates (all [P])
-- [ ] T020 [P] Create DirectoryListing aggregate with navigation methods in src-tauri/src/domain/aggregates/directory_listing.rs
-- [ ] T021 [P] Create DirectoryListing TypeScript interface in src/domain/aggregates/directory-listing.ts
+- [x] T020 [P] Create DirectoryListing aggregate with navigation methods in src-tauri/src/domain/aggregates/directory_listing.rs
+- [x] T021 [P] Create DirectoryListing TypeScript interface in src/domain/aggregates/directory-listing.ts
 
 ### Repository Interface ([P])
-- [ ] T022 [P] Create WorkspaceRepository trait in src-tauri/src/domain/repositories/workspace_repository.rs
+- [x] T022 [P] Create WorkspaceRepository trait in src-tauri/src/domain/repositories/workspace_repository.rs
 
 ## Phase 3.4: Application Layer
 
 ### DTOs (all [P])
-- [ ] T023 [P] Create WorkspaceDto in src-tauri/src/application/dtos/workspace_dto.rs
-- [ ] T024 [P] Create DirectoryListingDto in src-tauri/src/application/dtos/directory_listing_dto.rs
-- [ ] T025 [P] Create FileEntryDto in src-tauri/src/application/dtos/file_entry_dto.rs
-- [ ] T026 [P] Create TypeScript DTOs in src/application/dtos/workspace-dtos.ts
+- [x] T023 [P] Create WorkspaceDto in src-tauri/src/application/dtos/workspace_dto.rs
+- [x] T024 [P] Create DirectoryListingDto in src-tauri/src/application/dtos/directory_listing_dto.rs
+- [x] T025 [P] Create FileEntryDto in src-tauri/src/application/dtos/file_entry_dto.rs
+- [x] T026 [P] Create TypeScript DTOs in frontend/src/domains/workspace/application/dtos/workspace-dtos.ts
 
 ### Application Service
-- [ ] T027 Create WorkspaceService in src-tauri/src/application/services/workspace_service.rs
+- [x] T027 Create WorkspaceNavigationService in src-tauri/src/application/services/workspace_service.rs
 
 ## Phase 3.5: Infrastructure Layer
 
 ### Repository Implementation
-- [ ] T028 Create WorkspaceRepositoryImpl with file system operations in src-tauri/src/infrastructure/repositories/workspace_repository_impl.rs
+- [x] T028 ~~Create WorkspaceRepositoryImpl~~ (Simplified to direct file system operations in service)
 
 ## Phase 3.6: Command Layer (Tauri Commands)
 
 ### Command Handlers (sequential - same file)
-- [ ] T029 Create open_workspace command handler in src-tauri/src/commands/workspace_commands.rs
-- [ ] T030 Add list_directory command handler to src-tauri/src/commands/workspace_commands.rs
-- [ ] T031 Add navigate_to_folder command handler to src-tauri/src/commands/workspace_commands.rs
-- [ ] T032 Add navigate_to_parent command handler to src-tauri/src/commands/workspace_commands.rs
+- [x] T029 Create open_workspace_navigation command handler in src-tauri/src/commands/workspace_commands.rs
+- [x] T030 Add list_directory command handler to src-tauri/src/commands/workspace_commands.rs
+- [x] T031 Add navigate_to_folder command handler to src-tauri/src/commands/workspace_commands.rs
+- [x] T032 Add navigate_to_parent command handler to src-tauri/src/commands/workspace_commands.rs
 
 ### Command Registration
-- [ ] T033 Register workspace commands in src-tauri/src/main.rs
+- [x] T033 Register workspace commands in src-tauri/src/main.rs
 
 ## Phase 3.7: Frontend Domain Models
 
 ### TypeScript Domain Models (all [P])
-- [ ] T034 [P] Create TypeScript Project interface extensions in src/domain/entities/project.ts (add openWorkspace method)
+- [x] T034 [P] Create TypeScript Project interface extensions in frontend/src/domain/entities/project.ts (add openWorkspace method)
 
 ## Phase 3.8: UI Layer
 
 ### React Components (can be parallel as separate files)
-- [ ] T035 [P] Create WorkspacePage component in src/ui/pages/WorkspacePage.tsx
-- [ ] T036 [P] Create ProjectHeader component in src/ui/components/workspace/ProjectHeader.tsx
-- [ ] T037 [P] Create FileList component in src/ui/components/workspace/FileList.tsx
-- [ ] T038 [P] Create NavigationBreadcrumb component in src/ui/components/workspace/NavigationBreadcrumb.tsx
+- [x] T035 [P] Create WorkspacePage component in frontend/src/ui/pages/WorkspacePage.tsx
+- [x] T036 [P] Create ProjectHeader component in frontend/src/ui/components/workspace/ProjectHeader.tsx
+- [x] T037 [P] Create FileList component in frontend/src/ui/components/workspace/FileList.tsx
+- [x] T038 [P] Create NavigationBreadcrumb component in frontend/src/ui/components/workspace/NavigationBreadcrumb.tsx
 
 ### State Management
-- [ ] T039 Create workspace store slice in src/stores/workspace-store.ts
+- [x] T039 Create workspace store slice in frontend/src/stores/workspace-store.ts
 
 ## Dependencies & Execution Order
 

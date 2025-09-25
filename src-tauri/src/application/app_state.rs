@@ -6,7 +6,7 @@ use crate::domain::project::ProjectRepository;
 use crate::infrastructure::{
     SqliteProjectRepository, DatabaseConnection, DatabaseHealth, AppError, AppResult
 };
-use crate::application::services::project_service::ProjectService;
+use crate::application::services::{ProjectService, WorkspaceNavigationService};
 
 /// Application state container for dependency injection
 ///
@@ -22,6 +22,9 @@ pub struct AppState {
 
     /// Project application service
     project_service: Arc<ProjectService>,
+
+    /// Workspace navigation service
+    workspace_navigation_service: Arc<WorkspaceNavigationService>,
 
     /// Application metadata
     metadata: Arc<RwLock<AppMetadata>>,
@@ -90,6 +93,9 @@ impl AppState {
         // Create services
         let project_service = Arc::new(ProjectService::new(project_repository.clone()));
 
+        // Create workspace navigation service
+        let workspace_navigation_service = Arc::new(WorkspaceNavigationService::new());
+
         // Initialize metadata
         let metadata = AppMetadata {
             version: env!("CARGO_PKG_VERSION").to_string(),
@@ -104,6 +110,7 @@ impl AppState {
             database,
             project_repository,
             project_service,
+            workspace_navigation_service,
             metadata: Arc::new(RwLock::new(metadata)),
         };
 
@@ -122,6 +129,9 @@ impl AppState {
         let project_repository = Arc::new(MockProjectRepository::new());
         let project_service = Arc::new(ProjectService::new(project_repository.clone()));
 
+        // Create workspace navigation service for testing
+        let workspace_navigation_service = Arc::new(WorkspaceNavigationService::new());
+
         // Create temporary database for testing
         let (database, _temp_dir) = DatabaseConnection::new_temp().await?;
         let database = Arc::new(database);
@@ -139,6 +149,7 @@ impl AppState {
             database,
             project_repository,
             project_service,
+            workspace_navigation_service,
             metadata: Arc::new(RwLock::new(metadata)),
         })
     }
@@ -156,6 +167,11 @@ impl AppState {
     /// Get the project service
     pub fn project_service(&self) -> Arc<ProjectService> {
         self.project_service.clone()
+    }
+
+    /// Get the workspace navigation service
+    pub fn workspace_navigation_service(&self) -> Arc<WorkspaceNavigationService> {
+        self.workspace_navigation_service.clone()
     }
 
     /// Get application metadata (read-only)

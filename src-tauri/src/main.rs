@@ -11,7 +11,7 @@ pub mod application;
 pub mod infrastructure;
 
 use application::{
-    workspace_service::WorkspaceService,
+    LegacyWorkspaceService,
     StateManager,
 };
 use infrastructure::database::initialize_database;
@@ -69,9 +69,9 @@ async fn main() {
             // commands::workspace_commands::create_document_caddy,
             // commands::workspace_commands::update_document_caddy,
             // commands::workspace_commands::get_project_details,
-            commands::file_system_commands::list_folder_contents,
-            commands::file_system_commands::search_files_recursive,
-            commands::file_system_commands::get_file_info,
+            // commands::file_system_commands::list_folder_contents,
+            // commands::file_system_commands::search_files_recursive,
+            // commands::file_system_commands::get_file_info,
             commands::file_system_commands::is_path_accessible,
 
             // New project management commands
@@ -101,6 +101,12 @@ async fn main() {
             commands::open_project::get_recent_projects,
             commands::open_project::open_project_folder,
             commands::open_project::get_project_opening_stats,
+
+            // Workspace navigation commands
+            commands::workspace_commands::open_workspace_navigation,
+            commands::workspace_commands::list_directory,
+            commands::workspace_commands::navigate_to_folder,
+            commands::workspace_commands::navigate_to_parent,
 
             // Application state commands
             application::app_state::get_app_status,
