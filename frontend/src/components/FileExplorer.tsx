@@ -9,7 +9,10 @@ export const FileExplorer: React.FC = () => {
     fileExplorerItems,
     currentPath,
     isLoading,
-    loadFolderContents,
+    error,
+    navigateToFolder,
+    refreshFiles,
+    currentProject
   } = useOldWorkspaceStore()
 
   // Use the new Multi-Document Workspace store for adding documents
@@ -26,26 +29,26 @@ export const FileExplorer: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('')
 
   const handleRefresh = () => {
-    loadFolderContents(currentPath)
+    refreshFiles()
   }
 
   const handleSourceFolderClick = () => {
-    const { currentProject } = useOldWorkspaceStore.getState()
-    if (currentProject) {
-      loadFolderContents(currentProject.source_folder)
-    }
+    // TODO: Navigate to source folder - implement when navigation is available
+    console.log('Navigate to source folder')
   }
 
   const handleReportsFolderClick = () => {
-    const { currentProject } = useOldWorkspaceStore.getState()
-    if (currentProject) {
-      loadFolderContents(currentProject.reports_folder)
-    }
+    // TODO: Navigate to reports folder - implement when navigation is available
+    console.log('Navigate to reports folder')
   }
 
-  const handleFileClick = async (item: any) => {
+  const handleFileDoubleClick = async (item: any) => {
     if (item.item_type === 'directory') {
-      loadFolderContents(item.path)
+      try {
+        await navigateToFolder(item.name)
+      } catch (error) {
+        console.error('Navigation failed:', error)
+      }
     } else {
       try {
         await addDocument(item.path)
@@ -125,11 +128,22 @@ export const FileExplorer: React.FC = () => {
 
       {/* File list */}
       <div className="flex-1 overflow-y-auto">
-        {isLoading ? (
-          <div className="p-3 text-xs text-gray-500">Loading...</div>
+        {error ? (
+          <div className="p-3 text-xs text-red-600 bg-red-50 border border-red-200 rounded m-2">
+            <div className="font-medium">Error loading files:</div>
+            <div>{error}</div>
+            <button
+              onClick={handleRefresh}
+              className="mt-2 px-2 py-1 text-xs bg-red-100 hover:bg-red-200 rounded"
+            >
+              Retry
+            </button>
+          </div>
+        ) : isLoading ? (
+          <div className="p-3 text-xs text-gray-500">Loading files...</div>
         ) : fileExplorerItems.length === 0 ? (
           <div className="p-3 text-xs text-gray-500">
-            {currentPath.includes('Source') ? 'Source folder is empty' : 'Reports folder is empty'}
+            No files found in current directory
           </div>
         ) : (
           <div className="p-1">
@@ -145,7 +159,7 @@ export const FileExplorer: React.FC = () => {
                 return (
                   <div
                     key={item.path}
-                    onClick={() => handleFileClick(item)}
+                    onDoubleClick={() => handleFileDoubleClick(item)}
                     draggable={isDraggable}
                     onDragStart={() => handleDragStart(item)}
                     className={`flex items-center justify-between p-2 hover:bg-gray-100 cursor-pointer rounded text-xs ${
