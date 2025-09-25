@@ -139,3 +139,5 @@ CREATE TABLE projects (
 - Folder picker responds within 1 second
 
 This MVP establishes the foundation for project management while keeping scope minimal for fast delivery and early user feedback.
+
+COMPLETED IN specs/003-project-list

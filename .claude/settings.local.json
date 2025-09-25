@@ -33,7 +33,8 @@
       "Bash(find:*)",
       "Bash(npm run:*)",
       "Bash(FEATURE_DIR=\"/Users/kdm/projects/digital-ext/CORPUS_REVIEW/specs/003-project-list\" .specify/scripts/bash/check-implementation-prerequisites.sh --json)",
-      "Bash(timeout 10s npm run tauri:dev)"
+      "Bash(timeout 10s npm run tauri:dev)",
+      "Bash(sort:*)"
     ],
     "deny": [],
     "ask": []
