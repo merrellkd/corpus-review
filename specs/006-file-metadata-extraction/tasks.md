@@ -4,6 +4,7 @@
 **Prerequisites**: plan.md ✅, research.md ✅, data-model.md ✅, contracts/ ✅
 
 ## Execution Flow (main)
+
 ```
 1. Load plan.md from feature directory ✅
    → Tech stack: Rust (Tauri backend), TypeScript/React (frontend)
@@ -20,38 +21,44 @@
 ```
 
 ## Format: `[ID] [P?] Description`
+
 - **[P]**: Can run in parallel (different files, no dependencies)
 - File paths are absolute for Tauri app structure
 
 ## Path Conventions
+
 - **Backend**: `src-tauri/src/` (Rust code)
 - **Frontend**: `src/` (TypeScript/React code)
 - **Database**: `src-tauri/migrations/` (SQLite migrations)
 
 ## Phase 3.1: Database Setup
-- [ ] T001 Create SQLite migration for original_documents table in `src-tauri/migrations/001_create_original_documents.sql`
-- [ ] T002 Create SQLite migration for file_extractions table in `src-tauri/migrations/002_create_file_extractions.sql`
-- [ ] T003 Create SQLite migration for extracted_documents table in `src-tauri/migrations/003_create_extracted_documents.sql`
-- [ ] T004 Create database indexes migration in `src-tauri/migrations/004_create_indexes.sql`
+
+- [x] T001 Create SQLite migration for original_documents table in `src-tauri/migrations/002_create_original_documents.sql`
+- [x] T002 Create SQLite migration for file_extractions table in `src-tauri/migrations/003_create_file_extractions.sql`
+- [x] T003 Create SQLite migration for extracted_documents table in `src-tauri/migrations/004_create_extracted_documents.sql`
+- [x] T004 Create database indexes migration in `src-tauri/migrations/005_create_indexes.sql`
 
 ## Phase 3.2: Domain Layer (DDD Core)
-- [ ] T005 [P] DocumentId value object in `src-tauri/src/domain/value_objects/document_id.rs`
-- [ ] T006 [P] ExtractionId value object in `src-tauri/src/domain/value_objects/extraction_id.rs`
-- [ ] T007 [P] ExtractedDocumentId value object in `src-tauri/src/domain/value_objects/extracted_document_id.rs`
-- [ ] T008 [P] FilePath value object in `src-tauri/src/domain/value_objects/file_path.rs`
-- [ ] T009 [P] DocumentType enum in `src-tauri/src/domain/value_objects/document_type.rs`
-- [ ] T010 [P] ExtractionStatus enum in `src-tauri/src/domain/value_objects/extraction_status.rs`
-- [ ] T011 [P] ProseMirrorJson value object in `src-tauri/src/domain/value_objects/prosemirror_json.rs`
-- [ ] T012 [P] OriginalDocument entity in `src-tauri/src/domain/entities/original_document.rs`
-- [ ] T013 [P] ExtractedDocument entity in `src-tauri/src/domain/entities/extracted_document.rs`
-- [ ] T014 [P] FileExtraction entity in `src-tauri/src/domain/entities/file_extraction.rs`
-- [ ] T015 DocumentExtractionAggregate root in `src-tauri/src/domain/aggregates/document_extraction_aggregate.rs`
-- [ ] T016 [P] DocumentRepository trait in `src-tauri/src/domain/repositories/document_repository.rs`
-- [ ] T017 [P] ExtractionRepository trait in `src-tauri/src/domain/repositories/extraction_repository.rs`
-- [ ] T018 [P] ExtractedDocumentRepository trait in `src-tauri/src/domain/repositories/extracted_document_repository.rs`
+
+- [x] T005 [P] DocumentId value object in `src-tauri/src/domain/extraction/value_objects/document_id.rs`
+- [x] T006 [P] ExtractionId value object in `src-tauri/src/domain/extraction/value_objects/extraction_id.rs`
+- [x] T007 [P] ExtractedDocumentId value object in `src-tauri/src/domain/extraction/value_objects/extracted_document_id.rs`
+- [x] T008 [P] FilePath value object in `src-tauri/src/domain/extraction/value_objects/file_path.rs`
+- [x] T009 [P] DocumentType enum in `src-tauri/src/domain/extraction/value_objects/document_type.rs`
+- [x] T010 [P] ExtractionStatus enum in `src-tauri/src/domain/extraction/value_objects/extraction_status.rs`
+- [x] T011 [P] ProseMirrorJson value object in `src-tauri/src/domain/extraction/value_objects/prosemirror_json.rs`
+- [x] T012 [P] OriginalDocument entity in `src-tauri/src/domain/extraction/entities/original_document.rs`
+- [x] T013 [P] ExtractedDocument entity in `src-tauri/src/domain/extraction/entities/extracted_document.rs`
+- [x] T014 [P] FileExtraction entity in `src-tauri/src/domain/extraction/entities/file_extraction.rs`
+- [x] T015 DocumentExtractionAggregate root in `src-tauri/src/domain/extraction/aggregates/document_extraction_aggregate.rs`
+- [x] T016 [P] DocumentRepository trait in `src-tauri/src/domain/extraction/repositories/document_repository.rs`
+- [x] T017 [P] ExtractionRepository trait in `src-tauri/src/domain/extraction/repositories/extraction_repository.rs`
+- [x] T018 [P] ExtractedDocumentRepository trait in `src-tauri/src//domain/extraction/repositories/extracted_document_repository.rs`
 
 ## Phase 3.3: Tests First (TDD) ⚠️ MUST COMPLETE BEFORE 3.4
+
 **CRITICAL: These tests MUST be written and MUST FAIL before ANY implementation**
+
 - [ ] T019 [P] Contract test scan_project_documents in `src-tauri/tests/contract/test_scan_project_documents.rs`
 - [ ] T020 [P] Contract test get_document_details in `src-tauri/tests/contract/test_get_document_details.rs`
 - [ ] T021 [P] Contract test start_document_extraction in `src-tauri/tests/contract/test_start_document_extraction.rs`
@@ -66,6 +73,7 @@
 - [ ] T030 [P] Integration test DocumentCaddy dual-mode operation in `src/tests/integration/test_document_caddy_dual_mode.test.ts`
 
 ## Phase 3.4: Infrastructure Layer (ONLY after tests are failing)
+
 - [ ] T031 [P] SQLite DocumentRepository implementation in `src-tauri/src/infrastructure/repositories/sqlite_document_repository.rs`
 - [ ] T032 [P] SQLite ExtractionRepository implementation in `src-tauri/src/infrastructure/repositories/sqlite_extraction_repository.rs`
 - [ ] T033 [P] SQLite ExtractedDocumentRepository implementation in `src-tauri/src/infrastructure/repositories/sqlite_extracted_document_repository.rs`
@@ -76,12 +84,14 @@
 - [ ] T038 File system service for .det files in `src-tauri/src/infrastructure/services/file_system_service.rs`
 
 ## Phase 3.5: Application Layer
+
 - [ ] T039 [P] DocumentService in `src-tauri/src/application/services/document_service.rs`
 - [ ] T040 [P] ExtractionService in `src-tauri/src/application/services/extraction_service.rs`
 - [ ] T041 [P] DTOs module in `src-tauri/src/application/dtos/mod.rs`
 - [ ] T042 Error handling and mapping in `src-tauri/src/application/errors/extraction_error.rs`
 
 ## Phase 3.6: Tauri Command Layer
+
 - [ ] T043 scan_project_documents command in `src-tauri/src/commands/document_commands.rs`
 - [ ] T044 get_document_details command in `src-tauri/src/commands/document_commands.rs`
 - [ ] T045 start_document_extraction command in `src-tauri/src/commands/extraction_commands.rs`
@@ -92,6 +102,7 @@
 - [ ] T050 get_original_document_preview command in `src-tauri/src/commands/document_preview_commands.rs`
 
 ## Phase 3.7: Frontend Integration
+
 - [ ] T051 [P] ExtractionStore slice in `src/stores/extraction-store.ts`
 - [ ] T052 [P] Tauri API client for extraction commands in `src/infrastructure/tauri-extraction-api.ts`
 - [ ] T053 DocumentCaddy dual-mode enhancement in `src/domains/workspace/ui/components/DocumentCaddy.tsx`
@@ -99,7 +110,9 @@
 - [ ] T055 Extract button integration in workspace file browser in `src/domains/workspace/ui/components/FileList.tsx`
 
 ## Dependencies
+
 **Phase Dependencies**:
+
 - Database setup (T001-T004) before all other phases
 - Domain layer (T005-T018) before Application layer
 - Tests (T019-T030) before Infrastructure/Application implementation
@@ -108,6 +121,7 @@
 - Backend (T001-T050) before Frontend (T051-T055)
 
 **Specific Dependencies**:
+
 - T015 (aggregate) depends on T012-T014 (entities)
 - T016-T018 (repository traits) before T031-T033 (implementations)
 - T039-T040 (services) depend on T031-T038 (repositories and parsers)
@@ -117,6 +131,7 @@
 ## Parallel Execution Examples
 
 ### Phase 3.2: Domain Value Objects (T005-T011)
+
 ```bash
 # Launch all value objects in parallel:
 Task: "DocumentId value object in src-tauri/src/domain/value_objects/document_id.rs"
@@ -129,6 +144,7 @@ Task: "ProseMirrorJson value object in src-tauri/src/domain/value_objects/prosem
 ```
 
 ### Phase 3.3: Contract Tests (T019-T026)
+
 ```bash
 # Launch all Tauri command tests in parallel:
 Task: "Contract test scan_project_documents in src-tauri/tests/contract/test_scan_project_documents.rs"
@@ -142,6 +158,7 @@ Task: "Contract test get_original_document_preview in src-tauri/tests/contract/t
 ```
 
 ### Phase 3.4: Infrastructure Parsers (T034-T036)
+
 ```bash
 # Launch all document parsers in parallel:
 Task: "PDF text extraction parser in src-tauri/src/infrastructure/parsers/pdf_parser.rs"
@@ -150,7 +167,8 @@ Task: "Markdown to ProseMirror converter in src-tauri/src/infrastructure/parsers
 ```
 
 ## Validation Checklist
-*GATE: All items must be checked before implementation completion*
+
+_GATE: All items must be checked before implementation completion_
 
 - [x] All 8 Tauri commands have corresponding contract tests (T019-T026)
 - [x] All 3 domain entities have model creation tasks (T012-T014)
@@ -166,8 +184,9 @@ Task: "Markdown to ProseMirror converter in src-tauri/src/infrastructure/parsers
 - [x] Extraction status tracking in UI (T054-T055)
 
 ## Notes
+
 - **Constitutional Compliance**: All tasks follow DDD principles with proper layer isolation
-- **Prefixed IDs**: DocumentId (doc_*), ExtractionId (ext_*), ExtractedDocumentId (det_*)
+- **Prefixed IDs**: DocumentId (doc*\*), ExtractionId (ext*\_), ExtractedDocumentId (det\_\_)
 - **File Processing**: PDF (pdf-extract), DOCX (docx-rs), Markdown (pulldown-cmark)
 - **UI Integration**: TipTap/ProseMirror for .det editing, format-specific viewers for originals
 - **Performance**: <30s extraction, <2s status updates, <1s UI refresh
