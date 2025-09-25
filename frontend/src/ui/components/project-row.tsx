@@ -181,7 +181,7 @@ export const ProjectRow: React.FC<ProjectRowProps> = ({
               {project.name.value}
             </h3>
             <p className="text-sm text-gray-500 truncate" title={project.sourceFolder.value}>
-              📁 {folderName}
+              📁 {project.sourceFolder.value}
             </p>
           </div>
 

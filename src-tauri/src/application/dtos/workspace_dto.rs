@@ -6,6 +6,7 @@ use crate::application::dtos::DirectoryListingDto;
 /// This represents the complete workspace context and current directory state
 /// for communication between the backend and frontend.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
 pub struct WorkspaceDto {
     /// The project ID this workspace represents
     pub project_id: String,

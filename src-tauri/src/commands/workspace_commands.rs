@@ -109,11 +109,31 @@ pub async fn open_workspace_navigation(
     source_folder: String,
     app_state: State<'_, AppState>,
 ) -> Result<WorkspaceDto, AppError> {
+    println!(
+        "🔧 Opening workspace navigation: project_id={}, project_name={}, source_folder={}",
+        project_id, project_name, source_folder
+    );
+
     let workspace_service = app_state.workspace_navigation_service();
-    workspace_service
+    let result = workspace_service
         .open_workspace(&project_id, &project_name, &source_folder)
         .await
-        .map_err(AppError::from)
+        .map_err(AppError::from);
+
+    match &result {
+        Ok(workspace) => {
+            println!(
+                "✅ Workspace navigation opened successfully: currentPath={}, entries_count={}",
+                workspace.current_path,
+                workspace.directory_listing.entries.len()
+            );
+        }
+        Err(e) => {
+            println!("❌ Failed to open workspace navigation: {:?}", e);
+        }
+    }
+
+    result
 }
 
 /// Tauri command to list the contents of the current directory

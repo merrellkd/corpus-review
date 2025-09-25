@@ -6,7 +6,7 @@ import { useWorkspaceStore } from '../../src/stores/workspaceStore'
 
 // Mock Tauri invoke function
 const mockInvoke = vi.fn()
-vi.mock('@tauri-apps/api/tauri', () => ({
+vi.mock('@tauri-apps/api/core', () => ({
   invoke: mockInvoke,
 }))
 
@@ -15,9 +15,9 @@ vi.mock('../../src/stores/workspaceStore')
 
 describe('FilesCategoriesPanel with Real File Data', () => {
   const mockWorkspaceStore = {
-    fileExplorerItems: [],
+    fileExplorerItems: [] as any[],
     isLoading: false,
-    error: null,
+    error: null as string | null,
     currentPath: '/test/project/path',
     navigateToFolder: vi.fn(),
     refreshFiles: vi.fn(),

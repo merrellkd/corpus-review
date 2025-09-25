@@ -6,6 +6,7 @@ use crate::application::dtos::FileEntryDto;
 /// Represents the contents of a directory within a workspace,
 /// including navigation context and metadata.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
 pub struct DirectoryListingDto {
     /// The file and folder entries in this directory
     pub entries: Vec<FileEntryDto>,

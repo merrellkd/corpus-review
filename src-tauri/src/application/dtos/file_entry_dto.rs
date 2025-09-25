@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 /// Represents a file or directory with its metadata for
 /// communication between backend and frontend layers.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
 pub struct FileEntryDto {
     /// The name of the file or directory
     pub name: String,

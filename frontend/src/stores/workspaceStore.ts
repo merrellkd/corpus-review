@@ -1,19 +1,23 @@
 import { create } from 'zustand'
 import { devtools } from 'zustand/middleware'
-import { invoke } from '@tauri-apps/api/tauri'
+import { invoke } from '@tauri-apps/api/core'
 import { WorkspaceDto, DirectoryListingDto } from '../domains/workspace/application/dtos/workspace-dtos'
 import { WorkspaceAdapter, FileSystemItem, WorkspaceLayout } from '../adapters/workspace-dto-adapter'
 
 // Backend integration enabled - use real file system data
 const isDevelopment = false // Real backend integration enabled
 
-// Types (simplified)
+// Types (simplified) - matches backend ProjectDto
 interface Project {
   id: string
   name: string
   source_folder: string
-  reports_folder: string
+  source_folder_name?: string
+  note?: string
+  note_preview?: string
+  note_line_count?: number
   created_at: string
+  is_accessible: boolean
 }
 
 
@@ -23,8 +27,12 @@ const mockProject: Project = {
   id: 'project_550e8400-e29b-41d4-a716-446655440000',
   name: 'Sample Research Project',
   source_folder: '/Users/demo/Documents/Research/Source',
-  reports_folder: '/Users/demo/Documents/Research/Reports',
-  created_at: '2024-01-15T10:30:00Z'
+  source_folder_name: 'Source',
+  note: 'This is a sample research project for testing purposes.',
+  note_preview: 'This is a sample research project...',
+  note_line_count: 1,
+  created_at: '2024-01-15T10:30:00Z',
+  is_accessible: true
 }
 
 const mockLayout: WorkspaceLayout = {
@@ -239,7 +247,7 @@ export const useWorkspaceStore = create<WorkspaceState>()(
 
         try {
           // Get project details first
-          const project = await invoke<Project>('get_project', { projectId })
+          const project = await invoke<Project>('open_project', { id: projectId })
 
           // Open workspace using real backend
           const workspace = await invoke<WorkspaceDto>('open_workspace_navigation', {
@@ -247,6 +255,10 @@ export const useWorkspaceStore = create<WorkspaceState>()(
             projectName: project.name,
             sourceFolder: project.source_folder
           })
+
+          // Debug: Log what we actually received
+          console.log('Backend workspace response:', workspace)
+          console.log('Workspace directoryListing:', workspace.directoryListing)
 
           // Convert backend DTOs to store format using adapter
           const adaptedWorkspace = WorkspaceAdapter.adaptWorkspace(workspace)

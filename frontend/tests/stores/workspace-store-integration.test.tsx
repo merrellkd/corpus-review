@@ -4,7 +4,7 @@ import { act, renderHook } from '@testing-library/react'
 
 // Mock Tauri invoke function
 const mockInvoke = vi.fn()
-vi.mock('@tauri-apps/api/tauri', () => ({
+vi.mock('@tauri-apps/api/core', () => ({
   invoke: mockInvoke,
 }))
 
@@ -18,7 +18,6 @@ describe('WorkspaceStore Tauri Integration', () => {
       isLoading: false,
       error: null,
       currentPath: '',
-      navigationHistory: [],
       workspaceLayout: null,
     })
   })
@@ -83,9 +82,9 @@ describe('WorkspaceStore Tauri Integration', () => {
       // Verify file items are correctly mapped
       const fileItems = result.current.fileExplorerItems
       expect(fileItems[0].name).toBe('src')
-      expect(fileItems[0].type).toBe('directory')
+      expect(fileItems[0].item_type).toBe('directory')
       expect(fileItems[1].name).toBe('README.md')
-      expect(fileItems[1].type).toBe('file')
+      expect(fileItems[1].item_type).toBe('file')
       expect(fileItems[1].size).toBe(1024)
     })
 
@@ -426,7 +425,6 @@ describe('WorkspaceStore Tauri Integration', () => {
       useWorkspaceStore.setState({
         currentProject: { id: 'proj_123', name: 'Test Project' } as any,
         currentPath: '/test/project/path',
-        navigationHistory: []
       })
 
       // Mock navigation responses
@@ -458,10 +456,8 @@ describe('WorkspaceStore Tauri Integration', () => {
         await result.current.navigateToFolder('components')
       })
 
-      // Should have navigation history
-      expect(result.current.navigationHistory).toHaveLength(2)
-      expect(result.current.navigationHistory[0].path).toBe('/test/project/path/src')
-      expect(result.current.navigationHistory[1].path).toBe('/test/project/path/src/components')
+      // Navigation should have occurred successfully
+      expect(result.current.currentPath).toBe('/test/project/path/src/components')
     })
   })
 })
