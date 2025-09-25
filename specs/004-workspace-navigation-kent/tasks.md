@@ -34,37 +34,37 @@
 - File paths assume existing Tauri app structure from constitution
 
 ## Phase 3.1: Setup (No new dependencies required)
-- [ ] T001 Verify existing workspace navigation dependencies are available (Tauri file system APIs)
-- [ ] T002 [P] Add workspace error types to src-tauri/src/domain/errors/workspace_error.rs
+- [x] T001 Verify existing workspace navigation dependencies are available (Tauri file system APIs)
+- [x] T002 [P] Add workspace error types to src-tauri/src/domain/errors/workspace_error.rs
 
 ## Phase 3.2: Tests First (TDD) ⚠️ MUST COMPLETE BEFORE 3.3
 
 ### Contract Tests (4 commands - all [P])
-- [ ] T003 [P] Create contract test for open_workspace command in src-tauri/src/commands/tests/workspace_tests.rs
-- [ ] T004 [P] Create contract test for list_directory command in src-tauri/src/commands/tests/workspace_tests.rs
-- [ ] T005 [P] Create contract test for navigate_to_folder command in src-tauri/src/commands/tests/workspace_tests.rs
-- [ ] T006 [P] Create contract test for navigate_to_parent command in src-tauri/src/commands/tests/workspace_tests.rs
+- [x] T003 [P] Create contract test for open_workspace command in src-tauri/src/commands/tests/workspace_tests.rs
+- [x] T004 [P] Create contract test for list_directory command in src-tauri/src/commands/tests/workspace_tests.rs
+- [x] T005 [P] Create contract test for navigate_to_folder command in src-tauri/src/commands/tests/workspace_tests.rs
+- [x] T006 [P] Create contract test for navigate_to_parent command in src-tauri/src/commands/tests/workspace_tests.rs
 
 ### Integration Test Scenarios (9 scenarios - all [P])
-- [ ] T007 [P] Create integration test for "Open Project Workspace (Happy Path)" in tests/integration/workspace_navigation_test.rs
-- [ ] T008 [P] Create integration test for "Basic Folder Navigation" in tests/integration/workspace_navigation_test.rs
-- [ ] T009 [P] Create integration test for "Empty Folder Handling" in tests/integration/workspace_navigation_test.rs
-- [ ] T010 [P] Create integration test for "Return to Project List" in tests/integration/workspace_navigation_test.rs
-- [ ] T011 [P] Create integration test for "Inaccessible Source Folder" in tests/integration/workspace_navigation_test.rs
-- [ ] T012 [P] Create integration test for "Permission Denied Handling" in tests/integration/workspace_navigation_test.rs
-- [ ] T013 [P] Create integration test for "Large Directory Handling" in tests/integration/workspace_navigation_test.rs
-- [ ] T014 [P] Create integration test for "Workspace Session Persistence" in tests/integration/workspace_navigation_test.rs
-- [ ] T015 [P] Create integration test for "Multiple Project Context" in tests/integration/workspace_navigation_test.rs
+- [x] T007 [P] Create integration test for "Open Project Workspace (Happy Path)" in tests/integration/workspace_navigation_test.rs
+- [x] T008 [P] Create integration test for "Basic Folder Navigation" in tests/integration/workspace_navigation_test.rs
+- [x] T009 [P] Create integration test for "Empty Folder Handling" in tests/integration/workspace_navigation_test.rs
+- [x] T010 [P] Create integration test for "Return to Project List" in tests/integration/workspace_navigation_test.rs
+- [x] T011 [P] Create integration test for "Inaccessible Source Folder" in tests/integration/workspace_navigation_test.rs
+- [x] T012 [P] Create integration test for "Permission Denied Handling" in tests/integration/workspace_navigation_test.rs
+- [x] T013 [P] Create integration test for "Large Directory Handling" in tests/integration/workspace_navigation_test.rs
+- [x] T014 [P] Create integration test for "Workspace Session Persistence" in tests/integration/workspace_navigation_test.rs
+- [x] T015 [P] Create integration test for "Multiple Project Context" in tests/integration/workspace_navigation_test.rs
 
 ## Phase 3.3: Domain Layer (Pure Business Logic)
 
 ### Value Objects (all [P])
-- [ ] T016 [P] Create WorkspaceContext value object in src-tauri/src/domain/value_objects/workspace_context.rs
-- [ ] T017 [P] Create WorkspaceContext TypeScript interface in src/domain/value-objects/workspace-context.ts
+- [x] T016 [P] Create WorkspaceContext value object in src-tauri/src/domain/value_objects/workspace_context.rs
+- [x] T017 [P] Create WorkspaceContext TypeScript interface in src/domain/value-objects/workspace-context.ts
 
 ### Entities (all [P])
-- [ ] T018 [P] Create FileEntry entity with FileEntryType enum in src-tauri/src/domain/entities/file_entry.rs
-- [ ] T019 [P] Create FileEntry TypeScript interface in src/domain/entities/file-entry.ts
+- [x] T018 [P] Create FileEntry entity with FileEntryType enum in src-tauri/src/domain/entities/file_entry.rs
+- [x] T019 [P] Create FileEntry TypeScript interface in src/domain/entities/file-entry.ts
 
 ### Aggregates (all [P])
 - [ ] T020 [P] Create DirectoryListing aggregate with navigation methods in src-tauri/src/domain/aggregates/directory_listing.rs
