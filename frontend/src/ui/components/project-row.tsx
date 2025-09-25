@@ -37,6 +37,7 @@ export interface ProjectRowProps {
   onEdit?: (project: Project) => void;
   onDelete?: (project: Project) => void;
   onOpenFolder?: (project: Project) => void;
+  onOpenWorkspace?: (project: Project) => void;
   onDoubleClick?: (project: Project) => void;
 }
 
@@ -56,6 +57,7 @@ export const ProjectRow: React.FC<ProjectRowProps> = ({
   onEdit,
   onDelete,
   onOpenFolder,
+  onOpenWorkspace,
   onDoubleClick,
 }) => {
   // ====================
@@ -95,6 +97,11 @@ export const ProjectRow: React.FC<ProjectRowProps> = ({
   const handleOpenFolderClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     onOpenFolder?.(project);
+  };
+
+  const handleOpenWorkspaceClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onOpenWorkspace?.(project);
   };
 
   // ====================
@@ -208,6 +215,16 @@ export const ProjectRow: React.FC<ProjectRowProps> = ({
       {/* Actions */}
       {showActions && (
         <div className="flex-shrink-0 ml-4 flex items-center space-x-2">
+          {/* Browse Files Button */}
+          <button
+            onClick={handleOpenWorkspaceClick}
+            className="px-3 py-1 text-sm bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors rounded-md font-medium"
+            title="Browse project files"
+            aria-label={`Browse ${project.name.value} files`}
+          >
+            Browse Files
+          </button>
+
           {/* Open Folder Button */}
           <button
             onClick={handleOpenFolderClick}

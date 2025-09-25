@@ -22,7 +22,15 @@ import DeleteConfirmDialog from '../components/delete-confirm-dialog';
 // Component
 // ====================
 
-export const ProjectListPage: React.FC = () => {
+export interface ProjectListPageProps {
+  /** Callback to open workspace for a project */
+  onOpenWorkspace?: (project: Project) => void;
+}
+
+export const ProjectListPage: React.FC<ProjectListPageProps> = ({
+  onOpenWorkspace,
+}) => {
+
   // ====================
   // Store State
   // ====================
@@ -121,6 +129,11 @@ export const ProjectListPage: React.FC = () => {
     } catch (error) {
       console.error('Failed to open folder:', error);
     }
+  };
+
+  const handleProjectOpenWorkspace = (project: Project) => {
+    // Use callback to navigate to workspace
+    onOpenWorkspace?.(project);
   };
 
   const handleBulkDelete = () => {
@@ -443,6 +456,7 @@ export const ProjectListPage: React.FC = () => {
               onEdit={handleProjectEdit}
               onDelete={handleProjectDelete}
               onOpenFolder={handleProjectOpenFolder}
+              onOpenWorkspace={handleProjectOpenWorkspace}
               onDoubleClick={handleProjectDoubleClick}
             />
           ))}

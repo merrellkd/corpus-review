@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import ProjectListPage from './ui/pages/project-list-page';
-import { useProjectStore } from './stores/project-store';
+import { ProjectListPage } from './ui/pages/project-list-page';
 import { ProjectWorkspace } from './components/ProjectWorkspace';
+import { useProjectStore } from './stores/project-store';
+import { Project } from './domains/project';
 
 /**
  * Main App Component
@@ -10,48 +11,28 @@ import { ProjectWorkspace } from './components/ProjectWorkspace';
  */
 function App() {
   const [currentView, setCurrentView] = useState<'list' | 'workspace'>('list');
-  const currentProject = useProjectStore((state) => state.currentProject);
+  const [selectedProjectForWorkspace, setSelectedProjectForWorkspace] = useState<Project | null>(null);
 
-  // Auto-switch to workspace when project is selected
-  React.useEffect(() => {
-    if (currentProject) {
-      setCurrentView('workspace');
-    }
-  }, [currentProject]);
+  const handleOpenWorkspace = (project: Project) => {
+    setSelectedProjectForWorkspace(project);
+    setCurrentView('workspace');
+  };
 
   const handleBackToList = () => {
     setCurrentView('list');
-    // Clear current project to return to list view
-    useProjectStore.getState().setCurrentProject(null);
+    setSelectedProjectForWorkspace(null);
   };
 
   const renderCurrentView = () => {
     switch (currentView) {
       case 'workspace':
-        if (currentProject) {
+        if (selectedProjectForWorkspace) {
           return (
-            <div className="h-full flex flex-col">
-              {/* Navigation header */}
-              <div className="bg-white border-b border-gray-200 px-4 py-2 flex items-center">
-                <button
-                  onClick={handleBackToList}
-                  className="flex items-center space-x-2 text-sm text-gray-600 hover:text-gray-900 transition-colors"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                  </svg>
-                  <span>Back to Projects</span>
-                </button>
-                <div className="mx-4 text-sm text-gray-400">|</div>
-                <div className="text-sm font-medium text-gray-900">
-                  {currentProject.name.value}
-                </div>
-              </div>
-
-              {/* Workspace content */}
-              <div className="flex-1">
-                <ProjectWorkspace projectId={currentProject.id.value} />
-              </div>
+            <div className="h-full">
+              <ProjectWorkspace
+                projectId={selectedProjectForWorkspace.id.value}
+                onBackToProjects={handleBackToList}
+              />
             </div>
           );
         }
@@ -61,7 +42,7 @@ function App() {
 
       case 'list':
       default:
-        return <ProjectListPage />;
+        return <ProjectListPage onOpenWorkspace={handleOpenWorkspace} />;
     }
   };
 

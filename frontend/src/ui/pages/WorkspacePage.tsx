@@ -1,10 +1,20 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
 import { ProjectHeader } from '../components/workspace/ProjectHeader';
 import { NavigationBreadcrumb } from '../components/workspace/NavigationBreadcrumb';
 import { FileList } from '../components/workspace/FileList';
 import { useWorkspaceStore } from '../../stores/workspace-store';
 import { ViewMode } from '../../domains/workspace/application/dtos/workspace-dtos';
+import { Project } from '../../domains/project';
+
+/**
+ * Props for the WorkspacePage component
+ */
+export interface WorkspacePageProps {
+  /** The project to display workspace for */
+  project: Project;
+  /** Callback for returning to project list */
+  onBackToProjects: () => void;
+}
 
 /**
  * Main workspace page component
@@ -12,9 +22,10 @@ import { ViewMode } from '../../domains/workspace/application/dtos/workspace-dto
  * Provides the primary interface for navigating project files and folders.
  * Integrates all workspace components and manages the overall workspace state.
  */
-export const WorkspacePage: React.FC = () => {
-  const { projectId } = useParams<{ projectId: string }>();
-  const navigate = useNavigate();
+export const WorkspacePage: React.FC<WorkspacePageProps> = ({
+  project,
+  onBackToProjects,
+}) => {
 
   // Workspace store state
   const {
@@ -34,26 +45,25 @@ export const WorkspacePage: React.FC = () => {
 
   // Load workspace on mount
   useEffect(() => {
-    if (projectId) {
-      // We would need to get project details first
-      // For now, we'll simulate opening a workspace
-      // In a real app, this would fetch project details then open workspace
-      loadWorkspaceForProject(projectId);
+    if (project) {
+      // Load workspace using the provided project data
+      loadWorkspaceForProject(project);
     }
 
     // Cleanup on unmount
     return () => {
       clearWorkspace();
     };
-  }, [projectId]);
+  }, [project]);
 
-  const loadWorkspaceForProject = async (id: string) => {
+  const loadWorkspaceForProject = async (projectData: Project) => {
     try {
-      // This is a simplified version - in reality we'd:
-      // 1. Fetch project details from project service
-      // 2. Use those details to open the workspace
-      // For now, we'll use placeholder data
-      await openWorkspace(id, 'Sample Project', '/path/to/project');
+      // Open workspace using the provided project data
+      await openWorkspace(
+        projectData.id.value,
+        projectData.name.value,
+        projectData.sourceFolder.value
+      );
     } catch (error) {
       console.error('Failed to load workspace:', error);
     }
@@ -61,7 +71,7 @@ export const WorkspacePage: React.FC = () => {
 
   const handleBackToProjects = () => {
     clearWorkspace();
-    navigate('/projects');
+    onBackToProjects();
   };
 
   const handleFolderDoubleClick = async (folderName: string) => {
@@ -191,7 +201,7 @@ export const WorkspacePage: React.FC = () => {
 
       <main className="workspace-page__content">
         <FileList
-          directoryListing={currentWorkspace.directoryListing}
+          directoryListing={currentWorkspace?.directoryListing}
           selectedFiles={selectedFiles}
           viewMode={viewMode}
           onFolderDoubleClick={handleFolderDoubleClick}

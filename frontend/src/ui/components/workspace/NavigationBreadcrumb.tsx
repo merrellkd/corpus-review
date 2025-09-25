@@ -26,6 +26,17 @@ export const NavigationBreadcrumb: React.FC<NavigationBreadcrumbProps> = ({
   onNavigate,
   onNavigateUp,
 }) => {
+  // Early return if workspace or directoryListing is not available
+  if (!workspace || !workspace.directoryListing) {
+    return (
+      <nav className="navigation-breadcrumb" aria-label="File path navigation">
+        <div className="navigation-breadcrumb__container">
+          <div className="navigation-breadcrumb__loading">Loading navigation...</div>
+        </div>
+      </nav>
+    );
+  }
+
   // Get breadcrumb segments from the workspace
   const segments = WorkspaceDtoUtils.getBreadcrumbSegments(workspace);
   const canNavigateUp = workspace.directoryListing.canNavigateUp;

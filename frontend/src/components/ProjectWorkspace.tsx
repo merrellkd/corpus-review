@@ -11,9 +11,10 @@ import { DocumentWorkspace } from './DocumentWorkspace'
 
 export interface ProjectWorkspaceProps {
   projectId: string
+  onBackToProjects?: () => void
 }
 
-export const ProjectWorkspace: React.FC<ProjectWorkspaceProps> = ({ projectId }) => {
+export const ProjectWorkspace: React.FC<ProjectWorkspaceProps> = ({ projectId, onBackToProjects }) => {
   const {
     currentProject,
     workspaceLayout,
@@ -85,7 +86,10 @@ export const ProjectWorkspace: React.FC<ProjectWorkspaceProps> = ({ projectId })
       {/* Top Header - Project title and settings */}
       <div className="h-14 bg-white border-b border-gray-200 flex items-center justify-between px-4">
         <div className="flex items-center space-x-4">
-          <button className="text-blue-600 hover:text-blue-800 text-sm">
+          <button
+            onClick={onBackToProjects}
+            className="text-blue-600 hover:text-blue-800 text-sm"
+          >
             Return to Project List
           </button>
           <div className="text-gray-300">|</div>

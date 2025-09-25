@@ -66,6 +66,12 @@ export const useWorkspaceStore = create<WorkspaceState>()(
           sourceFolder,
         });
 
+        console.log('Workspace opened successfully:', {
+          workspace,
+          hasDirectoryListing: !!workspace.directoryListing,
+          directoryListingEntries: workspace.directoryListing?.entries?.length || 0,
+        });
+
         set({
           currentWorkspace: workspace,
           isLoading: false,

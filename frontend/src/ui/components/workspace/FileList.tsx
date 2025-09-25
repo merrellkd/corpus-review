@@ -34,6 +34,17 @@ export const FileList: React.FC<FileListProps> = ({
   onFolderDoubleClick,
   onFileSelect,
 }) => {
+  // Early return if directoryListing is not available
+  if (!directoryListing || !directoryListing.entries) {
+    return (
+      <div className="file-list file-list--loading">
+        <div className="file-list__loading-message">
+          Loading files...
+        </div>
+      </div>
+    );
+  }
+
   // Sort entries for consistent display
   const sortedEntries = WorkspaceDtoUtils.sortEntriesForListing(directoryListing.entries);
 

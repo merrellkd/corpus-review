@@ -98,7 +98,10 @@ export class WorkspaceDtoUtils {
   /**
    * Sort entries for consistent listing (directories first, then files, alphabetically)
    */
-  static sortEntriesForListing(entries: FileEntryDto[]): FileEntryDto[] {
+  static sortEntriesForListing(entries: FileEntryDto[] | undefined): FileEntryDto[] {
+    if (!entries) {
+      return [];
+    }
     return [...entries].sort((a, b) => {
       // Directories first
       if (this.isDirectory(a) && this.isFile(b)) return -1;
@@ -112,7 +115,10 @@ export class WorkspaceDtoUtils {
   /**
    * Generate breadcrumb segments from workspace
    */
-  static getBreadcrumbSegments(workspace: WorkspaceDto): BreadcrumbSegment[] {
+  static getBreadcrumbSegments(workspace: WorkspaceDto | null | undefined): BreadcrumbSegment[] {
+    if (!workspace) {
+      return [];
+    }
     const segments: BreadcrumbSegment[] = [];
 
     // Start with project root
