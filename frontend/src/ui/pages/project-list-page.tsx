@@ -6,14 +6,14 @@
  */
 
 import React, { useEffect, useState } from 'react';
-import { Project } from '../../domains/project';
 import {
   useProjectStore,
   useProjectList,
   useProjectActions,
   useProjectDialogs,
   useProjectSelection,
-} from '../../stores/project-store';
+} from '../../features/project-management/store';
+import type { ProjectListItem } from '../../features/project-management/store';
 import ProjectRow from '../components/project-row';
 import CreateProjectForm, { CreateProjectModal } from '../components/create-project-form';
 import DeleteConfirmDialog from '../components/delete-confirm-dialog';
@@ -24,7 +24,7 @@ import DeleteConfirmDialog from '../components/delete-confirm-dialog';
 
 export interface ProjectListPageProps {
   /** Callback to open workspace for a project */
-  onOpenWorkspace?: (project: Project) => void;
+  onOpenWorkspace?: (projectId: string) => void;
 }
 
 export const ProjectListPage: React.FC<ProjectListPageProps> = ({
@@ -36,7 +36,7 @@ export const ProjectListPage: React.FC<ProjectListPageProps> = ({
   // ====================
 
   const { projects, isLoading, error, totalProjects, currentPage, hasMore } = useProjectList();
-  const { fetchProjectsPaged, searchProjects, setSearchQuery, refreshProjects, clearError } = useProjectActions();
+  const { fetchProjectsPaged, setSearchQuery, refreshProjects, clearError } = useProjectActions();
 
   const {
     showCreateDialog,
@@ -57,7 +57,6 @@ export const ProjectListPage: React.FC<ProjectListPageProps> = ({
   } = useProjectSelection();
 
   const deleteProject = useProjectStore((state) => state.deleteProject);
-  const deleteBulkProjects = useProjectStore((state) => state.deleteBulkProjects);
   const openProject = useProjectStore((state) => state.openProject);
   const openProjectFolder = useProjectStore((state) => state.openProjectFolder);
   const showDeleteProjectDialog = useProjectStore((state) => state.showDeleteProjectDialog);
@@ -107,45 +106,45 @@ export const ProjectListPage: React.FC<ProjectListPageProps> = ({
     setSearchQuery(query);
   };
 
-  const handleProjectClick = (project: Project) => {
-    selectProject(project.id.value);
+  const handleProjectClick = (project: ProjectListItem) => {
+    selectProject(project.id);
   };
 
-  const handleProjectDoubleClick = async (project: Project) => {
-    await openProject(project.id.value);
+  const handleProjectDoubleClick = async (project: ProjectListItem) => {
+    await openProject(project.id);
   };
 
-  const handleProjectEdit = (project: Project) => {
-    showUpdateProjectDialog(project.id.value);
+  const handleProjectEdit = (project: ProjectListItem) => {
+    showUpdateProjectDialog(project.id);
   };
 
-  const handleProjectDelete = (project: Project) => {
-    showDeleteProjectDialog(project.id.value);
+  const handleProjectDelete = (project: ProjectListItem) => {
+    showDeleteProjectDialog(project.id);
   };
 
-  const handleProjectOpenFolder = async (project: Project) => {
+  const handleProjectOpenFolder = async (project: ProjectListItem) => {
     try {
-      await openProjectFolder(project.id.value);
+      await openProjectFolder(project.id);
     } catch (error) {
       console.error('Failed to open folder:', error);
     }
   };
 
-  const handleProjectOpenWorkspace = (project: Project) => {
+  const handleProjectOpenWorkspace = (project: ProjectListItem) => {
     // Use callback to navigate to workspace
-    onOpenWorkspace?.(project);
+    onOpenWorkspace?.(project.id);
   };
 
   const handleBulkDelete = () => {
     if (selectedCount > 0) {
       // For bulk delete, we need to pass the projects to delete
-      const projectsToDelete = projects.filter(p => selectedProjectIds.includes(p.id.value));
+      const projectsToDelete = projects.filter(p => selectedProjectIds.includes(p.id));
       // Since DeleteConfirmDialog expects Project | Project[], we'll handle this
       handleDeleteConfirm(projectsToDelete);
     }
   };
 
-  const handleDeleteConfirm = (projectsToDelete?: Project | Project[]) => {
+  const handleDeleteConfirm = (projectsToDelete?: ProjectListItem | ProjectListItem[]) => {
     // Implementation would open delete dialog with the projects
     console.log('Delete confirm for:', projectsToDelete || 'current selection');
   };
@@ -177,7 +176,7 @@ export const ProjectListPage: React.FC<ProjectListPageProps> = ({
 
   const getProjectToDelete = () => {
     if (!projectToDelete) return null;
-    return projects.find(p => p.id.value === projectToDelete) || null;
+    return projects.find(p => p.id === projectToDelete) || null;
   };
 
   // ====================
@@ -446,9 +445,9 @@ export const ProjectListPage: React.FC<ProjectListPageProps> = ({
         <div className="divide-y divide-gray-200">
           {projects.map((project) => (
             <ProjectRow
-              key={project.id.value}
+              key={project.id}
               project={project}
-              isSelected={selectedProjectIds.includes(project.id.value)}
+              isSelected={selectedProjectIds.includes(project.id)}
               showSelection={true}
               showActions={true}
               onClick={handleProjectClick}
@@ -540,7 +539,7 @@ export const ProjectListPage: React.FC<ProjectListPageProps> = ({
         isDeleting={isDeleting}
         onConfirm={async () => {
           if (projectToDelete) {
-            await deleteProject(projectToDelete, true);
+            await deleteProject(projectToDelete);
             clearSelection();
           }
         }}

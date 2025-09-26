@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import { ProjectListPage } from './ui/pages/project-list-page';
 import { ProjectWorkspace } from './components/ProjectWorkspace';
-import { useProjectStore } from './stores/project-store';
-import { Project } from './domains/project';
 
 /**
  * Main App Component
@@ -11,26 +9,26 @@ import { Project } from './domains/project';
  */
 function App() {
   const [currentView, setCurrentView] = useState<'list' | 'workspace'>('list');
-  const [selectedProjectForWorkspace, setSelectedProjectForWorkspace] = useState<Project | null>(null);
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
 
-  const handleOpenWorkspace = (project: Project) => {
-    setSelectedProjectForWorkspace(project);
+  const handleOpenWorkspace = (projectId: string) => {
+    setSelectedProjectId(projectId);
     setCurrentView('workspace');
   };
 
   const handleBackToList = () => {
     setCurrentView('list');
-    setSelectedProjectForWorkspace(null);
+    setSelectedProjectId(null);
   };
 
   const renderCurrentView = () => {
     switch (currentView) {
       case 'workspace':
-        if (selectedProjectForWorkspace) {
+        if (selectedProjectId) {
           return (
             <div className="h-full">
               <ProjectWorkspace
-                projectId={selectedProjectForWorkspace.id.value}
+                projectId={selectedProjectId}
                 onBackToProjects={handleBackToList}
               />
             </div>

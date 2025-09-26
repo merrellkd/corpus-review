@@ -1,16 +1,14 @@
 import React from 'react'
-import { useUnifiedPanelState } from '../stores/unifiedPanelState'
+import { useUiStore, uiSelectors } from '../stores/ui-store'
 import { FileExplorer } from './FileExplorer'
 
 export const FilesCategoriesPanel: React.FC = () => {
-  const {
-    isFilesCategoriesPanelActive,
-    fileExplorerVisible,
-    categoryExplorerVisible,
-    isDragDropAvailable,
-    toggleFileExplorer,
-    toggleCategoryExplorer
-  } = useUnifiedPanelState()
+  const isFilesCategoriesPanelActive = useUiStore(uiSelectors.isFilesCategoriesPanelActive)
+  const fileExplorerVisible = useUiStore(uiSelectors.fileExplorerVisible)
+  const categoryExplorerVisible = useUiStore(uiSelectors.categoryExplorerVisible)
+  const isDragDropAvailable = useUiStore(uiSelectors.isDragDropAvailable)
+  const toggleFileExplorer = useUiStore(state => state.toggleFileExplorer)
+  const toggleCategoryExplorer = useUiStore(state => state.toggleCategoryExplorer)
 
   // Don't render if panel is not active
   if (!isFilesCategoriesPanelActive) {

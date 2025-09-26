@@ -1,447 +1,99 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
-import { useUnifiedPanelState, createUnifiedPanelState, useUnifiedPanelStateWithOptions } from '../../src/stores/unifiedPanelState'
+import { useUiStore } from '../../src/stores/ui-store'
 
-describe('Unified Panel State Machine (T034a)', () => {
+const resetUiStore = () => {
+  useUiStore.setState({
+    filesPanelOpen: true,
+    categoriesPanelOpen: false,
+    searchPanelOpen: false,
+    lastFilesCategories: { filesPanelOpen: true, categoriesPanelOpen: false },
+    workspaceLayout: { explorerWidth: 30, workspaceWidth: 70 },
+  })
+}
+
+describe('UI Store Panel State (Phase 1)', () => {
   beforeEach(() => {
-    // Reset store state between tests
-    vi.clearAllMocks()
-
-    // Reset Zustand store to initial state
-    useUnifiedPanelState.setState({
-      currentState: 'none',
-      lastValidFilesCategories: {
-        fileExplorerVisible: true,
-        categoryExplorerVisible: false
-      },
-      timestamp: Date.now(),
-      isFilesCategoriesPanelActive: false,
-      isSearchPanelActive: false,
-      isDragDropAvailable: false,
-      fileExplorerVisible: false,
-      categoryExplorerVisible: false,
-    })
+    resetUiStore()
   })
 
-  describe('State Machine Definition', () => {
-    it('should initialize with none state and default lastValidState', () => {
-      const { result } = renderHook(() => useUnifiedPanelState())
+  it('initializes with files panel open and categories closed', () => {
+    const { result } = renderHook(() => useUiStore())
 
-      expect(result.current.currentState).toBe('none')
-      expect(result.current.lastValidFilesCategories).toEqual({
-        fileExplorerVisible: true,
-        categoryExplorerVisible: false
-      })
-    })
-
-    it('should support all 5 defined states', () => {
-      const validStates = ['none', 'files-only', 'categories-only', 'files-and-categories', 'search']
-      const { result } = renderHook(() => useUnifiedPanelState())
-
-      validStates.forEach(state => {
-        act(() => {
-          result.current.setState(state as any)
-        })
-        expect(result.current.currentState).toBe(state)
-      })
-    })
+    expect(result.current.filesPanelOpen).toBe(true)
+    expect(result.current.categoriesPanelOpen).toBe(false)
+    expect(result.current.searchPanelOpen).toBe(false)
+    expect(result.current.workspaceLayout).toEqual({ explorerWidth: 30, workspaceWidth: 70 })
   })
 
-  describe('Files & Categories Button Toggle Logic', () => {
-    it('should restore to lastValidState when toggling from none to Files & Categories', () => {
-      const { result } = renderHook(() => useUnifiedPanelState())
+  it('toggles files & categories panels off and restores last combination', () => {
+    const { result } = renderHook(() => useUiStore())
 
-      // Set a specific lastValidState
-      act(() => {
-        result.current.setLastValidState({
-          fileExplorerVisible: false,
-          categoryExplorerVisible: true
-        })
-      })
-
-      // Toggle Files & Categories from none
-      act(() => {
-        result.current.toggleFilesCategories()
-      })
-
-      expect(result.current.currentState).toBe('categories-only')
+    act(() => {
+      result.current.toggleCategoryExplorer()
     })
 
-    it('should default to files-only when no previous lastValidState exists', () => {
-      const { result } = renderHook(() => useUnifiedPanelState())
-
-      // Ensure we start from none with default lastValidState
-      expect(result.current.currentState).toBe('none')
-
-      act(() => {
-        result.current.toggleFilesCategories()
-      })
-
-      expect(result.current.currentState).toBe('files-only')
+    act(() => {
+      result.current.toggleFilesCategories()
     })
 
-    it('should save current state as lastValidState when toggling off', () => {
-      const { result } = renderHook(() => useUnifiedPanelState())
+    expect(result.current.filesPanelOpen).toBe(false)
+    expect(result.current.categoriesPanelOpen).toBe(false)
 
-      // Set to files-and-categories state
-      act(() => {
-        result.current.setState('files-and-categories')
-      })
-
-      // Toggle off
-      act(() => {
-        result.current.toggleFilesCategories()
-      })
-
-      expect(result.current.currentState).toBe('none')
-      expect(result.current.lastValidFilesCategories).toEqual({
-        fileExplorerVisible: true,
-        categoryExplorerVisible: true
-      })
+    act(() => {
+      result.current.toggleFilesCategories()
     })
+
+    expect(result.current.filesPanelOpen).toBe(true)
+    expect(result.current.categoriesPanelOpen).toBe(true)
   })
 
-  describe('Search Button Toggle Logic', () => {
-    it('should transition to search state from any Files & Categories state', () => {
-      const { result } = renderHook(() => useUnifiedPanelState())
+  it('activates search panel and restores previous panels when toggled off', () => {
+    const { result } = renderHook(() => useUiStore())
 
-      // Start from files-and-categories
-      act(() => {
-        result.current.setState('files-and-categories')
-      })
-
-      act(() => {
-        result.current.toggleSearch()
-      })
-
-      expect(result.current.currentState).toBe('search')
+    act(() => {
+      result.current.toggleCategoryExplorer()
     })
 
-    it('should save Files & Categories state when switching to search', () => {
-      const { result } = renderHook(() => useUnifiedPanelState())
-
-      // Set to categories-only
-      act(() => {
-        result.current.setState('categories-only')
-      })
-
-      act(() => {
-        result.current.toggleSearch()
-      })
-
-      expect(result.current.currentState).toBe('search')
-      expect(result.current.lastValidFilesCategories).toEqual({
-        fileExplorerVisible: false,
-        categoryExplorerVisible: true
-      })
+    act(() => {
+      result.current.toggleSearchPanel()
     })
 
-    it('should toggle off to none when already in search state', () => {
-      const { result } = renderHook(() => useUnifiedPanelState())
+    expect(result.current.searchPanelOpen).toBe(true)
+    expect(result.current.filesPanelOpen).toBe(false)
+    expect(result.current.categoriesPanelOpen).toBe(false)
 
-      // Set to search state
-      act(() => {
-        result.current.setState('search')
-      })
-
-      act(() => {
-        result.current.toggleSearch()
-      })
-
-      expect(result.current.currentState).toBe('none')
+    act(() => {
+      result.current.toggleSearchPanel()
     })
+
+    expect(result.current.searchPanelOpen).toBe(false)
+    expect(result.current.filesPanelOpen).toBe(true)
+    expect(result.current.categoriesPanelOpen).toBe(true)
   })
 
-  describe('Section Toggle Logic (Internal to Files & Categories)', () => {
-    it('should transition files-only to files-and-categories when toggling Category Explorer on', () => {
-      const { result } = renderHook(() => useUnifiedPanelState())
+  it('toggleFileExplorer only affects file panel and clears search', () => {
+    const { result } = renderHook(() => useUiStore())
 
-      act(() => {
-        result.current.setState('files-only')
-      })
-
-      act(() => {
-        result.current.toggleCategoryExplorer()
-      })
-
-      expect(result.current.currentState).toBe('files-and-categories')
+    act(() => {
+      result.current.toggleSearchPanel()
     })
 
-    it('should transition categories-only to files-and-categories when toggling File Explorer on', () => {
-      const { result } = renderHook(() => useUnifiedPanelState())
-
-      act(() => {
-        result.current.setState('categories-only')
-      })
-
-      act(() => {
-        result.current.toggleFileExplorer()
-      })
-
-      expect(result.current.currentState).toBe('files-and-categories')
+    act(() => {
+      result.current.toggleFileExplorer()
     })
 
-    it('should transition files-and-categories to categories-only when toggling File Explorer off', () => {
-      const { result } = renderHook(() => useUnifiedPanelState())
-
-      act(() => {
-        result.current.setState('files-and-categories')
-      })
-
-      act(() => {
-        result.current.toggleFileExplorer()
-      })
-
-      expect(result.current.currentState).toBe('categories-only')
-    })
-
-    it('should transition files-and-categories to files-only when toggling Category Explorer off', () => {
-      const { result } = renderHook(() => useUnifiedPanelState())
-
-      act(() => {
-        result.current.setState('files-and-categories')
-      })
-
-      act(() => {
-        result.current.toggleCategoryExplorer()
-      })
-
-      expect(result.current.currentState).toBe('files-only')
-    })
+    expect(result.current.searchPanelOpen).toBe(false)
+    expect(result.current.filesPanelOpen).toBe(true)
   })
 
-  describe('Auto-Close Logic (Preventing Dead States)', () => {
-    it('should auto-close to none when toggling off File Explorer in files-only state', () => {
-      const { result } = renderHook(() => useUnifiedPanelState())
+  it('setExplorerWidth updates layout ratios', () => {
+    const { result } = renderHook(() => useUiStore())
 
-      act(() => {
-        result.current.setState('files-only')
-      })
-
-      act(() => {
-        result.current.toggleFileExplorer()
-      })
-
-      expect(result.current.currentState).toBe('none')
+    act(() => {
+      result.current.setExplorerWidth(40)
     })
 
-    it('should auto-close to none when toggling off Category Explorer in categories-only state', () => {
-      const { result } = renderHook(() => useUnifiedPanelState())
-
-      act(() => {
-        result.current.setState('categories-only')
-      })
-
-      act(() => {
-        result.current.toggleCategoryExplorer()
-      })
-
-      expect(result.current.currentState).toBe('none')
-    })
-
-    it('should save lastValidState when auto-closing', () => {
-      const { result } = renderHook(() => useUnifiedPanelState())
-
-      act(() => {
-        result.current.setState('files-only')
-      })
-
-      act(() => {
-        result.current.toggleFileExplorer()
-      })
-
-      expect(result.current.currentState).toBe('none')
-      expect(result.current.lastValidFilesCategories).toEqual({
-        fileExplorerVisible: true,
-        categoryExplorerVisible: false
-      })
-    })
-  })
-
-  describe('Computed Properties', () => {
-    it('should correctly compute isFilesCategoriesPanelActive', () => {
-      const { result } = renderHook(() => useUnifiedPanelState())
-
-      // Test for none and search states
-      act(() => {
-        result.current.setState('none')
-      })
-      expect(result.current.isFilesCategoriesPanelActive).toBe(false)
-
-      act(() => {
-        result.current.setState('search')
-      })
-      expect(result.current.isFilesCategoriesPanelActive).toBe(false)
-
-      // Test for Files & Categories states
-      const filesCategoriesStates = ['files-only', 'categories-only', 'files-and-categories']
-      filesCategoriesStates.forEach(state => {
-        act(() => {
-          result.current.setState(state as any)
-        })
-        expect(result.current.isFilesCategoriesPanelActive).toBe(true)
-      })
-    })
-
-    it('should correctly compute isSearchPanelActive', () => {
-      const { result } = renderHook(() => useUnifiedPanelState())
-
-      // Test for non-search states
-      const nonSearchStates = ['none', 'files-only', 'categories-only', 'files-and-categories']
-      nonSearchStates.forEach(state => {
-        act(() => {
-          result.current.setState(state as any)
-        })
-        expect(result.current.isSearchPanelActive).toBe(false)
-      })
-
-      // Test for search state
-      act(() => {
-        result.current.setState('search')
-      })
-      expect(result.current.isSearchPanelActive).toBe(true)
-    })
-
-    it('should correctly compute isDragDropAvailable', () => {
-      const { result } = renderHook(() => useUnifiedPanelState())
-
-      // Should only be true for files-and-categories state
-      const states = ['none', 'files-only', 'categories-only', 'search']
-      states.forEach(state => {
-        act(() => {
-          result.current.setState(state as any)
-        })
-        expect(result.current.isDragDropAvailable).toBe(false)
-      })
-
-      act(() => {
-        result.current.setState('files-and-categories')
-      })
-      expect(result.current.isDragDropAvailable).toBe(true)
-    })
-
-    it('should correctly compute section visibility', () => {
-      const { result } = renderHook(() => useUnifiedPanelState())
-
-      // Test files-only
-      act(() => {
-        result.current.setState('files-only')
-      })
-      expect(result.current.fileExplorerVisible).toBe(true)
-      expect(result.current.categoryExplorerVisible).toBe(false)
-
-      // Test categories-only
-      act(() => {
-        result.current.setState('categories-only')
-      })
-      expect(result.current.fileExplorerVisible).toBe(false)
-      expect(result.current.categoryExplorerVisible).toBe(true)
-
-      // Test files-and-categories
-      act(() => {
-        result.current.setState('files-and-categories')
-      })
-      expect(result.current.fileExplorerVisible).toBe(true)
-      expect(result.current.categoryExplorerVisible).toBe(true)
-
-      // Test none and search
-      act(() => {
-        result.current.setState('none')
-      })
-      expect(result.current.fileExplorerVisible).toBe(false)
-      expect(result.current.categoryExplorerVisible).toBe(false)
-
-      act(() => {
-        result.current.setState('search')
-      })
-      expect(result.current.fileExplorerVisible).toBe(false)
-      expect(result.current.categoryExplorerVisible).toBe(false)
-    })
-  })
-
-  describe('Edge Cases and Rapid Interactions', () => {
-    it('should handle rapid button clicking without state inconsistencies', () => {
-      const { result } = renderHook(() => useUnifiedPanelState())
-
-      // Rapid toggling should not cause issues
-      act(() => {
-        result.current.toggleFilesCategories()
-        result.current.toggleFilesCategories()
-        result.current.toggleFilesCategories()
-      })
-
-      // Should end up in a consistent state
-      expect(['none', 'files-only'].includes(result.current.currentState)).toBe(true)
-    })
-
-    it('should handle rapid section toggling', () => {
-      const { result } = renderHook(() => useUnifiedPanelState())
-
-      act(() => {
-        result.current.setState('files-and-categories')
-      })
-
-      act(() => {
-        result.current.toggleFileExplorer()
-        result.current.toggleCategoryExplorer()
-      })
-
-      // Should end up in none state (both sections turned off)
-      expect(result.current.currentState).toBe('none')
-    })
-
-    it('should handle invalid state transitions gracefully', () => {
-      const { result } = renderHook(() => useUnifiedPanelState())
-
-      // Attempt to set invalid state
-      act(() => {
-        result.current.setState('invalid-state' as any)
-      })
-
-      // Should remain in valid state
-      expect(['none', 'files-only', 'categories-only', 'files-and-categories', 'search'].includes(result.current.currentState)).toBe(true)
-    })
-  })
-
-  describe('State Persistence', () => {
-    it('should call persistence callback on state changes', () => {
-      const onStateChange = vi.fn()
-      const { result } = renderHook(() =>
-        createUnifiedPanelState({ onStateChange })
-      )
-
-      act(() => {
-        result.current.toggleFilesCategories()
-      })
-
-      expect(onStateChange).toHaveBeenCalledWith({
-        currentState: 'files-only',
-        lastValidFilesCategories: {
-          fileExplorerVisible: true,
-          categoryExplorerVisible: false
-        },
-        timestamp: expect.any(Number)
-      })
-    })
-
-    it('should restore state from initial options', () => {
-      const initialState = {
-        currentState: 'categories-only' as const,
-        lastValidFilesCategories: {
-          fileExplorerVisible: false,
-          categoryExplorerVisible: true
-        }
-      }
-
-      const { result } = renderHook(() =>
-        useUnifiedPanelStateWithOptions({ initialState })
-      )
-
-      expect(result.current.currentState).toBe('categories-only')
-      expect(result.current.lastValidFilesCategories).toEqual({
-        fileExplorerVisible: false,
-        categoryExplorerVisible: true
-      })
-    })
+    expect(result.current.workspaceLayout).toEqual({ explorerWidth: 40, workspaceWidth: 60 })
   })
 })

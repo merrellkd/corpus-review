@@ -6,7 +6,7 @@
  */
 
 import React from 'react';
-import { Project } from '../../domains/project';
+import type { ProjectListItem } from '../../features/project-management/store';
 
 // ====================
 // Types
@@ -14,7 +14,7 @@ import { Project } from '../../domains/project';
 
 export interface ProjectRowProps {
   /** The project to display */
-  project: Project;
+  project: ProjectListItem;
 
   /** Whether the project row is selected */
   isSelected?: boolean;
@@ -32,14 +32,49 @@ export interface ProjectRowProps {
   className?: string;
 
   // Event handlers
-  onClick?: (project: Project) => void;
+  onClick?: (project: ProjectListItem) => void;
   onSelect?: (projectId: string, selected: boolean) => void;
-  onEdit?: (project: Project) => void;
-  onDelete?: (project: Project) => void;
-  onOpenFolder?: (project: Project) => void;
-  onOpenWorkspace?: (project: Project) => void;
-  onDoubleClick?: (project: Project) => void;
+  onEdit?: (project: ProjectListItem) => void;
+  onDelete?: (project: ProjectListItem) => void;
+  onOpenFolder?: (project: ProjectListItem) => void;
+  onOpenWorkspace?: (project: ProjectListItem) => void;
+  onDoubleClick?: (project: ProjectListItem) => void;
 }
+
+// ====================
+// Helper Functions
+// ====================
+
+const formatCreatedAt = (isoDate: string): { display: string; relative: string } => {
+  const date = new Date(isoDate);
+  if (Number.isNaN(date.getTime())) {
+    return { display: 'Unknown', relative: 'Unknown' };
+  }
+
+  const display = date.toLocaleDateString();
+  const diffMs = Date.now() - date.getTime();
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+  if (diffDays <= 0) {
+    return { display, relative: 'Today' };
+  }
+  if (diffDays === 1) {
+    return { display, relative: '1 day ago' };
+  }
+  if (diffDays < 7) {
+    return { display, relative: `${diffDays} days ago` };
+  }
+  const diffWeeks = Math.floor(diffDays / 7);
+  if (diffWeeks < 4) {
+    return { display, relative: `${diffWeeks} week${diffWeeks === 1 ? '' : 's'} ago` };
+  }
+  const diffMonths = Math.floor(diffDays / 30);
+  if (diffMonths < 12) {
+    return { display, relative: `${diffMonths} month${diffMonths === 1 ? '' : 's'} ago` };
+  }
+  const diffYears = Math.floor(diffDays / 365);
+  return { display, relative: `${diffYears} year${diffYears === 1 ? '' : 's'} ago` };
+};
 
 // ====================
 // Component
@@ -81,7 +116,7 @@ export const ProjectRow: React.FC<ProjectRowProps> = ({
 
   const handleSelectionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     e.stopPropagation();
-    onSelect?.(project.id.value, e.target.checked);
+    onSelect?.(project.id, e.target.checked);
   };
 
   const handleEditClick = (e: React.MouseEvent) => {
@@ -108,13 +143,11 @@ export const ProjectRow: React.FC<ProjectRowProps> = ({
   // Computed Properties
   // ====================
 
-  const folderName = project.sourceFolder.folderName() || 'Unknown Folder';
-  const notePreview = project.note?.preview(100) || null;
-  const createdAtDisplay = project.createdAt.formatDate();
-  const relativeTime = project.createdAt.getRelativeTime();
+  const folderName = project.sourceFolderName || 'Unknown Folder';
+  const notePreview = project.notePreview || project.note || null;
+  const { display: createdAtDisplay, relative: relativeTime } = formatCreatedAt(project.createdAt);
 
-  // Accessibility status
-  const isAccessible = true; // In frontend, we assume accessible unless told otherwise
+  const isAccessible = project.isAccessible;
   const accessibilityIcon = isAccessible ? '✓' : '⚠️';
   const accessibilityTitle = isAccessible ? 'Folder is accessible' : 'Folder is not accessible';
 
@@ -158,172 +191,70 @@ export const ProjectRow: React.FC<ProjectRowProps> = ({
             checked={isSelected}
             onChange={handleSelectionChange}
             className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-            aria-label={`Select ${project.name.value}`}
+            aria-label={`Select project ${project.name}`}
           />
         </div>
       )}
 
-      {/* Accessibility Indicator */}
-      <div
-        className="flex-shrink-0 mr-3 text-lg"
-        title={accessibilityTitle}
-        aria-label={accessibilityTitle}
-      >
-        {accessibilityIcon}
-      </div>
-
-      {/* Main Content */}
+      {/* Project Info */}
       <div className="flex-1 min-w-0">
-        {/* Project Name and Folder */}
         <div className="flex items-center justify-between">
-          <div className="flex-1 min-w-0">
-            <h3 className="text-sm font-medium text-gray-900 truncate">
-              {project.name.value}
-            </h3>
-            <p className="text-sm text-gray-500 truncate" title={project.sourceFolder.value}>
-              📁 {project.sourceFolder.value}
-            </p>
-          </div>
-
-          {/* Creation Date */}
-          <div className="flex-shrink-0 ml-4 text-xs text-gray-400">
-            <div title={createdAtDisplay}>
-              {relativeTime}
+          <div className="flex items-center space-x-3 min-w-0">
+            <div className="text-lg font-medium text-gray-900 truncate" title={project.name}>
+              {project.name}
+            </div>
+            <div className="flex items-center text-xs text-gray-500" title={accessibilityTitle}>
+              <span className={`mr-1 ${isAccessible ? 'text-green-500' : 'text-yellow-500'}`}>
+                {accessibilityIcon}
+              </span>
+              <span>{folderName}</span>
             </div>
           </div>
+
+          <div className="flex items-center space-x-3 text-xs text-gray-500">
+            <span title={project.sourceFolder}>{project.sourceFolder}</span>
+            <span title={createdAtDisplay}>{relativeTime}</span>
+          </div>
         </div>
 
-        {/* Note Preview */}
         {notePreview && (
-          <div className="mt-2">
-            <p className="text-xs text-gray-600 line-clamp-2" title={project.note?.value}>
-              {notePreview}
-            </p>
+          <div className="mt-2 text-sm text-gray-600 line-clamp-2" title={notePreview}>
+            {notePreview}
           </div>
         )}
-
-        {/* Project Metadata */}
-        <div className="mt-2 flex items-center space-x-4 text-xs text-gray-400">
-          <span>ID: {project.id.display()}</span>
-          {project.note && (
-            <span>{project.note.lineCount} lines</span>
-          )}
-          <span>Created {createdAtDisplay}</span>
-        </div>
       </div>
 
       {/* Actions */}
       {showActions && (
         <div className="flex-shrink-0 ml-4 flex items-center space-x-2">
-          {/* Browse Files Button */}
           <button
             onClick={handleOpenWorkspaceClick}
-            className="px-3 py-1 text-sm bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors rounded-md font-medium"
-            title="Browse project files"
-            aria-label={`Browse ${project.name.value} files`}
+            className="px-2 py-1 text-xs bg-blue-50 text-blue-600 rounded hover:bg-blue-100"
           >
-            Browse Files
+            Open
           </button>
-
-          {/* Open Folder Button */}
           <button
             onClick={handleOpenFolderClick}
-            className="p-2 text-gray-400 hover:text-gray-600 transition-colors rounded"
-            title="Open folder in file explorer"
-            aria-label={`Open ${project.name.value} folder`}
+            className="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded hover:bg-gray-200"
           >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-            </svg>
+            Folder
           </button>
-
-          {/* Edit Button */}
           <button
             onClick={handleEditClick}
-            className="p-2 text-gray-400 hover:text-blue-600 transition-colors rounded"
-            title="Edit project"
-            aria-label={`Edit ${project.name.value}`}
+            className="px-2 py-1 text-xs bg-white text-gray-600 border border-gray-300 rounded hover:bg-gray-50"
           >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-            </svg>
+            Edit
           </button>
-
-          {/* Delete Button */}
           <button
             onClick={handleDeleteClick}
-            className="p-2 text-gray-400 hover:text-red-600 transition-colors rounded"
-            title="Delete project"
-            aria-label={`Delete ${project.name.value}`}
+            className="px-2 py-1 text-xs bg-red-50 text-red-600 rounded hover:bg-red-100"
           >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-            </svg>
+            Delete
           </button>
         </div>
       )}
-
-      {/* Loading Overlay */}
-      {isLoading && (
-        <div className="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center">
-          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-        </div>
-      )}
     </div>
   );
 };
-
-// ====================
-// Variants and Extensions
-// ====================
-
-/**
- * Compact version of ProjectRow for dense lists
- */
-export const ProjectRowCompact: React.FC<ProjectRowProps> = (props) => {
-  return (
-    <ProjectRow
-      {...props}
-      className={`${props.className} py-2 text-sm`}
-    />
-  );
-};
-
-/**
- * ProjectRow with context menu support
- */
-export interface ProjectRowWithMenuProps extends ProjectRowProps {
-  menuItems?: Array<{
-    label: string;
-    action: () => void;
-    icon?: React.ReactNode;
-    disabled?: boolean;
-    danger?: boolean;
-  }>;
-  onContextMenu?: (e: React.MouseEvent) => void;
-}
-
-export const ProjectRowWithMenu: React.FC<ProjectRowWithMenuProps> = ({
-  menuItems,
-  onContextMenu,
-  ...props
-}) => {
-  const handleContextMenu = (e: React.MouseEvent) => {
-    if (menuItems && menuItems.length > 0) {
-      e.preventDefault();
-      onContextMenu?.(e);
-    }
-  };
-
-  return (
-    <div onContextMenu={handleContextMenu}>
-      <ProjectRow {...props} />
-    </div>
-  );
-};
-
-// ====================
-// Default Export
-// ====================
 
 export default ProjectRow;

@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react'
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels'
-import { useWorkspaceStore } from '../stores/workspaceStore'
-import { useUnifiedPanelState } from '../stores/unifiedPanelState'
+import { useWorkspaceNavigationStore } from '../features/workspace-navigation/store'
+import { useUiStore, uiSelectors } from '../stores/ui-store'
 
 // New architecture components
 import { TopToolbar } from './TopToolbar'
@@ -17,32 +17,29 @@ export interface ProjectWorkspaceProps {
 export const ProjectWorkspace: React.FC<ProjectWorkspaceProps> = ({ projectId, onBackToProjects }) => {
   const {
     currentProject,
-    workspaceLayout,
     isLoading,
     error,
-    loadProject,
-    updatePanelSizes,
-  } = useWorkspaceStore()
+    loadWorkspaceById,
+  } = useWorkspaceNavigationStore()
 
-  const {
-    isFilesCategoriesPanelActive,
-    isSearchPanelActive,
-  } = useUnifiedPanelState()
+  const workspaceLayout = useUiStore(uiSelectors.workspaceLayout)
+  const isFilesCategoriesPanelActive = useUiStore(uiSelectors.isFilesCategoriesPanelActive)
+  const isSearchPanelActive = useUiStore(uiSelectors.isSearchPanelActive)
+  const setExplorerWidth = useUiStore(state => state.setExplorerWidth)
 
   // Load project on mount
   useEffect(() => {
     if (projectId) {
-      loadProject(projectId)
+      loadWorkspaceById(projectId)
     }
-  }, [projectId, loadProject])
+  }, [projectId, loadWorkspaceById])
 
   // Handle panel resize
-  const handlePanelResize = (panelType: string, sizes: number[]) => {
+  const handlePanelResize = (sizes: number[]) => {
     if (!workspaceLayout) return
 
-    // Convert percentage to pixel approximation (assuming 1200px total width)
-    const explorerWidth = Math.round((sizes[0] / 100) * 1200)
-    updatePanelSizes(panelType, explorerWidth)
+    const explorerWidthPercent = sizes[0]
+    setExplorerWidth(explorerWidthPercent)
   }
 
   if (isLoading) {
@@ -68,7 +65,7 @@ export const ProjectWorkspace: React.FC<ProjectWorkspaceProps> = ({ projectId, o
     )
   }
 
-  if (!currentProject || !workspaceLayout) {
+  if (!currentProject) {
     return (
       <div className="flex items-center justify-center h-screen bg-gray-50" data-testid="workspace-container">
         <p className="text-gray-600">No project loaded</p>
@@ -111,12 +108,12 @@ export const ProjectWorkspace: React.FC<ProjectWorkspaceProps> = ({ projectId, o
         {hasSidePanel ? (
           <PanelGroup
             direction="horizontal"
-            onLayout={(sizes) => handlePanelResize('panel', sizes)}
+            onLayout={handlePanelResize}
           >
             {/* Side Panel - Files & Categories OR Search (mutually exclusive) */}
             <Panel
               id="side-panel"
-              defaultSize={workspaceLayout.explorer_width || 30}
+              defaultSize={workspaceLayout.explorerWidth || 30}
               minSize={15}
               maxSize={70}
               className="bg-white border-r border-gray-200"
@@ -137,7 +134,7 @@ export const ProjectWorkspace: React.FC<ProjectWorkspaceProps> = ({ projectId, o
             {/* Document Workspace */}
             <Panel
               id="document-workspace"
-              defaultSize={workspaceLayout.workspace_width || 70}
+              defaultSize={workspaceLayout.workspaceWidth || 70}
               minSize={30}
             >
               <DocumentWorkspace />
@@ -154,4 +151,3 @@ export const ProjectWorkspace: React.FC<ProjectWorkspaceProps> = ({ projectId, o
     </div>
   )
 }
-

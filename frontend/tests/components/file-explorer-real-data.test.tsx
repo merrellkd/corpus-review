@@ -1,8 +1,10 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest'
+import type { Mock } from 'vitest'
 import React from 'react'
 import { FilesCategoriesPanel } from '../../src/components/FilesCategoriesPanel'
-import { useWorkspaceStore } from '../../src/stores/workspaceStore'
+import { useWorkspaceNavigationStore } from '../../src/features/workspace-navigation/store'
+import { useWorkspaceStore as useDocumentWorkspaceStore } from '../../src/domains/workspace/ui/stores/workspace-store'
 
 // Mock Tauri invoke function
 const mockInvoke = vi.fn()
@@ -10,8 +12,11 @@ vi.mock('@tauri-apps/api/core', () => ({
   invoke: mockInvoke,
 }))
 
-// Mock the workspace store
-vi.mock('../../src/stores/workspaceStore')
+// Mock the workspace stores
+vi.mock('../../src/features/workspace-navigation/store')
+vi.mock('../../src/domains/workspace/ui/stores/workspace-store', () => ({
+  useWorkspaceStore: vi.fn(),
+}))
 
 describe('FilesCategoriesPanel with Real File Data', () => {
   const mockWorkspaceStore = {
@@ -19,14 +24,23 @@ describe('FilesCategoriesPanel with Real File Data', () => {
     isLoading: false,
     error: null as string | null,
     currentPath: '/test/project/path',
+    currentProject: { id: 'project-1', name: 'Project One', sourceFolder: '/test/project/path' },
     navigateToFolder: vi.fn(),
-    refreshFiles: vi.fn(),
-    loadProject: vi.fn(),
+    refreshCurrentDirectory: vi.fn(),
+    loadWorkspaceById: vi.fn(),
+  }
+
+  const mockDocumentWorkspaceStore = {
+    addDocument: vi.fn(),
   }
 
   beforeEach(() => {
     vi.clearAllMocks()
-    ;(useWorkspaceStore as any).mockReturnValue(mockWorkspaceStore)
+    mockWorkspaceStore.fileExplorerItems = []
+    mockWorkspaceStore.isLoading = false
+    mockWorkspaceStore.error = null
+    ;(useWorkspaceNavigationStore as unknown as Mock).mockReturnValue(mockWorkspaceStore)
+    ;(useDocumentWorkspaceStore as unknown as Mock).mockReturnValue(mockDocumentWorkspaceStore)
   })
 
   afterEach(() => {
@@ -230,7 +244,7 @@ describe('FilesCategoriesPanel with Real File Data', () => {
     fireEvent.click(refreshButton)
 
     await waitFor(() => {
-      expect(mockWorkspaceStore.refreshFiles).toHaveBeenCalled()
+      expect(mockWorkspaceStore.refreshCurrentDirectory).toHaveBeenCalled()
     })
   })
 
@@ -327,9 +341,10 @@ export const mockWorkspaceStoreState = (overrides: any = {}) => {
     isLoading: false,
     error: null,
     currentPath: '/test/project/path',
+    currentProject: { id: 'project-1', name: 'Project One', sourceFolder: '/test/project/path' },
     navigateToFolder: vi.fn(),
-    refreshFiles: vi.fn(),
-    loadProject: vi.fn(),
+    refreshCurrentDirectory: vi.fn(),
+    loadWorkspaceById: vi.fn(),
     ...overrides
   }
 }

@@ -1,23 +1,32 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 import { TopToolbar } from '../../src/components/TopToolbar'
+import { useUiStore } from '../../src/stores/ui-store'
 
-// Mock the unified panel state store
 const mockToggleFilesCategories = vi.fn()
 const mockToggleSearch = vi.fn()
 
-vi.mock('../../src/stores/unifiedPanelState', () => ({
-  useUnifiedPanelState: vi.fn(() => ({
-    isFilesCategoriesPanelActive: false,
-    isSearchPanelActive: false,
+const setUiState = (overrides: Partial<ReturnType<typeof useUiStore.getState>>) => {
+  useUiStore.setState({
+    filesPanelOpen: false,
+    categoriesPanelOpen: false,
+    searchPanelOpen: false,
+    lastFilesCategories: { filesPanelOpen: true, categoriesPanelOpen: false },
+    workspaceLayout: { explorerWidth: 30, workspaceWidth: 70 },
     toggleFilesCategories: mockToggleFilesCategories,
-    toggleSearch: mockToggleSearch
-  }))
-}))
+    toggleSearchPanel: mockToggleSearch,
+    toggleFileExplorer: useUiStore.getState().toggleFileExplorer,
+    toggleCategoryExplorer: useUiStore.getState().toggleCategoryExplorer,
+    setExplorerWidth: useUiStore.getState().setExplorerWidth,
+    resetPanels: useUiStore.getState().resetPanels,
+    ...overrides,
+  })
+}
 
 describe('TopToolbar - Unified State Integration', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    setUiState({})
   })
 
   describe('Basic Rendering', () => {
@@ -45,13 +54,7 @@ describe('TopToolbar - Unified State Integration', () => {
     })
 
     it('should show active state for Files & Categories when active', () => {
-      const { useUnifiedPanelState } = require('../../src/stores/unifiedPanelState')
-      useUnifiedPanelState.mockReturnValue({
-        isFilesCategoriesPanelActive: true,
-        isSearchPanelActive: false,
-        toggleFilesCategories: mockToggleFilesCategories,
-        toggleSearch: mockToggleSearch
-      })
+      setUiState({ filesPanelOpen: true })
 
       render(<TopToolbar />)
 
@@ -65,13 +68,7 @@ describe('TopToolbar - Unified State Integration', () => {
     })
 
     it('should show active state for Search when active', () => {
-      const { useUnifiedPanelState } = require('../../src/stores/unifiedPanelState')
-      useUnifiedPanelState.mockReturnValue({
-        isFilesCategoriesPanelActive: false,
-        isSearchPanelActive: true,
-        toggleFilesCategories: mockToggleFilesCategories,
-        toggleSearch: mockToggleSearch
-      })
+      setUiState({ searchPanelOpen: true })
 
       render(<TopToolbar />)
 

@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { ProjectWorkspace } from '../../src/components/ProjectWorkspace'
+import { useUiStore } from '../../src/stores/ui-store'
 
 // Mock react-resizable-panels
 vi.mock('react-resizable-panels', () => ({
@@ -26,41 +27,35 @@ vi.mock('../../src/components/DocumentWorkspace', () => ({
   DocumentWorkspace: () => <div data-testid="document-workspace">Documents</div>
 }))
 
-// Mock workspace store
-vi.mock('../../src/stores/workspaceStore', () => ({
-  useWorkspaceStore: vi.fn(() => ({
+// Mock workspace navigation store
+vi.mock('../../src/features/workspace-navigation/store', () => ({
+  useWorkspaceNavigationStore: vi.fn(() => ({
     currentProject: {
       id: 'test-project',
       name: 'Test Project',
-      sourceFolderPath: '/test/source',
-      reportsFolderPath: '/test/reports'
+      sourceFolder: '/test/source'
     },
-    workspaceLayout: null,
     isLoading: false,
-    loadProject: vi.fn(),
-    updatePanelSizes: vi.fn()
+    error: null,
+    loadWorkspaceById: vi.fn(),
   }))
 }))
 
-// Mock unified panel state
-vi.mock('../../src/stores/unifiedPanelState', () => ({
-  useUnifiedPanelState: vi.fn(() => ({
-    currentState: 'none',
-    isFilesCategoriesPanelActive: false,
-    isSearchPanelActive: false,
-    fileExplorerVisible: true,
-    categoryExplorerVisible: true,
-    isDragDropAvailable: false,
-    toggleFilesCategories: vi.fn(),
-    toggleSearch: vi.fn(),
-    toggleFileExplorer: vi.fn(),
-    toggleCategoryExplorer: vi.fn()
-  }))
-}))
+const setUiState = (overrides: Partial<ReturnType<typeof useUiStore.getState>>) => {
+  useUiStore.setState({
+    filesPanelOpen: true,
+    categoriesPanelOpen: false,
+    searchPanelOpen: false,
+    lastFilesCategories: { filesPanelOpen: true, categoriesPanelOpen: false },
+    workspaceLayout: { explorerWidth: 30, workspaceWidth: 70 },
+    ...overrides,
+  })
+}
 
 describe('ProjectWorkspace V2 - Unified State Integration', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    setUiState({})
   })
 
   describe('Basic Rendering', () => {
@@ -82,19 +77,7 @@ describe('ProjectWorkspace V2 - Unified State Integration', () => {
 
   describe('Panel Visibility Integration', () => {
     it('should show files-categories panel when active', () => {
-      const { useUnifiedPanelState } = require('../../src/stores/unifiedPanelState')
-      useUnifiedPanelState.mockReturnValue({
-        currentState: 'files-only',
-        isFilesCategoriesPanelActive: true,
-        isSearchPanelActive: false,
-        fileExplorerVisible: true,
-        categoryExplorerVisible: false,
-        isDragDropAvailable: false,
-        toggleFilesCategories: vi.fn(),
-        toggleSearch: vi.fn(),
-        toggleFileExplorer: vi.fn(),
-        toggleCategoryExplorer: vi.fn()
-      })
+      setUiState({ filesPanelOpen: true, categoriesPanelOpen: true })
 
       render(<ProjectWorkspace projectId="test-project" />)
       expect(screen.getByTestId('files-categories-panel')).toBeInTheDocument()
@@ -102,18 +85,10 @@ describe('ProjectWorkspace V2 - Unified State Integration', () => {
     })
 
     it('should show search panel when active', () => {
-      const { useUnifiedPanelState } = require('../../src/stores/unifiedPanelState')
-      useUnifiedPanelState.mockReturnValue({
-        currentState: 'search',
-        isFilesCategoriesPanelActive: false,
-        isSearchPanelActive: true,
-        fileExplorerVisible: false,
-        categoryExplorerVisible: false,
-        isDragDropAvailable: false,
-        toggleFilesCategories: vi.fn(),
-        toggleSearch: vi.fn(),
-        toggleFileExplorer: vi.fn(),
-        toggleCategoryExplorer: vi.fn()
+      setUiState({
+        filesPanelOpen: false,
+        categoriesPanelOpen: false,
+        searchPanelOpen: true,
       })
 
       render(<ProjectWorkspace projectId="test-project" />)

@@ -1,0 +1,14 @@
+frontend/src/components/DocumentWorkspace.tsx:import { useWorkspaceStore, workspaceSelectors } from '../domains/workspace/ui/stores/workspace-store'
+frontend/src/components/DocumentWorkspace.tsx:import { LayoutModeType } from '../domains/workspace/domain/value-objects/layout-mode'
+frontend/src/components/DocumentWorkspace.tsx:import { Position, Dimensions } from '../domains/workspace/domain/value-objects/geometry'
+frontend/src/components/DocumentWorkspace.tsx:import { WorkspaceCommandBar } from '../domains/workspace/ui/components/WorkspaceCommandBar'
+frontend/src/components/DocumentWorkspace.tsx:import { DocumentCaddy } from '../domains/workspace/ui/components/DocumentCaddy'
+frontend/src/components/FileExplorer.tsx:import { useWorkspaceStore as useDocumentWorkspaceStore } from '../domains/workspace/ui/stores/workspace-store'
+frontend/src/components/SearchPanel.tsx:import { useWorkspaceStore as useDocumentWorkspaceStore } from '../domains/workspace/ui/stores/workspace-store'
+frontend/src/adapters/workspace-dto-adapter.ts:import { WorkspaceDto, DirectoryListingDto, FileEntryDto } from '../domains/workspace/application/dtos/workspace-dtos'
+frontend/src/shared/file-explorer/workspace-integration.ts:import { Position, Dimensions } from '../../domains/workspace/domain/value-objects/geometry';
+frontend/src/shared/file-explorer/workspace-integration.ts:import { useWorkspaceStore } from '../../domains/workspace/ui/stores/workspace-store';
+frontend/src/shared/file-explorer/workspace-integration.ts:import { useWorkspaceEventDispatcher } from '../../domains/workspace/ui/hooks/useWorkspaceEvents';
+frontend/src/ui/components/workspace/FileList.tsx:import { DirectoryListingDto, FileEntryDto, WorkspaceDtoUtils, ViewMode } from '../../../domains/workspace/application/dtos/workspace-dtos';
+frontend/src/ui/components/workspace/NavigationBreadcrumb.tsx:import { WorkspaceDto, WorkspaceDtoUtils } from '../../../domains/workspace/application/dtos/workspace-dtos';
+frontend/src/ui/components/workspace/ProjectHeader.tsx:import { WorkspaceDto, ViewMode } from '../../../domains/workspace/application/dtos/workspace-dtos';

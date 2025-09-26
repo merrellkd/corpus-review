@@ -6,7 +6,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { Project } from '../../domains/project';
+import type { ProjectListItem } from '../../features/project-management/store';
 
 // ====================
 // Types
@@ -17,7 +17,7 @@ export interface DeleteConfirmDialogProps {
   isOpen: boolean;
 
   /** The project(s) to be deleted */
-  projects: Project | Project[];
+  projects: ProjectListItem | ProjectListItem[];
 
   /** Whether the deletion is in progress */
   isDeleting?: boolean;
@@ -89,7 +89,7 @@ export const DeleteConfirmDialog: React.FC<DeleteConfirmDialogProps> = ({
 
   const defaultMessage = isMultipleProjects
     ? `Are you sure you want to delete ${projectCount} projects? This action cannot be undone.`
-    : `Are you sure you want to delete "${projectList[0]?.name.value}"? This action cannot be undone.`;
+    : `Are you sure you want to delete "${projectList[0]?.name}"? This action cannot be undone.`;
 
   // ====================
   // Effects
@@ -216,24 +216,33 @@ export const DeleteConfirmDialog: React.FC<DeleteConfirmDialogProps> = ({
                 {isMultipleProjects ? 'Projects to be deleted:' : 'Project details:'}
               </h4>
               <div className="space-y-2 max-h-32 overflow-y-auto">
-                {projectList.map((project) => (
-                  <div key={project.id.value} className="text-sm">
-                    <div className="flex items-center justify-between">
-                      <span className="font-medium text-gray-900">{project.name.value}</span>
-                      <span className="text-gray-500 text-xs">
-                        {project.createdAt.formatDate()}
-                      </span>
-                    </div>
-                    <div className="text-gray-600 text-xs truncate" title={project.sourceFolder.value}>
-                      📁 {project.sourceFolder.display(50)}
-                    </div>
-                    {project.note && (
-                      <div className="text-gray-500 text-xs mt-1">
-                        📝 {project.note.preview(60)}
+                {projectList.map((project) => {
+                  const createdAt = new Date(project.createdAt);
+                  const createdAtDisplay = Number.isNaN(createdAt.getTime())
+                    ? 'Unknown'
+                    : createdAt.toLocaleDateString();
+                  const truncatedPath = project.sourceFolder.length > 60
+                    ? `…${project.sourceFolder.slice(-59)}`
+                    : project.sourceFolder;
+                  const notePreview = project.notePreview || project.note;
+
+                  return (
+                    <div key={project.id} className="text-sm">
+                      <div className="flex items-center justify-between">
+                        <span className="font-medium text-gray-900">{project.name}</span>
+                        <span className="text-gray-500 text-xs">{createdAtDisplay}</span>
                       </div>
-                    )}
-                  </div>
-                ))}
+                      <div className="text-gray-600 text-xs truncate" title={project.sourceFolder}>
+                        📁 {truncatedPath}
+                      </div>
+                      {notePreview && (
+                        <div className="text-gray-500 text-xs mt-1">
+                          📝 {notePreview.length > 60 ? `${notePreview.slice(0, 57)}…` : notePreview}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}

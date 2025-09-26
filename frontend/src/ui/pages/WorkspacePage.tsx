@@ -2,16 +2,17 @@ import React, { useEffect, useState } from 'react';
 import { ProjectHeader } from '../components/workspace/ProjectHeader';
 import { NavigationBreadcrumb } from '../components/workspace/NavigationBreadcrumb';
 import { FileList } from '../components/workspace/FileList';
-import { useWorkspaceStore } from '../../stores/workspace-store';
-import { ViewMode } from '../../domains/workspace/application/dtos/workspace-dtos';
-import { Project } from '../../domains/project';
+import { useWorkspaceNavigationStore } from '../../features/workspace-navigation/store';
+import type { ProjectListItem } from '../../features/project-management/store';
+
+type ViewMode = 'list' | 'grid';
 
 /**
  * Props for the WorkspacePage component
  */
 export interface WorkspacePageProps {
   /** The project to display workspace for */
-  project: Project;
+  project: ProjectListItem;
   /** Callback for returning to project list */
   onBackToProjects: () => void;
 }
@@ -32,12 +33,12 @@ export const WorkspacePage: React.FC<WorkspacePageProps> = ({
     currentWorkspace,
     isLoading,
     error,
-    openWorkspace,
+    openWorkspaceFromProject,
     navigateToFolder,
     navigateToParent,
     navigateToPath,
     clearWorkspace,
-  } = useWorkspaceStore();
+  } = useWorkspaceNavigationStore();
 
   // Local UI state
   const [selectedFiles, setSelectedFiles] = useState<Set<string>>(new Set());
@@ -54,16 +55,16 @@ export const WorkspacePage: React.FC<WorkspacePageProps> = ({
     return () => {
       clearWorkspace();
     };
-  }, [project]);
+  }, [project, clearWorkspace]);
 
-  const loadWorkspaceForProject = async (projectData: Project) => {
+  const loadWorkspaceForProject = async (projectData: ProjectListItem) => {
     try {
       // Open workspace using the provided project data
-      await openWorkspace(
-        projectData.id.value,
-        projectData.name.value,
-        projectData.sourceFolder.value
-      );
+      await openWorkspaceFromProject({
+        id: projectData.id,
+        name: projectData.name,
+        sourceFolder: projectData.sourceFolder,
+      });
     } catch (error) {
       console.error('Failed to load workspace:', error);
     }
@@ -78,13 +79,7 @@ export const WorkspacePage: React.FC<WorkspacePageProps> = ({
     if (!currentWorkspace) return;
 
     try {
-      await navigateToFolder(
-        currentWorkspace.projectId,
-        currentWorkspace.projectName,
-        currentWorkspace.sourceFolder,
-        currentWorkspace.currentPath,
-        folderName
-      );
+      await navigateToFolder(folderName);
       // Clear selection when navigating
       setSelectedFiles(new Set());
     } catch (error) {
@@ -96,12 +91,7 @@ export const WorkspacePage: React.FC<WorkspacePageProps> = ({
     if (!currentWorkspace) return;
 
     try {
-      await navigateToParent(
-        currentWorkspace.projectId,
-        currentWorkspace.projectName,
-        currentWorkspace.sourceFolder,
-        currentWorkspace.currentPath
-      );
+      await navigateToParent();
       // Clear selection when navigating
       setSelectedFiles(new Set());
     } catch (error) {
@@ -113,12 +103,7 @@ export const WorkspacePage: React.FC<WorkspacePageProps> = ({
     if (!currentWorkspace) return;
 
     try {
-      await navigateToPath(
-        currentWorkspace.projectId,
-        currentWorkspace.projectName,
-        currentWorkspace.sourceFolder,
-        path
-      );
+      await navigateToPath(path);
       // Clear selection when navigating
       setSelectedFiles(new Set());
     } catch (error) {

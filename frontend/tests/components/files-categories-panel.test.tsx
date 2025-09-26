@@ -1,32 +1,44 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 
-// Mock the unified panel state store
-vi.mock('../../src/stores/unifiedPanelState', () => ({
-  useUnifiedPanelState: vi.fn()
-}))
-
 import { FilesCategoriesPanel } from '../../src/components/FilesCategoriesPanel'
-import { useUnifiedPanelState } from '../../src/stores/unifiedPanelState'
+import { useUiStore } from '../../src/stores/ui-store'
+import type { UiState } from '../../src/stores/ui-store'
 
 const mockToggleFileExplorer = vi.fn()
 const mockToggleCategoryExplorer = vi.fn()
-const mockUseUnifiedPanelState = vi.mocked(useUnifiedPanelState)
+
+const setUiState = (overrides: Partial<UiState>) => {
+  useUiStore.setState(
+    () => ({
+      filesPanelOpen: true,
+      categoriesPanelOpen: false,
+      searchPanelOpen: false,
+      lastFilesCategories: { filesPanelOpen: true, categoriesPanelOpen: false },
+      workspaceLayout: { explorerWidth: 30, workspaceWidth: 70 },
+      toggleFilesCategories: vi.fn(),
+      toggleSearchPanel: vi.fn(),
+      toggleFileExplorer: mockToggleFileExplorer,
+      toggleCategoryExplorer: mockToggleCategoryExplorer,
+      setExplorerWidth: vi.fn(),
+      resetPanels: vi.fn(),
+      ...overrides,
+    }),
+    true
+  )
+}
 
 describe('FilesCategoriesPanel - Unified State Integration', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    setUiState({})
   })
 
   describe('Panel Visibility', () => {
     it('should not render when Files & Categories panel is not active', () => {
-      mockUseUnifiedPanelState.mockReturnValue({
-        isFilesCategoriesPanelActive: false,
-        fileExplorerVisible: false,
-        categoryExplorerVisible: false,
-        isDragDropAvailable: false,
-        toggleFileExplorer: mockToggleFileExplorer,
-        toggleCategoryExplorer: mockToggleCategoryExplorer
+      setUiState({
+        filesPanelOpen: false,
+        categoriesPanelOpen: false,
       })
 
       const { container } = render(<FilesCategoriesPanel />)
@@ -34,13 +46,9 @@ describe('FilesCategoriesPanel - Unified State Integration', () => {
     })
 
     it('should render when Files & Categories panel is active', () => {
-      mockUseUnifiedPanelState.mockReturnValue({
-        isFilesCategoriesPanelActive: true,
-        fileExplorerVisible: true,
-        categoryExplorerVisible: false,
-        isDragDropAvailable: false,
-        toggleFileExplorer: mockToggleFileExplorer,
-        toggleCategoryExplorer: mockToggleCategoryExplorer
+      setUiState({
+        filesPanelOpen: true,
+        categoriesPanelOpen: false,
       })
 
       render(<FilesCategoriesPanel />)
@@ -50,13 +58,9 @@ describe('FilesCategoriesPanel - Unified State Integration', () => {
 
   describe('Section Visibility', () => {
     it('should show only File Explorer when fileExplorerVisible is true', () => {
-      mockUseUnifiedPanelState.mockReturnValue({
-        isFilesCategoriesPanelActive: true,
-        fileExplorerVisible: true,
-        categoryExplorerVisible: false,
-        isDragDropAvailable: false,
-        toggleFileExplorer: mockToggleFileExplorer,
-        toggleCategoryExplorer: mockToggleCategoryExplorer
+      setUiState({
+        filesPanelOpen: true,
+        categoriesPanelOpen: false,
       })
 
       render(<FilesCategoriesPanel />)
@@ -69,13 +73,9 @@ describe('FilesCategoriesPanel - Unified State Integration', () => {
     })
 
     it('should show only Category Explorer when categoryExplorerVisible is true', () => {
-      mockUseUnifiedPanelState.mockReturnValue({
-        isFilesCategoriesPanelActive: true,
-        fileExplorerVisible: false,
-        categoryExplorerVisible: true,
-        isDragDropAvailable: false,
-        toggleFileExplorer: mockToggleFileExplorer,
-        toggleCategoryExplorer: mockToggleCategoryExplorer
+      setUiState({
+        filesPanelOpen: false,
+        categoriesPanelOpen: true,
       })
 
       render(<FilesCategoriesPanel />)
@@ -88,13 +88,9 @@ describe('FilesCategoriesPanel - Unified State Integration', () => {
     })
 
     it('should show both sections when both are visible', () => {
-      mockUseUnifiedPanelState.mockReturnValue({
-        isFilesCategoriesPanelActive: true,
-        fileExplorerVisible: true,
-        categoryExplorerVisible: true,
-        isDragDropAvailable: true,
-        toggleFileExplorer: mockToggleFileExplorer,
-        toggleCategoryExplorer: mockToggleCategoryExplorer
+      setUiState({
+        filesPanelOpen: true,
+        categoriesPanelOpen: true,
       })
 
       render(<FilesCategoriesPanel />)
@@ -110,13 +106,9 @@ describe('FilesCategoriesPanel - Unified State Integration', () => {
 
   describe('Section Toggle Interactions', () => {
     it('should call toggleFileExplorer when File Explorer toggle is clicked', () => {
-      mockUseUnifiedPanelState.mockReturnValue({
-        isFilesCategoriesPanelActive: true,
-        fileExplorerVisible: true,
-        categoryExplorerVisible: false,
-        isDragDropAvailable: false,
-        toggleFileExplorer: mockToggleFileExplorer,
-        toggleCategoryExplorer: mockToggleCategoryExplorer
+      setUiState({
+        filesPanelOpen: true,
+        categoriesPanelOpen: false,
       })
 
       render(<FilesCategoriesPanel />)
@@ -128,13 +120,9 @@ describe('FilesCategoriesPanel - Unified State Integration', () => {
     })
 
     it('should call toggleCategoryExplorer when Category Explorer toggle is clicked', () => {
-      mockUseUnifiedPanelState.mockReturnValue({
-        isFilesCategoriesPanelActive: true,
-        fileExplorerVisible: false,
-        categoryExplorerVisible: true,
-        isDragDropAvailable: false,
-        toggleFileExplorer: mockToggleFileExplorer,
-        toggleCategoryExplorer: mockToggleCategoryExplorer
+      setUiState({
+        filesPanelOpen: false,
+        categoriesPanelOpen: true,
       })
 
       render(<FilesCategoriesPanel />)
@@ -148,13 +136,9 @@ describe('FilesCategoriesPanel - Unified State Integration', () => {
 
   describe('Drag-Drop Status', () => {
     it('should show drag-drop available message when both sections are visible', () => {
-      mockUseUnifiedPanelState.mockReturnValue({
-        isFilesCategoriesPanelActive: true,
-        fileExplorerVisible: true,
-        categoryExplorerVisible: true,
-        isDragDropAvailable: true,
-        toggleFileExplorer: mockToggleFileExplorer,
-        toggleCategoryExplorer: mockToggleCategoryExplorer
+      setUiState({
+        filesPanelOpen: true,
+        categoriesPanelOpen: true,
       })
 
       render(<FilesCategoriesPanel />)
@@ -163,13 +147,9 @@ describe('FilesCategoriesPanel - Unified State Integration', () => {
     })
 
     it('should show appropriate message when drag-drop is not available', () => {
-      mockUseUnifiedPanelState.mockReturnValue({
-        isFilesCategoriesPanelActive: true,
-        fileExplorerVisible: true,
-        categoryExplorerVisible: false,
-        isDragDropAvailable: false,
-        toggleFileExplorer: mockToggleFileExplorer,
-        toggleCategoryExplorer: mockToggleCategoryExplorer
+      setUiState({
+        filesPanelOpen: true,
+        categoriesPanelOpen: false,
       })
 
       render(<FilesCategoriesPanel />)
@@ -180,13 +160,9 @@ describe('FilesCategoriesPanel - Unified State Integration', () => {
 
   describe('Button States', () => {
     it('should show correct active/inactive states for section toggles', () => {
-      mockUseUnifiedPanelState.mockReturnValue({
-        isFilesCategoriesPanelActive: true,
-        fileExplorerVisible: true,
-        categoryExplorerVisible: false,
-        isDragDropAvailable: false,
-        toggleFileExplorer: mockToggleFileExplorer,
-        toggleCategoryExplorer: mockToggleCategoryExplorer
+      setUiState({
+        filesPanelOpen: true,
+        categoriesPanelOpen: false,
       })
 
       render(<FilesCategoriesPanel />)

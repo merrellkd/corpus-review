@@ -10,8 +10,8 @@ import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 
-import { CreateProjectParams, ProjectName, FolderPath, ProjectNote } from '../../domains/project';
-import { useProjectStore } from '../../stores/project-store';
+import { useProjectStore } from '../../features/project-management/store';
+import type { ProjectListItem } from '../../features/project-management/store';
 import { ProjectFolderPicker } from './folder-picker';
 
 // ====================
@@ -60,9 +60,9 @@ export interface CreateProjectFormProps {
   showCancel?: boolean;
 
   /** Event handlers */
-  onSubmit?: (project: any) => void; // Would be Project from domain, but avoiding import issues
+  onSubmit?: (project: ProjectListItem | null) => void;
   onCancel?: () => void;
-  onSuccess?: (project: any) => void;
+  onSuccess?: (project: ProjectListItem) => void;
   onError?: (error: string) => void;
 
   /** Custom styling */
@@ -186,81 +186,29 @@ export const CreateProjectForm: React.FC<CreateProjectFormProps> = ({
   // Event Handlers
   // ====================
 
-  const handleFormSubmit = async (data: any) => {
+  const handleFormSubmit = async (data: CreateProjectFormData) => {
     try {
-      // Validate domain objects first
-      try {
-        ProjectName.new(data.name);
-      } catch (error) {
-        const message = error instanceof Error ? error.message : 'Invalid project name';
-        throw new Error(`Project name validation failed: ${message}`);
-      }
-
-      try {
-        FolderPath.new(data.sourceFolder);
-      } catch (error) {
-        const message = error instanceof Error ? error.message : 'Invalid folder path';
-        throw new Error(`Source folder validation failed: ${message}. Please check that the folder exists and is accessible.`);
-      }
-
-      if (data.note) {
-        try {
-          ProjectNote.new(data.note);
-        } catch (error) {
-          const message = error instanceof Error ? error.message : 'Invalid note';
-          throw new Error(`Project note validation failed: ${message}`);
-        }
-      }
-
-      const params: CreateProjectParams = {
+      const project = await createProject({
         name: data.name,
-        sourceFolder: data.sourceFolder,
+        source_folder: data.sourceFolder,
         note: data.note,
-      };
-
-      // Call custom onSubmit if provided
-      if (onSubmit) {
-        onSubmit(params);
-        return;
-      }
-
-      // Otherwise, create project via store
-      const project = await createProject(params);
+      });
 
       if (project) {
         onSuccess?.(project);
+        onSubmit?.(project);
 
-        // Reset form on success
         if (!isModal) {
           reset();
           setNameAvailability(null);
         }
+      } else {
+        onSubmit?.(null);
       }
     } catch (error) {
-      let errorMessage = 'Failed to create project';
-
-      if (error instanceof Error) {
-        // Check for specific error types and provide better messages
-        if (error.message.includes('name')) {
-          errorMessage = error.message;
-        } else if (error.message.includes('folder') || error.message.includes('path')) {
-          errorMessage = error.message;
-        } else if (error.message.includes('note')) {
-          errorMessage = error.message;
-        } else if (error.message.includes('duplicate') || error.message.includes('already exists')) {
-          errorMessage = 'A project with this name already exists. Please choose a different name.';
-        } else if (error.message.includes('database') || error.message.includes('connection')) {
-          errorMessage = 'Database error occurred. Please try again or contact support if the issue persists.';
-        } else if (error.message.includes('permission') || error.message.includes('access')) {
-          errorMessage = 'Permission denied. Please check that you have access to the selected folder.';
-        } else {
-          // Include the original error message for debugging
-          errorMessage = `Project creation failed: ${error.message}`;
-        }
-      }
-
+      const message = error instanceof Error ? error.message : 'Failed to create project';
       console.error('Project creation error:', error);
-      onError?.(errorMessage);
+      onError?.(message);
     }
   };
 
@@ -278,12 +226,7 @@ export const CreateProjectForm: React.FC<CreateProjectFormProps> = ({
       return 'Source folder is required';
     }
 
-    try {
-      FolderPath.new(path);
-      return null;
-    } catch (error) {
-      return error instanceof Error ? error.message : 'Invalid folder path';
-    }
+    return null;
   }, []);
 
   // ====================

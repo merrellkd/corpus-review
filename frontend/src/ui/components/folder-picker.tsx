@@ -7,7 +7,24 @@
 
 import React, { useState, useCallback, useEffect } from 'react';
 import { open } from '@tauri-apps/plugin-dialog';
-import { FolderPath } from '../../domains/project';
+
+const getFolderName = (path: string): string => {
+  if (!path) {
+    return 'Unknown';
+  }
+
+  let normalized = path.replace(/\\/g, '/');
+  while (normalized.endsWith('/')) {
+    normalized = normalized.slice(0, -1);
+  }
+
+  const segments = normalized.split('/').filter(Boolean);
+  if (segments.length > 0) {
+    return segments[segments.length - 1];
+  }
+
+  return normalized || 'Unknown';
+};
 
 // ====================
 // Types
@@ -160,10 +177,9 @@ export const FolderPicker: React.FC<FolderPickerProps> = ({
     try {
       // In a real implementation, this would call Tauri commands
       // to get folder information. For now, we'll create basic info.
-      const folderPath = FolderPath.new(path);
       const info: FolderInfo = {
         path,
-        name: folderPath.folderName() || 'Unknown',
+        name: getFolderName(path),
         exists: true, // Would check with Tauri file system API
         readable: true, // Would check with Tauri file system API
       };
@@ -417,13 +433,7 @@ export const ProjectFolderPicker: React.FC<Omit<FolderPickerProps, 'validate'>> 
       return 'Folder path is required';
     }
 
-    try {
-      // This would use actual Tauri file system checks
-      FolderPath.new(path);
-      return null; // Valid
-    } catch (error) {
-      return error instanceof Error ? error.message : 'Invalid folder path';
-    }
+    return null;
   }, []);
 
   return (

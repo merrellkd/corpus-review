@@ -1,16 +1,18 @@
 import React, { useState } from 'react'
-import { useWorkspaceStore } from '../stores/workspaceStore'
-import { usePanelStateMachine } from '../stores/panelStateMachine'
+import { useWorkspaceNavigationStore } from '../features/workspace-navigation/store'
+import { useWorkspaceStore as useDocumentWorkspaceStore } from '../domains/workspace/ui/stores/workspace-store'
+import { useUiStore, uiSelectors } from '../stores/ui-store'
 
 export const SearchPanel: React.FC = () => {
   const {
     searchResults,
-    isLoading,
     searchFiles,
-    createDocumentCaddy,
-  } = useWorkspaceStore()
+    searchQuery,
+  } = useWorkspaceNavigationStore()
 
-  const { isSearchPanelActive } = usePanelStateMachine()
+  const { addDocument } = useDocumentWorkspaceStore()
+
+  const isSearchPanelActive = useUiStore(uiSelectors.isSearchPanelActive)
 
   const [query, setQuery] = useState('')
 
@@ -21,7 +23,7 @@ export const SearchPanel: React.FC = () => {
   }
 
   const handleFileClick = (filePath: string) => {
-    createDocumentCaddy(filePath)
+    addDocument(filePath)
   }
 
   // Don't render if this panel is not active due to mutually exclusive behavior
@@ -47,7 +49,7 @@ export const SearchPanel: React.FC = () => {
           />
           <button
             onClick={handleSearch}
-            disabled={!query.trim() || isLoading}
+            disabled={!query.trim()}
             className="text-xs bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 disabled:bg-gray-400"
           >
             Search
@@ -57,11 +59,9 @@ export const SearchPanel: React.FC = () => {
 
       {/* Results */}
       <div className="flex-1 overflow-y-auto">
-        {isLoading ? (
-          <div className="p-3 text-xs text-gray-500">Searching...</div>
-        ) : searchResults.length === 0 ? (
+        {searchResults.length === 0 ? (
           <div className="p-3 text-xs text-gray-500">
-            {query ? 'No results found' : 'Enter a search term to find files'}
+            {searchQuery ? 'No results found' : 'Enter a search term to find files'}
           </div>
         ) : (
           <div className="p-1">
@@ -91,9 +91,7 @@ export const SearchPanel: React.FC = () => {
       {/* Footer with search stats */}
       <div className="px-3 py-2 bg-purple-50 border-t border-purple-200">
         <div className="text-xs text-purple-700">
-          {isLoading
-            ? 'Searching...'
-            : searchResults.length > 0
+          {searchResults.length > 0
             ? `Found ${searchResults.length} results`
             : query
             ? 'No results found'

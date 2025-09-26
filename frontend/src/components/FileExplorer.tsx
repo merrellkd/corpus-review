@@ -1,8 +1,8 @@
 import React, { useState } from 'react'
-import { useWorkspaceStore as useOldWorkspaceStore } from '../stores/workspaceStore'
-import { useWorkspaceStore } from '../domains/workspace/ui/stores/workspace-store'
+import { useWorkspaceNavigationStore } from '../features/workspace-navigation/store'
+import { useWorkspaceStore as useDocumentWorkspaceStore } from '../domains/workspace/ui/stores/workspace-store'
 import { useFileCategorization } from '../stores/fileCategorization'
-import { useUnifiedPanelState } from '../stores/unifiedPanelState'
+import { useUiStore, uiSelectors } from '../stores/ui-store'
 
 export const FileExplorer: React.FC = () => {
   const {
@@ -11,12 +11,12 @@ export const FileExplorer: React.FC = () => {
     isLoading,
     error,
     navigateToFolder,
-    refreshFiles,
+    refreshCurrentDirectory,
     currentProject
-  } = useOldWorkspaceStore()
+  } = useWorkspaceNavigationStore()
 
   // Use the new Multi-Document Workspace store for adding documents
-  const { addDocument } = useWorkspaceStore()
+  const { addDocument } = useDocumentWorkspaceStore()
 
   const {
     startDrag,
@@ -24,12 +24,12 @@ export const FileExplorer: React.FC = () => {
     draggedFile
   } = useFileCategorization()
 
-  const { isDragDropAvailable } = useUnifiedPanelState()
+  const isDragDropAvailable = useUiStore(uiSelectors.isDragDropAvailable)
 
   const [searchQuery, setSearchQuery] = useState('')
 
   const handleRefresh = () => {
-    refreshFiles()
+    refreshCurrentDirectory()
   }
 
   const handleSourceFolderClick = () => {
