@@ -1,42 +1,12 @@
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
-import { invoke } from '@tauri-apps/api/core';
-
-// Backend DTO shapes (duplicated locally to keep feature store independent from domain layer)
-interface FileEntryDto {
-  name: string;
-  path: string;
-  entryType: 'file' | 'directory';
-  size: number | null;
-  modified: string;
-}
-
-interface DirectoryListingDto {
-  entries: FileEntryDto[];
-  isRoot: boolean;
-  parentPath: string | null;
-  canNavigateUp: boolean;
-}
-
-interface WorkspaceDto {
-  projectId: string;
-  projectName: string;
-  sourceFolder: string;
-  currentPath: string;
-  directoryListing: DirectoryListingDto;
-}
-
-interface BackendProject {
-  id: string;
-  name: string;
-  source_folder: string;
-  source_folder_name?: string;
-  note?: string;
-  note_preview?: string;
-  note_line_count?: number;
-  created_at: string;
-  is_accessible: boolean;
-}
+import {
+  workspaceApi,
+  FileEntryDto,
+  DirectoryListingDto,
+  WorkspaceDto,
+  BackendProjectDto,
+} from './services/workspace-api';
 
 export interface FileSystemItem {
   name: string;
@@ -132,7 +102,7 @@ const adaptWorkspace = (workspace: WorkspaceDto) => {
   return { snapshot, fileExplorerItems };
 };
 
-const toProjectSummary = (project: BackendProject): ProjectSummary => ({
+const toProjectSummary = (project: BackendProjectDto): ProjectSummary => ({
   id: project.id,
   name: project.name,
   sourceFolder: project.source_folder,
@@ -155,7 +125,7 @@ export const useWorkspaceNavigationStore = create<WorkspaceNavigationState>()(
       set({ isLoading: true, error: null });
 
       try {
-        const project = await invoke<BackendProject>('open_project', { id: projectId });
+        const project = await workspaceApi.openProject(projectId);
         const summary = toProjectSummary(project);
         await get().openWorkspaceFromProject(summary);
       } catch (error) {
@@ -168,7 +138,7 @@ export const useWorkspaceNavigationStore = create<WorkspaceNavigationState>()(
       set({ isLoading: true, error: null });
 
       try {
-        const workspace = await invoke<WorkspaceDto>('open_workspace_navigation', {
+        const workspace = await workspaceApi.openWorkspaceNavigation({
           projectId: project.id,
           projectName: project.name,
           sourceFolder: project.sourceFolder,
@@ -203,7 +173,7 @@ export const useWorkspaceNavigationStore = create<WorkspaceNavigationState>()(
       set({ isLoading: true, error: null });
 
       try {
-        const listing = await invoke<DirectoryListingDto>('list_directory', {
+        const listing = await workspaceApi.listDirectory({
           projectId: project.id,
           projectName: project.name,
           sourceFolder: project.sourceFolder,
@@ -239,7 +209,7 @@ export const useWorkspaceNavigationStore = create<WorkspaceNavigationState>()(
       set({ isLoading: true, error: null });
 
       try {
-        const response = await invoke<WorkspaceDto>('navigate_to_folder', {
+        const response = await workspaceApi.navigateToFolder({
           projectId: project.id,
           projectName: project.name,
           sourceFolder: project.sourceFolder,
@@ -275,7 +245,7 @@ export const useWorkspaceNavigationStore = create<WorkspaceNavigationState>()(
       set({ isLoading: true, error: null });
 
       try {
-        const response = await invoke<WorkspaceDto>('navigate_to_parent', {
+        const response = await workspaceApi.navigateToParent({
           projectId: project.id,
           projectName: project.name,
           sourceFolder: project.sourceFolder,
@@ -310,7 +280,7 @@ export const useWorkspaceNavigationStore = create<WorkspaceNavigationState>()(
       set({ isLoading: true, error: null });
 
       try {
-        const response = await invoke<WorkspaceDto>('navigate_to_path', {
+        const response = await workspaceApi.navigateToPath({
           projectId: project.id,
           projectName: project.name,
           sourceFolder: project.sourceFolder,

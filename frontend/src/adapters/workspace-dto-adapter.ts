@@ -1,4 +1,4 @@
-import { WorkspaceDto, DirectoryListingDto, FileEntryDto } from '../domains/workspace/application/dtos/workspace-dtos'
+import type { WorkspaceDto, DirectoryListingDto, FileEntryDto } from '../features/workspace-navigation/services/workspace-api'
 
 // UI Store Types (matches backend data structure)
 export interface FileSystemItem {

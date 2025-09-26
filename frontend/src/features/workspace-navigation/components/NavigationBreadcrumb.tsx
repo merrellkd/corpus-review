@@ -1,5 +1,6 @@
 import React from 'react';
-import { WorkspaceDto, WorkspaceDtoUtils } from '../../../domains/workspace/application/dtos/workspace-dtos';
+import type { WorkspaceDto } from '../services/workspace-api';
+import { getBreadcrumbSegments, canNavigateUp } from '../utils/file-utils';
 
 /**
  * Props for the NavigationBreadcrumb component
@@ -38,8 +39,8 @@ export const NavigationBreadcrumb: React.FC<NavigationBreadcrumbProps> = ({
   }
 
   // Get breadcrumb segments from the workspace
-  const segments = WorkspaceDtoUtils.getBreadcrumbSegments(workspace);
-  const canNavigateUp = workspace.directoryListing.canNavigateUp;
+  const segments = getBreadcrumbSegments(workspace);
+  const canGoUp = canNavigateUp(workspace);
 
   const handleSegmentClick = (path: string) => {
     // Don't navigate if we're already at this path
@@ -49,7 +50,7 @@ export const NavigationBreadcrumb: React.FC<NavigationBreadcrumbProps> = ({
   };
 
   const handleUpClick = () => {
-    if (canNavigateUp && onNavigateUp) {
+    if (canGoUp && onNavigateUp) {
       onNavigateUp();
     }
   };
@@ -58,7 +59,7 @@ export const NavigationBreadcrumb: React.FC<NavigationBreadcrumbProps> = ({
     <nav className="navigation-breadcrumb" aria-label="File path navigation">
       <div className="navigation-breadcrumb__container">
         {/* Up button */}
-        {canNavigateUp && (
+        {canGoUp && (
           <button
             className="navigation-breadcrumb__up-button"
             onClick={handleUpClick}

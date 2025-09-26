@@ -1,5 +1,7 @@
 import React from 'react';
-import { DirectoryListingDto, FileEntryDto, WorkspaceDtoUtils, ViewMode } from '../../../domains/workspace/application/dtos/workspace-dtos';
+import type { DirectoryListingDto, FileEntryDto } from '../services/workspace-api';
+import type { ViewMode } from '../types';
+import { sortEntriesForListing, isDirectory, getExtension, getSizeDisplay } from '../utils/file-utils';
 
 /**
  * Props for the FileList component
@@ -46,12 +48,12 @@ export const FileList: React.FC<FileListProps> = ({
   }
 
   // Sort entries for consistent display
-  const sortedEntries = WorkspaceDtoUtils.sortEntriesForListing(directoryListing.entries);
+  const sortedEntries = sortEntriesForListing(directoryListing.entries);
 
   const handleEntryClick = (entry: FileEntryDto, event: React.MouseEvent) => {
     if (event.detail === 2) {
       // Double click
-      if (WorkspaceDtoUtils.isDirectory(entry)) {
+      if (isDirectory(entry)) {
         onFolderDoubleClick(entry.name);
       }
     } else {
@@ -66,11 +68,11 @@ export const FileList: React.FC<FileListProps> = ({
   };
 
   const getFileIcon = (entry: FileEntryDto): string => {
-    if (WorkspaceDtoUtils.isDirectory(entry)) {
+    if (isDirectory(entry)) {
       return '📁';
     }
 
-    const extension = WorkspaceDtoUtils.getExtension(entry);
+    const extension = getExtension(entry);
     switch (extension) {
       case 'txt':
       case 'md':
@@ -139,14 +141,14 @@ export const FileList: React.FC<FileListProps> = ({
       <div className="file-list__body">
         {sortedEntries.map((entry) => {
           const isSelected = selectedFiles.has(entry.name);
-          const isDirectory = WorkspaceDtoUtils.isDirectory(entry);
+          const isDirectoryEntry = isDirectory(entry);
 
           return (
             <div
               key={entry.path}
-              className={`file-entry file-entry--list ${isSelected ? 'file-entry--selected' : ''} ${isDirectory ? 'file-entry--directory' : 'file-entry--file'}`}
+              className={`file-entry file-entry--list ${isSelected ? 'file-entry--selected' : ''} ${isDirectoryEntry ? 'file-entry--directory' : 'file-entry--file'}`}
               onClick={(e) => handleEntryClick(entry, e)}
-              title={isDirectory ? `Double-click to open ${entry.name}` : entry.name}
+              title={isDirectoryEntry ? `Double-click to open ${entry.name}` : entry.name}
             >
               <div className="file-entry__cell file-entry__cell--name">
                 <span className="file-entry__icon">{getFileIcon(entry)}</span>
@@ -154,7 +156,7 @@ export const FileList: React.FC<FileListProps> = ({
               </div>
 
               <div className="file-entry__cell file-entry__cell--size">
-                {WorkspaceDtoUtils.getSizeDisplay(entry)}
+                {getSizeDisplay(entry)}
               </div>
 
               <div className="file-entry__cell file-entry__cell--modified">
@@ -162,7 +164,7 @@ export const FileList: React.FC<FileListProps> = ({
               </div>
 
               <div className="file-entry__cell file-entry__cell--type">
-                {isDirectory ? 'Folder' : (WorkspaceDtoUtils.getExtension(entry) || 'File').toUpperCase()}
+                {isDirectoryEntry ? 'Folder' : (getExtension(entry) || 'File').toUpperCase()}
               </div>
 
               <div className="file-entry__cell file-entry__cell--select">
@@ -185,14 +187,14 @@ export const FileList: React.FC<FileListProps> = ({
       <div className="file-grid">
         {sortedEntries.map((entry) => {
           const isSelected = selectedFiles.has(entry.name);
-          const isDirectory = WorkspaceDtoUtils.isDirectory(entry);
+          const isDirectoryEntry = isDirectory(entry);
 
           return (
             <div
               key={entry.path}
-              className={`file-entry file-entry--grid ${isSelected ? 'file-entry--selected' : ''} ${isDirectory ? 'file-entry--directory' : 'file-entry--file'}`}
+              className={`file-entry file-entry--grid ${isSelected ? 'file-entry--selected' : ''} ${isDirectoryEntry ? 'file-entry--directory' : 'file-entry--file'}`}
               onClick={(e) => handleEntryClick(entry, e)}
-              title={isDirectory ? `Double-click to open ${entry.name}` : entry.name}
+              title={isDirectoryEntry ? `Double-click to open ${entry.name}` : entry.name}
             >
               <div className="file-entry__checkbox">
                 <input
@@ -211,7 +213,7 @@ export const FileList: React.FC<FileListProps> = ({
 
               <div className="file-entry__meta">
                 <div className="file-entry__size">
-                  {WorkspaceDtoUtils.getSizeDisplay(entry)}
+                {getSizeDisplay(entry)}
                 </div>
                 <div className="file-entry__modified">
                   {formatModifiedTime(entry.modified)}

@@ -1,5 +1,6 @@
 import React from 'react';
-import { WorkspaceDto, ViewMode } from '../../../domains/workspace/application/dtos/workspace-dtos';
+import type { WorkspaceDto } from '../services/workspace-api';
+import type { ViewMode } from '../types';
 
 /**
  * Props for the ProjectHeader component

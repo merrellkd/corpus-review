@@ -1,8 +1,7 @@
 import { invoke } from '@tauri-apps/api/core';
 import { open } from '@tauri-apps/plugin-dialog';
-import { Position, Dimensions } from '../../domains/workspace/domain/value-objects/geometry';
-import { useWorkspaceStore } from '../../domains/workspace/ui/stores/workspace-store';
-import { useWorkspaceEventDispatcher } from '../../domains/workspace/ui/hooks/useWorkspaceEvents';
+import type { Position, Dimensions } from '../../features/document-workspace/types';
+import { useDocumentWorkspaceStore } from '../../features/document-workspace/store';
 
 /**
  * File type definitions for supported document types
@@ -304,8 +303,7 @@ export interface AddDocumentsResult {
  * Hook for integrating file explorer with workspace
  */
 export const useFileExplorerIntegration = () => {
-  const { addDocument } = useWorkspaceStore();
-  const { dispatchDocumentAdded } = useWorkspaceEventDispatcher();
+  const addDocument = useDocumentWorkspaceStore((state) => state.addDocument);
 
   /**
    * Get file type information for a given file path
@@ -338,7 +336,7 @@ export const useFileExplorerIntegration = () => {
   const getDefaultDimensions = (filePath: string): Dimensions => {
     const fileType = getFileTypeInfo(filePath);
     const defaultSize = fileType?.defaultDimensions ?? { width: 400, height: 500 };
-    return Dimensions.fromValues(defaultSize.width, defaultSize.height);
+    return { width: defaultSize.width, height: defaultSize.height };
   };
 
   /**
@@ -350,7 +348,7 @@ export const useFileExplorerIntegration = () => {
     const offsetX = (index % 5) * 60; // Stagger horizontally
     const offsetY = Math.floor(index / 5) * 60; // Stagger vertically
 
-    return Position.fromCoordinates(baseX + offsetX, baseY + offsetY);
+    return { x: baseX + offsetX, y: baseY + offsetY };
   };
 
   /**
@@ -413,23 +411,21 @@ export const useFileExplorerIntegration = () => {
         const dimensions = getDefaultDimensions(filePath);
 
         // Add document to workspace
-        await addDocument(filePath, position, dimensions);
+        const addedDoc = await addDocument(filePath, position, dimensions);
 
-        // For now, assume success since addDocument doesn't return result object yet
-        const documentId = `doc_${crypto.randomUUID()}`; // Temporary ID
-        addedDocuments.push({
-          documentId,
-          filePath,
-          title: filePath.split('/').pop() || filePath,
-        });
-
-        // Dispatch event
-        dispatchDocumentAdded(
-          documentId,
-          filePath,
-          position,
-          dimensions
-        );
+        if (addedDoc) {
+          addedDocuments.push({
+            documentId: addedDoc.id,
+            filePath,
+            title: addedDoc.title,
+          });
+        } else {
+          addedDocuments.push({
+            documentId: `doc_${crypto.randomUUID()}`,
+            filePath,
+            title: filePath.split('/').pop() || filePath,
+          });
+        }
       } catch (error) {
         console.error(`Failed to add file ${filePath}:`, error);
         failedFiles.push({

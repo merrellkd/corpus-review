@@ -1,16 +1,19 @@
 import React, { useEffect, useCallback, useRef, useMemo } from 'react'
-import { useWorkspaceStore, workspaceSelectors } from '../../../domains/workspace/ui/stores/workspace-store'
-import { LayoutModeType } from '../../../domains/workspace/domain/value-objects/layout-mode'
-import { Position, Dimensions } from '../../../domains/workspace/domain/value-objects/geometry'
-import { WorkspaceCommandBar } from '../../../domains/workspace/ui/components/WorkspaceCommandBar'
-import { DocumentCaddy } from '../../../domains/workspace/ui/components/DocumentCaddy'
+import { useDocumentWorkspaceStore, documentWorkspaceSelectors } from '../store'
+import { layoutModes } from '../types'
+import type { LayoutModeType, Position, Dimensions } from '../types'
+import { WorkspaceCommandBar } from './WorkspaceCommandBar'
+import { DocumentCaddy } from './DocumentCaddy'
+
+const MIN_DOCUMENT_WIDTH = 200
+const MIN_DOCUMENT_HEIGHT = 150
 
 export const DocumentWorkspace: React.FC = () => {
-  // Get state and actions from store
-  const currentWorkspace = useWorkspaceStore(workspaceSelectors.currentWorkspace)
-  const documents = useWorkspaceStore(workspaceSelectors.documentList)
-  const isLoading = useWorkspaceStore(workspaceSelectors.isLoading)
-  const hasError = useWorkspaceStore(workspaceSelectors.hasError)
+  const currentWorkspace = useDocumentWorkspaceStore(documentWorkspaceSelectors.workspace)
+  const documents = useDocumentWorkspaceStore(documentWorkspaceSelectors.documentList)
+  const isLoading = useDocumentWorkspaceStore(documentWorkspaceSelectors.isLoading)
+  const hasError = useDocumentWorkspaceStore(documentWorkspaceSelectors.hasError)
+  const errorMessage = useDocumentWorkspaceStore(documentWorkspaceSelectors.error)
 
   const {
     createWorkspace,
@@ -24,94 +27,69 @@ export const DocumentWorkspace: React.FC = () => {
     resizeDocument,
     updateDocumentTitle,
     updateWorkspaceDimensions,
-  } = useWorkspaceStore()
+  } = useDocumentWorkspaceStore((state) => ({
+    createWorkspace: state.createWorkspace,
+    loadWorkspace: state.loadWorkspace,
+    switchLayoutMode: state.switchLayoutMode,
+    removeDocument: state.removeDocument,
+    removeAllDocuments: state.removeAllDocuments,
+    saveWorkspace: state.saveWorkspace,
+    activateDocument: state.activateDocument,
+    moveDocument: state.moveDocument,
+    resizeDocument: state.resizeDocument,
+    updateDocumentTitle: state.updateDocumentTitle,
+    updateWorkspaceDimensions: state.updateWorkspaceDimensions,
+  }))
 
   const workspaceRef = useRef<HTMLDivElement>(null)
   const resizeObserverRef = useRef<ResizeObserver | null>(null)
   const resizeTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const lastResizeRef = useRef<{ width: number; height: number } | null>(null)
 
-  // Handle document activation
   const handleDocumentActivate = useCallback((documentId: string) => {
-    activateDocument(documentId)
+    void activateDocument(documentId)
   }, [activateDocument])
 
-  // Handle document movement - allow positioning anywhere
   const handleDocumentMove = useCallback((documentId: string, position: Position) => {
     if (!currentWorkspace) return
-
-    try {
-      // Allow documents to be positioned anywhere - scrollbars will handle overflow
-      moveDocument(documentId, position)
-    } catch (error) {
-      console.warn('Invalid position during document move:', error)
-    }
+    void moveDocument(documentId, position)
   }, [moveDocument, currentWorkspace])
 
-  // Handle document resizing with minimum size validation
   const handleDocumentResize = useCallback((documentId: string, dimensions: Dimensions) => {
     if (!currentWorkspace) return
 
-    // Only enforce minimum dimensions - allow documents to be larger than workspace
-    const minWidth = 200
-    const minHeight = 150
+    const boundedWidth = Math.max(MIN_DOCUMENT_WIDTH, dimensions.width)
+    const boundedHeight = Math.max(MIN_DOCUMENT_HEIGHT, dimensions.height)
 
-    const boundedWidth = Math.max(minWidth, dimensions.getWidth())
-    const boundedHeight = Math.max(minHeight, dimensions.getHeight())
-
-    try {
-      const boundedDimensions = Dimensions.fromValues(boundedWidth, boundedHeight)
-      resizeDocument(documentId, boundedDimensions)
-    } catch (error) {
-      console.warn('Invalid dimensions during document resize:', error)
-    }
+    void resizeDocument(documentId, { width: boundedWidth, height: boundedHeight })
   }, [resizeDocument, currentWorkspace])
 
-  // Handle document close
   const handleDocumentClose = useCallback((documentId: string) => {
-    removeDocument(documentId)
+    void removeDocument(documentId)
   }, [removeDocument])
 
-  // Handle document title change
   const handleDocumentTitleChange = useCallback((documentId: string, newTitle: string) => {
     updateDocumentTitle(documentId, newTitle)
   }, [updateDocumentTitle])
 
-  const handleLayoutModeChange = useCallback(async (mode: LayoutModeType) => {
-    try {
-      await switchLayoutMode(mode)
-    } catch (error) {
-      console.error('Failed to switch layout mode:', error)
-    }
+  const handleLayoutModeChange = useCallback((mode: LayoutModeType) => {
+    void switchLayoutMode(mode)
   }, [switchLayoutMode])
 
-  const handleRemoveAllDocuments = useCallback(async () => {
-    try {
-      await removeAllDocuments()
-    } catch (error) {
-      console.error('Failed to remove all documents:', error)
-    }
+  const handleRemoveAllDocuments = useCallback(() => {
+    void removeAllDocuments()
   }, [removeAllDocuments])
 
-  const handleSaveWorkspace = useCallback(async () => {
-    try {
-      await saveWorkspace()
-    } catch (error) {
-      console.error('Failed to save workspace:', error)
-    }
+  const handleSaveWorkspace = useCallback(() => {
+    void saveWorkspace()
   }, [saveWorkspace])
 
-  const handleLoadWorkspace = useCallback(async () => {
-    try {
-      if (currentWorkspace) {
-        await loadWorkspace(currentWorkspace.id)
-      }
-    } catch (error) {
-      console.error('Failed to load workspace:', error)
+  const handleLoadWorkspace = useCallback(() => {
+    if (currentWorkspace) {
+      void loadWorkspace(currentWorkspace.id)
     }
   }, [loadWorkspace, currentWorkspace])
 
-  // Extract only position/dimension data to minimize recalculations
   const documentBounds = useMemo(() => {
     return documents.map(doc => ({
       id: doc.id,
@@ -122,45 +100,38 @@ export const DocumentWorkspace: React.FC = () => {
     }))
   }, [documents])
 
-  // Calculate container dimensions based on document positions
   const containerDimensions = useMemo(() => {
-    // Handle case when workspace doesn't exist yet
     if (!currentWorkspace) {
       return { width: 1200, height: 800 }
     }
 
-    // Calculate the actual space needed based on document positions
-    let maxX = currentWorkspace.workspaceDimensions.width
-    let maxY = currentWorkspace.workspaceDimensions.height
+    let maxX = currentWorkspace.size.width
+    let maxY = currentWorkspace.size.height
 
-    // Find the furthest document edges
     documentBounds.forEach(doc => {
       const rightEdge = doc.x + doc.width
       const bottomEdge = doc.y + doc.height
-      maxX = Math.max(maxX, rightEdge + 50) // Add some padding
+      maxX = Math.max(maxX, rightEdge + 50)
       maxY = Math.max(maxY, bottomEdge + 50)
     })
 
     return {
-      width: Math.max(maxX, currentWorkspace.workspaceDimensions.width),
-      height: Math.max(maxY, currentWorkspace.workspaceDimensions.height),
+      width: Math.max(maxX, currentWorkspace.size.width),
+      height: Math.max(maxY, currentWorkspace.size.height),
     }
-  }, [documentBounds, currentWorkspace?.workspaceDimensions])
+  }, [documentBounds, currentWorkspace?.size])
 
-  // Get document container styles - memoized
   const documentContainerStyle = useMemo((): React.CSSProperties => {
     if (!currentWorkspace) {
       return { width: 1200, height: 800, position: 'relative' as const }
     }
     return {
-      // Set size large enough to contain all documents
       width: containerDimensions.width,
       height: containerDimensions.height,
       position: 'relative' as const,
     }
   }, [containerDimensions, currentWorkspace])
 
-  // Render empty state - memoized
   const renderEmptyState = useMemo(() => (
     <div className="flex flex-col items-center justify-center h-full text-gray-500">
       <div className="text-center max-w-md">
@@ -175,16 +146,12 @@ export const DocumentWorkspace: React.FC = () => {
     </div>
   ), [])
 
-  // Initialize demo workspace on mount
   useEffect(() => {
     if (!currentWorkspace) {
-      // Start with large default dimensions - the workspace will auto-resize to container
-      createWorkspace('Demo Research Workspace', LayoutModeType.FREEFORM, Dimensions.fromValues(2000, 1500))
-        .catch(console.error)
+      void createWorkspace('Demo Research Workspace', layoutModes.FREEFORM, { width: 2000, height: 1500 })
     }
   }, [currentWorkspace, createWorkspace])
 
-  // Handle workspace resize observation with debouncing
   useEffect(() => {
     if (!workspaceRef.current || !currentWorkspace) {
       return
@@ -194,8 +161,7 @@ export const DocumentWorkspace: React.FC = () => {
       for (const entry of entries) {
         const { width, height } = entry.contentRect
         if (width > 0 && height > 0) {
-          // Check if dimensions actually changed significantly
-          const tolerance = 1 // 1px tolerance
+          const tolerance = 1
           const lastResize = lastResizeRef.current
 
           if (lastResize) {
@@ -203,24 +169,18 @@ export const DocumentWorkspace: React.FC = () => {
             const heightChanged = Math.abs(lastResize.height - height) > tolerance
 
             if (!widthChanged && !heightChanged) {
-              return // Skip if no significant change
+              return
             }
           }
 
-          // Debounce the resize calls
           if (resizeTimeoutRef.current) {
             clearTimeout(resizeTimeoutRef.current)
           }
 
           resizeTimeoutRef.current = setTimeout(() => {
-            try {
-              const newDimensions = Dimensions.fromValues(width, height)
-              lastResizeRef.current = { width, height }
-              updateWorkspaceDimensions(newDimensions)
-            } catch (error) {
-              console.warn('Invalid workspace dimensions during resize:', error)
-            }
-          }, 100) // 100ms debounce
+            lastResizeRef.current = { width, height }
+            void updateWorkspaceDimensions({ width, height })
+          }, 100)
         }
       }
     })
@@ -243,7 +203,7 @@ export const DocumentWorkspace: React.FC = () => {
         <div className="flex items-center justify-center h-full">
           <div className="text-center text-red-600">
             <p className="text-lg font-medium mb-2">Error loading workspace</p>
-            <p className="text-sm">Please try refreshing the page</p>
+            <p className="text-sm">{errorMessage ?? 'Please try refreshing the page'}</p>
           </div>
         </div>
       </div>
@@ -263,36 +223,28 @@ export const DocumentWorkspace: React.FC = () => {
     )
   }
 
-  // Get workspace container classes based on layout mode (for inner document container)
   const getWorkspaceClasses = () => {
     const baseClasses = 'relative'
 
-    let workspaceClasses
     switch (currentWorkspace.layoutMode) {
-      case LayoutModeType.STACKED:
-        workspaceClasses = `${baseClasses} workspace-stacked`
-        break
-      case LayoutModeType.GRID:
-        workspaceClasses = `${baseClasses} workspace-grid`
-        break
-      case LayoutModeType.FREEFORM:
-        workspaceClasses = `${baseClasses} workspace-freeform`
-        break
+      case layoutModes.STACKED:
+        return `${baseClasses} workspace-stacked`
+      case layoutModes.GRID:
+        return `${baseClasses} workspace-grid`
+      case layoutModes.FREEFORM:
+        return `${baseClasses} workspace-freeform`
       default:
-        workspaceClasses = baseClasses
+        return baseClasses
     }
-
-    return workspaceClasses
   }
 
-  // Render layout mode indicator
   const renderLayoutModeIndicator = () => (
     <div className="absolute top-4 right-4 z-10 bg-white bg-opacity-90 backdrop-blur-sm rounded-lg px-3 py-2 shadow-sm border border-gray-200">
       <div className="flex items-center space-x-2 text-sm text-gray-600">
         <span className="font-medium">Layout:</span>
         <span className={`px-2 py-1 rounded text-xs font-medium ${
-          currentWorkspace.layoutMode === LayoutModeType.STACKED ? 'bg-blue-100 text-blue-800' :
-          currentWorkspace.layoutMode === LayoutModeType.GRID ? 'bg-green-100 text-green-800' :
+          currentWorkspace.layoutMode === layoutModes.STACKED ? 'bg-blue-100 text-blue-800' :
+          currentWorkspace.layoutMode === layoutModes.GRID ? 'bg-green-100 text-green-800' :
           'bg-purple-100 text-purple-800'
         }`}>
           {currentWorkspace.layoutMode}
@@ -307,7 +259,6 @@ export const DocumentWorkspace: React.FC = () => {
     </div>
   )
 
-  // Render workspace statistics
   const renderWorkspaceStats = () => {
     const activeDocument = documents.find(doc => doc.isActive)
     const visibleDocuments = documents.filter(doc => doc.isVisible)
@@ -324,16 +275,17 @@ export const DocumentWorkspace: React.FC = () => {
             </span>
           )}
           <span>
-            <span className="font-medium">Workspace:</span> {currentWorkspace.workspaceDimensions.width}×{currentWorkspace.workspaceDimensions.height}
+            <span className="font-medium">Workspace:</span> {currentWorkspace.size.width}×{currentWorkspace.size.height}
           </span>
         </div>
       </div>
     )
   }
 
+  const isFreeformMode = currentWorkspace.layoutMode === layoutModes.FREEFORM
+
   return (
     <div className="multi-document-workspace flex flex-col h-full" data-testid="document-workspace-panel">
-      {/* Command Bar */}
       <WorkspaceCommandBar
         currentLayoutMode={currentWorkspace.layoutMode}
         documentCount={documents.length}
@@ -345,7 +297,6 @@ export const DocumentWorkspace: React.FC = () => {
         disabled={false}
       />
 
-      {/* Workspace Area */}
       <div
         ref={workspaceRef}
         className="flex-1 relative overflow-auto bg-gray-50"
@@ -362,7 +313,6 @@ export const DocumentWorkspace: React.FC = () => {
             renderEmptyState
           ) : (
             <>
-              {/* Document Caddies */}
               {documents.map((document) => (
                 <DocumentCaddy
                   key={document.id}
@@ -376,8 +326,8 @@ export const DocumentWorkspace: React.FC = () => {
                   isVisible={document.isVisible}
                   state={document.state}
                   errorMessage={document.errorMessage}
-                  isDraggable={document.isDraggable}
-                  isResizable={document.isResizable}
+                  isDraggable={isFreeformMode}
+                  isResizable={isFreeformMode}
                   onActivate={handleDocumentActivate}
                   onMove={handleDocumentMove}
                   onResize={handleDocumentResize}
@@ -386,15 +336,11 @@ export const DocumentWorkspace: React.FC = () => {
                 />
               ))}
 
-              {/* Layout Mode Indicator */}
               {renderLayoutModeIndicator()}
-
-              {/* Workspace Statistics */}
               {renderWorkspaceStats()}
             </>
           )}
 
-          {/* Loading Overlay */}
           {isLoading && (
             <div className="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center z-50">
               <div className="flex flex-col items-center space-y-4">

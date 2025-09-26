@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useWorkspaceNavigationStore } from '../store'
-import { useWorkspaceStore as useDocumentWorkspaceStore } from '../../../domains/workspace/ui/stores/workspace-store'
+import { useDocumentWorkspaceStore } from '../../document-workspace/store'
 import { useUiStore, uiSelectors } from '../../../stores/ui-store'
 
 export const SearchPanel: React.FC = () => {
@@ -10,7 +10,7 @@ export const SearchPanel: React.FC = () => {
     searchQuery,
   } = useWorkspaceNavigationStore()
 
-  const { addDocument } = useDocumentWorkspaceStore()
+  const addDocument = useDocumentWorkspaceStore(state => state.addDocument)
 
   const isSearchPanelActive = useUiStore(uiSelectors.isSearchPanelActive)
 
@@ -23,7 +23,7 @@ export const SearchPanel: React.FC = () => {
   }
 
   const handleFileClick = (filePath: string) => {
-    addDocument(filePath)
+    void addDocument(filePath)
   }
 
   // Don't render if this panel is not active due to mutually exclusive behavior

@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useWorkspaceNavigationStore } from '../store'
-import { useWorkspaceStore as useDocumentWorkspaceStore } from '../../../domains/workspace/ui/stores/workspace-store'
+import { useDocumentWorkspaceStore } from '../../document-workspace/store'
 import { useFileCategorization } from '../../../stores/fileCategorization'
 import { useUiStore, uiSelectors } from '../../../stores/ui-store'
 
@@ -16,7 +16,7 @@ export const FileExplorer: React.FC = () => {
   } = useWorkspaceNavigationStore()
 
   // Use the new Multi-Document Workspace store for adding documents
-  const { addDocument } = useDocumentWorkspaceStore()
+  const addDocument = useDocumentWorkspaceStore(state => state.addDocument)
 
   const {
     startDrag,

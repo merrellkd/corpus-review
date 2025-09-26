@@ -1,56 +1,14 @@
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
-import { invoke } from '@tauri-apps/api/core';
-
-// Backend DTO shapes duplicated locally to decouple from domain layer
-interface ProjectDto {
-  id: string;
-  name: string;
-  source_folder: string;
-  source_folder_name?: string;
-  note?: string;
-  note_preview?: string;
-  note_line_count?: number;
-  created_at: string;
-  is_accessible: boolean;
-}
-
-interface ProjectListDto {
-  projects: ProjectDto[];
-  total_count: number;
-  offset: number;
-  limit: number;
-  has_more: boolean;
-}
-
-interface RepositoryStatsDto {
-  total_projects: number;
-  accessible_projects: number;
-  inaccessible_projects: number;
-  accessibility_percentage: number;
-  projects_with_notes: number;
-  notes_percentage: number;
-  average_name_length: number;
-  oldest_project_date?: string;
-  newest_project_date?: string;
-  database_size_bytes?: number;
-}
-
-interface CreateProjectRequest {
-  name: string;
-  source_folder: string;
-  note?: string;
-}
-
-interface DeleteProjectRequest {
-  id: string;
-  confirm?: boolean;
-}
-
-interface BulkDeleteProjectsRequest {
-  ids: string[];
-  confirm?: boolean;
-}
+import {
+  projectApi,
+  ProjectDto,
+  ProjectListDto,
+  RepositoryStatsDto,
+  CreateProjectRequest,
+  DeleteProjectRequest,
+  BulkDeleteProjectsRequest,
+} from './services/project-api';
 
 interface ProjectListItem {
   id: string;
@@ -170,10 +128,11 @@ const extractErrorMessage = (error: unknown, fallback: string): string => {
 };
 
 const fetchProjectList = async (query: string, offset: number, limit: number): Promise<ProjectListDto> => {
-  if (query.trim().length > 0) {
-    return await invoke<ProjectListDto>('search_projects', { query, offset, limit });
+  const normalizedQuery = query.trim();
+  if (normalizedQuery.length > 0) {
+    return projectApi.search(normalizedQuery, offset, limit);
   }
-  return await invoke<ProjectListDto>('list_projects_paged', { offset, limit });
+  return projectApi.listPaged(offset, limit);
 };
 
 export const useProjectManagementStore = create<ProjectManagementState>()(
@@ -234,7 +193,7 @@ export const useProjectManagementStore = create<ProjectManagementState>()(
       set({ isCreating: true, error: null });
 
       try {
-        const dto = await invoke<ProjectDto>('create_project', { request });
+        const dto = await projectApi.create(request);
         const project = mapProjectDto(dto);
         await get().fetchProjectsPaged(0, get().pageSize);
         set({ isCreating: false, showCreateDialog: false });
@@ -253,7 +212,7 @@ export const useProjectManagementStore = create<ProjectManagementState>()(
 
       try {
         const request: DeleteProjectRequest = { id };
-        await invoke<void>('delete_project', { request });
+        await projectApi.remove(request);
         await get().fetchProjectsPaged((get().currentPage - 1) * get().pageSize, get().pageSize);
         set({ isDeleting: false, showDeleteDialog: false, projectToDelete: null });
       } catch (error) {
@@ -273,7 +232,7 @@ export const useProjectManagementStore = create<ProjectManagementState>()(
 
       try {
         const request: BulkDeleteProjectsRequest = { ids };
-        await invoke<void>('delete_projects_bulk', { request });
+        await projectApi.removeBulk(request);
         await get().fetchProjectsPaged((get().currentPage - 1) * get().pageSize, get().pageSize);
         set({
           isDeleting: false,
@@ -291,7 +250,7 @@ export const useProjectManagementStore = create<ProjectManagementState>()(
 
     openProject: async (id: string) => {
       try {
-        const dto = await invoke<ProjectDto>('open_project', { id });
+        const dto = await projectApi.open(id);
         const project = mapProjectDto(dto);
         set({ currentProject: project });
         return project;
@@ -303,7 +262,7 @@ export const useProjectManagementStore = create<ProjectManagementState>()(
 
     openProjectFolder: async (id: string) => {
       try {
-        await invoke<void>('open_project_folder', { id });
+        await projectApi.openFolder(id);
       } catch (error) {
         set({ error: extractErrorMessage(error, 'Failed to open project folder') });
       }
@@ -311,7 +270,7 @@ export const useProjectManagementStore = create<ProjectManagementState>()(
 
     isNameAvailable: async (name: string) => {
       try {
-        return await invoke<boolean>('check_project_name_availability', { name });
+        return projectApi.isNameAvailable(name);
       } catch (error) {
         set({ error: extractErrorMessage(error, 'Failed to check project name availability') });
         return true;
@@ -374,7 +333,7 @@ export const useProjectManagementStore = create<ProjectManagementState>()(
 
     fetchStats: async () => {
       try {
-        const statsDto = await invoke<RepositoryStatsDto>('get_repository_stats');
+        const statsDto = await projectApi.getStats();
         set({ stats: mapStatsDto(statsDto) });
       } catch (error) {
         set({ error: extractErrorMessage(error, 'Failed to load repository stats') });
@@ -397,6 +356,12 @@ export const useProjectList = () =>
     isLoading: state.isLoading,
     error: state.error,
   }));
+
+export type {
+  CreateProjectRequest,
+  DeleteProjectRequest,
+  BulkDeleteProjectsRequest,
+} from './services/project-api';
 
 export const useProjectActions = () =>
   useProjectManagementStore((state) => ({
