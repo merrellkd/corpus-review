@@ -1,7 +1,7 @@
-use serde::{Deserialize, Serialize};
+use crate::domain::workspace::value_objects::{ProjectId, WorkspaceLayoutId};
 use chrono::{DateTime, Utc};
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use crate::domain::workspace::value_objects::{WorkspaceLayoutId, ProjectId};
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct WorkspaceLayout {
@@ -22,8 +22,8 @@ pub struct PanelVisibilityState {
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct PanelDimensionState {
-    pub explorer_width: f32, // percentage 0.0-100.0
-    pub workspace_width: f32, // calculated percentage
+    pub explorer_width: f32,                 // percentage 0.0-100.0
+    pub workspace_width: f32,                // calculated percentage
     pub panel_heights: HashMap<String, f32>, // panel type -> height percentage
 }
 
@@ -67,7 +67,11 @@ impl WorkspaceLayout {
         }
     }
 
-    pub fn update_panel_visibility(&mut self, panel_type: PanelType, visible: bool) -> Result<(), String> {
+    pub fn update_panel_visibility(
+        &mut self,
+        panel_type: PanelType,
+        visible: bool,
+    ) -> Result<(), String> {
         // Business rule: Document workspace cannot be hidden
         if matches!(panel_type, PanelType::DocumentWorkspace) && !visible {
             return Err("Document workspace cannot be hidden".to_string());
@@ -83,7 +87,8 @@ impl WorkspaceLayout {
         // Auto-expand workspace when all explorer panels are hidden
         if !self.panel_states.file_explorer_visible
             && !self.panel_states.category_explorer_visible
-            && !self.panel_states.search_panel_visible {
+            && !self.panel_states.search_panel_visible
+        {
             self.panel_sizes.explorer_width = 0.0;
             self.panel_sizes.workspace_width = 100.0;
         } else if self.panel_sizes.explorer_width == 0.0 {
@@ -119,12 +124,18 @@ impl WorkspaceLayout {
         Ok(())
     }
 
-    pub fn update_panel_height(&mut self, panel_type: PanelType, height: f32) -> Result<(), String> {
+    pub fn update_panel_height(
+        &mut self,
+        panel_type: PanelType,
+        height: f32,
+    ) -> Result<(), String> {
         if height < 10.0 || height > 90.0 {
             return Err("Panel height must be between 10% and 90%".to_string());
         }
 
-        self.panel_sizes.panel_heights.insert(panel_type.as_str().to_string(), height);
+        self.panel_sizes
+            .panel_heights
+            .insert(panel_type.as_str().to_string(), height);
         self.last_modified = Utc::now();
         Ok(())
     }
@@ -191,9 +202,15 @@ mod tests {
         let project_id = ProjectId::new();
         let mut layout = WorkspaceLayout::new(project_id);
 
-        layout.update_panel_visibility(PanelType::FileExplorer, false).unwrap();
-        layout.update_panel_visibility(PanelType::CategoryExplorer, false).unwrap();
-        layout.update_panel_visibility(PanelType::SearchPanel, false).unwrap();
+        layout
+            .update_panel_visibility(PanelType::FileExplorer, false)
+            .unwrap();
+        layout
+            .update_panel_visibility(PanelType::CategoryExplorer, false)
+            .unwrap();
+        layout
+            .update_panel_visibility(PanelType::SearchPanel, false)
+            .unwrap();
 
         assert_eq!(layout.panel_sizes.explorer_width, 0.0);
         assert_eq!(layout.panel_sizes.workspace_width, 100.0);

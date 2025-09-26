@@ -1,12 +1,10 @@
 use std::sync::Arc;
+use tauri::{AppHandle, Manager, State};
 use tokio::sync::RwLock;
-use tauri::{Manager, AppHandle, State};
 
-use crate::domain::project::ProjectRepository;
-use crate::infrastructure::{
-    SqliteProjectRepository, DatabaseConnection, DatabaseHealth, AppError, AppResult
-};
 use crate::application::services::{ProjectService, WorkspaceNavigationService};
+use crate::domain::project::ProjectRepository;
+use crate::infrastructure::{AppError, AppResult, DatabaseConnection, SqliteProjectRepository};
 
 /// Application state container for dependency injection
 ///
@@ -258,7 +256,8 @@ impl AppState {
             uptime_seconds: uptime.num_seconds() as u64,
             development_mode: metadata.development_mode,
             database_path: metadata.database_path,
-            database_healthy: metadata.last_health_check
+            database_healthy: metadata
+                .last_health_check
                 .map(|h| h.database_healthy)
                 .unwrap_or(false),
             total_commands: metadata.stats.total_commands_executed,
@@ -354,8 +353,7 @@ pub async fn get_app_status(state: State<'_, AppState>) -> Result<AppStatus, Str
 /// Tauri command for performing health check
 #[tauri::command]
 pub async fn health_check(state: State<'_, AppState>) -> Result<HealthCheckResult, String> {
-    state.health_check().await
-        .map_err(|e| e.message)
+    state.health_check().await.map_err(|e| e.message)
 }
 
 #[cfg(test)]

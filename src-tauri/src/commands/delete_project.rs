@@ -1,7 +1,7 @@
 use tauri::{AppHandle, State};
 
 use crate::application::{AppState, StateManager};
-use crate::infrastructure::{DeleteProjectRequest, ProjectDto, AppResult};
+use crate::infrastructure::{DeleteProjectRequest, ProjectDto};
 
 /// Tauri command to delete a project
 ///
@@ -26,8 +26,11 @@ pub async fn delete_project(
 
     // Log the request for debugging in development
     if cfg!(debug_assertions) {
-        tracing::debug!("Deleting project: id={}, confirmed={}",
-            request.id, request.is_confirmed());
+        tracing::debug!(
+            "Deleting project: id={}, confirmed={}",
+            request.id,
+            request.is_confirmed()
+        );
     }
 
     // Execute the business logic through the application service
@@ -46,16 +49,25 @@ pub async fn delete_project(
             if app_error.should_log() {
                 match app_error.log_level() {
                     crate::infrastructure::errors::app_error::LogLevel::Error => {
-                        tracing::error!("Failed to delete project: {} - {}",
-                            app_error.code, app_error.message);
+                        tracing::error!(
+                            "Failed to delete project: {} - {}",
+                            app_error.code,
+                            app_error.message
+                        );
                     }
                     crate::infrastructure::errors::app_error::LogLevel::Warning => {
-                        tracing::warn!("Failed to delete project: {} - {}",
-                            app_error.code, app_error.message);
+                        tracing::warn!(
+                            "Failed to delete project: {} - {}",
+                            app_error.code,
+                            app_error.message
+                        );
                     }
                     crate::infrastructure::errors::app_error::LogLevel::Info => {
-                        tracing::info!("Failed to delete project: {} - {}",
-                            app_error.code, app_error.message);
+                        tracing::info!(
+                            "Failed to delete project: {} - {}",
+                            app_error.code,
+                            app_error.message
+                        );
                     }
                 }
             }
@@ -97,7 +109,8 @@ pub async fn get_project_for_deletion(
     tracing::debug!("Getting project info for deletion: {}", id);
 
     // Get the project
-    let project = state.project_service()
+    let project = state
+        .project_service()
         .get_project(&id)
         .await
         .map_err(|e| e.user_message())?
@@ -129,7 +142,10 @@ pub async fn delete_projects_bulk(
     tracing::info!("Performing bulk deletion of {} projects", requests.len());
 
     // Execute bulk deletion through the application service
-    let result = state.project_service().delete_projects_batch(requests).await;
+    let result = state
+        .project_service()
+        .delete_projects_batch(requests)
+        .await;
 
     match result {
         Ok(batch_result) => {
@@ -143,20 +159,30 @@ pub async fn delete_projects_bulk(
                 successful: batch_result.success_count(),
                 failed: batch_result.failure_count(),
                 success_rate: batch_result.success_rate(),
-                errors: batch_result.failed.into_iter().map(|e| BulkDeletionError {
-                    index: e.index,
-                    error: e.error.user_message(),
-                }).collect(),
+                errors: batch_result
+                    .failed
+                    .into_iter()
+                    .map(|e| BulkDeletionError {
+                        index: e.index,
+                        error: e.error.user_message(),
+                    })
+                    .collect(),
             };
 
-            tracing::info!("Bulk deletion completed: {}/{} successful",
-                bulk_result.successful, bulk_result.total_requested);
+            tracing::info!(
+                "Bulk deletion completed: {}/{} successful",
+                bulk_result.successful,
+                bulk_result.total_requested
+            );
 
             Ok(bulk_result)
         }
         Err(app_error) => {
-            tracing::error!("Bulk deletion failed: {} - {}",
-                app_error.code, app_error.message);
+            tracing::error!(
+                "Bulk deletion failed: {} - {}",
+                app_error.code,
+                app_error.message
+            );
 
             Err(app_error.user_message())
         }
@@ -186,7 +212,11 @@ pub async fn check_deletion_safety(
         let safety_check = match project_result {
             Ok(Some(project)) => {
                 let warnings = get_deletion_warnings(&id, &state).await;
-                let risk_level = if warnings.is_empty() { RiskLevel::Low } else { RiskLevel::Medium };
+                let risk_level = if warnings.is_empty() {
+                    RiskLevel::Low
+                } else {
+                    RiskLevel::Medium
+                };
                 DeletionSafetyCheck {
                     project_id: id,
                     project_name: Some(project.name.clone()),
@@ -218,10 +248,7 @@ pub async fn check_deletion_safety(
 }
 
 /// Helper function to get deletion warnings for a project
-async fn get_deletion_warnings(
-    id: &str,
-    state: &State<'_, AppState>,
-) -> Vec<String> {
+async fn get_deletion_warnings(id: &str, state: &State<'_, AppState>) -> Vec<String> {
     let mut warnings = Vec::new();
 
     // Check if project source is inaccessible
@@ -299,7 +326,10 @@ impl BulkDeletionResult {
         if self.all_successful() {
             format!("All {} projects deleted successfully", self.successful)
         } else if self.any_successful() {
-            format!("{} of {} projects deleted successfully", self.successful, self.total_requested)
+            format!(
+                "{} of {} projects deleted successfully",
+                self.successful, self.total_requested
+            )
         } else {
             format!("Failed to delete any of {} projects", self.total_requested)
         }
@@ -328,10 +358,7 @@ mod tests {
         assert!(not_confirmed.validate().is_err());
 
         // Invalid ID format
-        let invalid_id = DeleteProjectRequest::new(
-            "invalid_id".to_string(),
-            Some(true),
-        );
+        let invalid_id = DeleteProjectRequest::new("invalid_id".to_string(), Some(true));
         assert!(invalid_id.validate().is_err());
     }
 
@@ -343,8 +370,14 @@ mod tests {
             failed: 2,
             success_rate: 60.0,
             errors: vec![
-                BulkDeletionError { index: 1, error: "Not found".to_string() },
-                BulkDeletionError { index: 3, error: "Permission denied".to_string() },
+                BulkDeletionError {
+                    index: 1,
+                    error: "Not found".to_string(),
+                },
+                BulkDeletionError {
+                    index: 3,
+                    error: "Permission denied".to_string(),
+                },
             ],
         };
 

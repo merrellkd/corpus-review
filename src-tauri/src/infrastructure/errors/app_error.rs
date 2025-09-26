@@ -2,7 +2,8 @@ use serde::{Deserialize, Serialize};
 
 use crate::domain::project::ProjectError;
 use crate::infrastructure::dtos::{
-    CreateProjectRequestError, UpdateProjectRequestError, DeleteProjectRequestError, ProjectDtoError
+    CreateProjectRequestError, DeleteProjectRequestError, ProjectDtoError,
+    UpdateProjectRequestError,
 };
 
 /// Application-level error type that maps domain and infrastructure errors
@@ -41,24 +42,12 @@ impl AppError {
 
     /// Create an internal server error
     pub fn internal_error(message: impl Into<String>) -> Self {
-        AppError::new(
-            "INTERNAL_ERROR",
-            message,
-            None,
-            false,
-            true,
-        )
+        AppError::new("INTERNAL_ERROR", message, None, false, true)
     }
 
     /// Create a validation error
     pub fn validation_error(message: impl Into<String>, details: Option<String>) -> Self {
-        AppError::new(
-            "VALIDATION_ERROR",
-            message,
-            details,
-            true,
-            true,
-        )
+        AppError::new("VALIDATION_ERROR", message, details, true, true)
     }
 
     /// Create a not found error
@@ -74,13 +63,7 @@ impl AppError {
 
     /// Create a conflict error
     pub fn conflict(message: impl Into<String>) -> Self {
-        AppError::new(
-            "CONFLICT",
-            message,
-            None,
-            true,
-            true,
-        )
+        AppError::new("CONFLICT", message, None, true, true)
     }
 
     /// Create a database error
@@ -96,24 +79,12 @@ impl AppError {
 
     /// Create a filesystem error
     pub fn filesystem_error(message: impl Into<String>) -> Self {
-        AppError::new(
-            "FILESYSTEM_ERROR",
-            message,
-            None,
-            true,
-            true,
-        )
+        AppError::new("FILESYSTEM_ERROR", message, None, true, true)
     }
 
     /// Create a permission error
     pub fn permission_error(message: impl Into<String>) -> Self {
-        AppError::new(
-            "PERMISSION_ERROR",
-            message,
-            None,
-            false,
-            true,
-        )
+        AppError::new("PERMISSION_ERROR", message, None, false, true)
     }
 
     /// Get a user-friendly error message with details
@@ -127,7 +98,10 @@ impl AppError {
     /// Check if this error should be logged
     pub fn should_log(&self) -> bool {
         // Log internal errors and database errors, but not validation errors
-        matches!(self.code.as_str(), "INTERNAL_ERROR" | "DATABASE_ERROR" | "FILESYSTEM_ERROR")
+        matches!(
+            self.code.as_str(),
+            "INTERNAL_ERROR" | "DATABASE_ERROR" | "FILESYSTEM_ERROR"
+        )
     }
 
     /// Get the log level for this error
@@ -156,37 +130,32 @@ impl From<ProjectError> for AppError {
     fn from(error: ProjectError) -> Self {
         match error {
             // Value object validation errors
-            ProjectError::InvalidName(e) => AppError::validation_error(
-                "Invalid project name",
-                Some(e.to_string())
-            ),
-            ProjectError::InvalidPath(e) => AppError::validation_error(
-                "Invalid folder path",
-                Some(e.to_string())
-            ),
-            ProjectError::InvalidNote(e) => AppError::validation_error(
-                "Invalid project note",
-                Some(e.to_string())
-            ),
-            ProjectError::InvalidTimestamp(e) => AppError::validation_error(
-                "Invalid timestamp",
-                Some(e.to_string())
-            ),
-            ProjectError::InvalidId => AppError::validation_error(
-                "Invalid project ID format",
-                None
-            ),
+            ProjectError::InvalidName(e) => {
+                AppError::validation_error("Invalid project name", Some(e.to_string()))
+            }
+            ProjectError::InvalidPath(e) => {
+                AppError::validation_error("Invalid folder path", Some(e.to_string()))
+            }
+            ProjectError::InvalidNote(e) => {
+                AppError::validation_error("Invalid project note", Some(e.to_string()))
+            }
+            ProjectError::InvalidTimestamp(e) => {
+                AppError::validation_error("Invalid timestamp", Some(e.to_string()))
+            }
+            ProjectError::InvalidId => {
+                AppError::validation_error("Invalid project ID format", None)
+            }
 
             // Business rule violations
             ProjectError::SourceNotAccessible => AppError::filesystem_error(
-                "Source folder cannot be accessed. It may have been moved or deleted."
+                "Source folder cannot be accessed. It may have been moved or deleted.",
             ),
-            ProjectError::NotFound { id } => AppError::not_found(
-                format!("Project with ID '{}'", id)
-            ),
-            ProjectError::DuplicateName { name } => AppError::conflict(
-                format!("A project named '{}' already exists", name)
-            ),
+            ProjectError::NotFound { id } => {
+                AppError::not_found(format!("Project with ID '{}'", id))
+            }
+            ProjectError::DuplicateName { name } => {
+                AppError::conflict(format!("A project named '{}' already exists", name))
+            }
             ProjectError::CannotDelete { reason } => AppError::new(
                 "CANNOT_DELETE",
                 "Cannot delete project",
@@ -236,22 +205,18 @@ impl From<ProjectError> for AppError {
 impl From<CreateProjectRequestError> for AppError {
     fn from(error: CreateProjectRequestError) -> Self {
         match error {
-            CreateProjectRequestError::NameRequired => AppError::validation_error(
-                "Project name is required",
-                None
-            ),
-            CreateProjectRequestError::NameTooLong => AppError::validation_error(
-                "Project name is too long (max 255 characters)",
-                None
-            ),
-            CreateProjectRequestError::SourceFolderRequired => AppError::validation_error(
-                "Source folder is required",
-                None
-            ),
-            CreateProjectRequestError::NoteTooLong => AppError::validation_error(
-                "Project note is too long (max 1000 characters)",
-                None
-            ),
+            CreateProjectRequestError::NameRequired => {
+                AppError::validation_error("Project name is required", None)
+            }
+            CreateProjectRequestError::NameTooLong => {
+                AppError::validation_error("Project name is too long (max 255 characters)", None)
+            }
+            CreateProjectRequestError::SourceFolderRequired => {
+                AppError::validation_error("Source folder is required", None)
+            }
+            CreateProjectRequestError::NoteTooLong => {
+                AppError::validation_error("Project note is too long (max 1000 characters)", None)
+            }
         }
     }
 }
@@ -259,22 +224,18 @@ impl From<CreateProjectRequestError> for AppError {
 impl From<UpdateProjectRequestError> for AppError {
     fn from(error: UpdateProjectRequestError) -> Self {
         match error {
-            UpdateProjectRequestError::InvalidIdFormat => AppError::validation_error(
-                "Invalid project ID format",
-                None
-            ),
-            UpdateProjectRequestError::NameRequired => AppError::validation_error(
-                "Project name is required when updating",
-                None
-            ),
-            UpdateProjectRequestError::NameTooLong => AppError::validation_error(
-                "Project name is too long (max 255 characters)",
-                None
-            ),
-            UpdateProjectRequestError::NoteTooLong => AppError::validation_error(
-                "Project note is too long (max 1000 characters)",
-                None
-            ),
+            UpdateProjectRequestError::InvalidIdFormat => {
+                AppError::validation_error("Invalid project ID format", None)
+            }
+            UpdateProjectRequestError::NameRequired => {
+                AppError::validation_error("Project name is required when updating", None)
+            }
+            UpdateProjectRequestError::NameTooLong => {
+                AppError::validation_error("Project name is too long (max 255 characters)", None)
+            }
+            UpdateProjectRequestError::NoteTooLong => {
+                AppError::validation_error("Project note is too long (max 1000 characters)", None)
+            }
         }
     }
 }
@@ -282,14 +243,12 @@ impl From<UpdateProjectRequestError> for AppError {
 impl From<DeleteProjectRequestError> for AppError {
     fn from(error: DeleteProjectRequestError) -> Self {
         match error {
-            DeleteProjectRequestError::InvalidIdFormat => AppError::validation_error(
-                "Invalid project ID format",
-                None
-            ),
-            DeleteProjectRequestError::NotConfirmed => AppError::validation_error(
-                "Deletion must be confirmed",
-                None
-            ),
+            DeleteProjectRequestError::InvalidIdFormat => {
+                AppError::validation_error("Invalid project ID format", None)
+            }
+            DeleteProjectRequestError::NotConfirmed => {
+                AppError::validation_error("Deletion must be confirmed", None)
+            }
         }
     }
 }
@@ -297,30 +256,24 @@ impl From<DeleteProjectRequestError> for AppError {
 impl From<ProjectDtoError> for AppError {
     fn from(error: ProjectDtoError) -> Self {
         match error {
-            ProjectDtoError::InvalidIdFormat => AppError::validation_error(
-                "Invalid project ID format",
-                None
-            ),
-            ProjectDtoError::EmptyName => AppError::validation_error(
-                "Project name cannot be empty",
-                None
-            ),
-            ProjectDtoError::NameTooLong => AppError::validation_error(
-                "Project name is too long",
-                None
-            ),
-            ProjectDtoError::EmptySourceFolder => AppError::validation_error(
-                "Source folder cannot be empty",
-                None
-            ),
-            ProjectDtoError::NoteTooLong => AppError::validation_error(
-                "Project note is too long",
-                None
-            ),
-            ProjectDtoError::InvalidTimestamp => AppError::validation_error(
-                "Invalid timestamp format",
-                None
-            ),
+            ProjectDtoError::InvalidIdFormat => {
+                AppError::validation_error("Invalid project ID format", None)
+            }
+            ProjectDtoError::EmptyName => {
+                AppError::validation_error("Project name cannot be empty", None)
+            }
+            ProjectDtoError::NameTooLong => {
+                AppError::validation_error("Project name is too long", None)
+            }
+            ProjectDtoError::EmptySourceFolder => {
+                AppError::validation_error("Source folder cannot be empty", None)
+            }
+            ProjectDtoError::NoteTooLong => {
+                AppError::validation_error("Project note is too long", None)
+            }
+            ProjectDtoError::InvalidTimestamp => {
+                AppError::validation_error("Invalid timestamp format", None)
+            }
         }
     }
 }
@@ -433,19 +386,16 @@ mod tests {
         let error_with_details = AppError::new(
             "TEST_ERROR",
             "Test message",
-            Some("Additional details"),
+            Some("Additional details".to_string()),
             false,
-            true
+            true,
         );
-        assert_eq!(error_with_details.user_message(), "Test message: Additional details");
+        assert_eq!(
+            error_with_details.user_message(),
+            "Test message: Additional details"
+        );
 
-        let error_without_details = AppError::new(
-            "TEST_ERROR",
-            "Test message",
-            None,
-            false,
-            true
-        );
+        let error_without_details = AppError::new("TEST_ERROR", "Test message", None, false, true);
         assert_eq!(error_without_details.user_message(), "Test message");
     }
 
@@ -487,7 +437,8 @@ mod tests {
     fn test_into_app_result_trait() {
         use crate::infrastructure::dtos::CreateProjectRequestError;
 
-        let domain_result: Result<String, CreateProjectRequestError> = Err(CreateProjectRequestError::NameRequired);
+        let domain_result: Result<String, CreateProjectRequestError> =
+            Err(CreateProjectRequestError::NameRequired);
         let app_result = domain_result.into_app_result();
 
         assert!(app_result.is_err());
@@ -499,7 +450,8 @@ mod tests {
     fn test_into_app_result_with_context() {
         use crate::infrastructure::dtos::CreateProjectRequestError;
 
-        let domain_result: Result<String, CreateProjectRequestError> = Err(CreateProjectRequestError::NameRequired);
+        let domain_result: Result<String, CreateProjectRequestError> =
+            Err(CreateProjectRequestError::NameRequired);
         let app_result = domain_result.into_app_result_with_context("Creating project");
 
         assert!(app_result.is_err());

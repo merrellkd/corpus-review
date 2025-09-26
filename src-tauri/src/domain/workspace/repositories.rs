@@ -1,19 +1,15 @@
+use crate::domain::project::aggregates::Project;
 use async_trait::async_trait;
 
 pub mod workspace_repository;
-pub use workspace_repository::*;
 use crate::domain::workspace::entities::{
+    document_caddy::DocumentCaddy, file_system_item::FileSystemItem,
     workspace_layout::WorkspaceLayout,
-    file_system_item::FileSystemItem,
-    document_caddy::DocumentCaddy,
-    project::Project,
 };
 use crate::domain::workspace::value_objects::{
-    ProjectId,
-    WorkspaceLayoutId,
-    DocumentCaddyId,
-    FilePath,
+    DocumentCaddyId, FilePath, ProjectId, WorkspaceLayoutId,
 };
+pub use workspace_repository::*;
 
 /// Repository for managing workspace layouts
 #[async_trait]
@@ -22,10 +18,16 @@ pub trait WorkspaceLayoutRepository: Send + Sync {
     async fn save(&self, layout: &WorkspaceLayout) -> Result<(), RepositoryError>;
 
     /// Find a workspace layout by project ID
-    async fn find_by_project_id(&self, project_id: &ProjectId) -> Result<Option<WorkspaceLayout>, RepositoryError>;
+    async fn find_by_project_id(
+        &self,
+        project_id: &ProjectId,
+    ) -> Result<Option<WorkspaceLayout>, RepositoryError>;
 
     /// Find a workspace layout by its ID
-    async fn find_by_id(&self, id: &WorkspaceLayoutId) -> Result<Option<WorkspaceLayout>, RepositoryError>;
+    async fn find_by_id(
+        &self,
+        id: &WorkspaceLayoutId,
+    ) -> Result<Option<WorkspaceLayout>, RepositoryError>;
 
     /// Delete a workspace layout
     async fn delete(&self, id: &WorkspaceLayoutId) -> Result<(), RepositoryError>;
@@ -38,7 +40,10 @@ pub trait WorkspaceLayoutRepository: Send + Sync {
 #[async_trait]
 pub trait FileSystemRepository: Send + Sync {
     /// List contents of a directory
-    async fn list_directory_contents(&self, path: &FilePath) -> Result<Vec<FileSystemItem>, RepositoryError>;
+    async fn list_directory_contents(
+        &self,
+        path: &FilePath,
+    ) -> Result<Vec<FileSystemItem>, RepositoryError>;
 
     /// Check if a path exists
     async fn path_exists(&self, path: &FilePath) -> Result<bool, RepositoryError>;
@@ -47,13 +52,20 @@ pub trait FileSystemRepository: Send + Sync {
     async fn is_path_accessible(&self, path: &FilePath) -> Result<bool, RepositoryError>;
 
     /// Get metadata for a specific file or directory
-    async fn get_item_metadata(&self, path: &FilePath) -> Result<Option<FileSystemItem>, RepositoryError>;
+    async fn get_item_metadata(
+        &self,
+        path: &FilePath,
+    ) -> Result<Option<FileSystemItem>, RepositoryError>;
 
     /// Watch a directory for changes (optional capability)
     async fn watch_directory(&self, path: &FilePath) -> Result<(), RepositoryError>;
 
     /// Validate that a path is within allowed project directories
-    async fn validate_path_within_project(&self, path: &FilePath, project: &Project) -> Result<bool, RepositoryError>;
+    async fn validate_path_within_project(
+        &self,
+        path: &FilePath,
+        project: &Project,
+    ) -> Result<bool, RepositoryError>;
 }
 
 /// Repository for managing document caddies
@@ -63,25 +75,46 @@ pub trait DocumentCaddyRepository: Send + Sync {
     async fn save(&self, caddy: &DocumentCaddy) -> Result<(), RepositoryError>;
 
     /// Find a document caddy by ID
-    async fn find_by_id(&self, id: &DocumentCaddyId) -> Result<Option<DocumentCaddy>, RepositoryError>;
+    async fn find_by_id(
+        &self,
+        id: &DocumentCaddyId,
+    ) -> Result<Option<DocumentCaddy>, RepositoryError>;
 
     /// Find all document caddies for a workspace
-    async fn find_by_workspace(&self, workspace_id: &WorkspaceLayoutId) -> Result<Vec<DocumentCaddy>, RepositoryError>;
+    async fn find_by_workspace(
+        &self,
+        workspace_id: &WorkspaceLayoutId,
+    ) -> Result<Vec<DocumentCaddy>, RepositoryError>;
 
     /// Find document caddy by file path
-    async fn find_by_file_path(&self, file_path: &FilePath) -> Result<Option<DocumentCaddy>, RepositoryError>;
+    async fn find_by_file_path(
+        &self,
+        file_path: &FilePath,
+    ) -> Result<Option<DocumentCaddy>, RepositoryError>;
 
     /// Delete a document caddy
     async fn delete(&self, id: &DocumentCaddyId) -> Result<(), RepositoryError>;
 
     /// Update document caddy position and dimensions
-    async fn update_layout(&self, id: &DocumentCaddyId, position: Option<(f64, f64)>, dimensions: Option<(f64, f64)>) -> Result<(), RepositoryError>;
+    async fn update_layout(
+        &self,
+        id: &DocumentCaddyId,
+        position: Option<(f64, f64)>,
+        dimensions: Option<(f64, f64)>,
+    ) -> Result<(), RepositoryError>;
 
     /// Set a document caddy as active (deactivates others)
-    async fn set_active(&self, id: &DocumentCaddyId, workspace_id: &WorkspaceLayoutId) -> Result<(), RepositoryError>;
+    async fn set_active(
+        &self,
+        id: &DocumentCaddyId,
+        workspace_id: &WorkspaceLayoutId,
+    ) -> Result<(), RepositoryError>;
 
     /// Get the currently active document caddy for a workspace
-    async fn get_active(&self, workspace_id: &WorkspaceLayoutId) -> Result<Option<DocumentCaddy>, RepositoryError>;
+    async fn get_active(
+        &self,
+        workspace_id: &WorkspaceLayoutId,
+    ) -> Result<Option<DocumentCaddy>, RepositoryError>;
 }
 
 /// Repository for managing projects
@@ -103,10 +136,18 @@ pub trait ProjectRepository: Send + Sync {
     async fn delete(&self, id: &ProjectId) -> Result<(), RepositoryError>;
 
     /// Check if a project name is unique
-    async fn is_name_unique(&self, name: &str, excluding_id: Option<&ProjectId>) -> Result<bool, RepositoryError>;
+    async fn is_name_unique(
+        &self,
+        name: &str,
+        excluding_id: Option<&ProjectId>,
+    ) -> Result<bool, RepositoryError>;
 
     /// Update project workspace layout
-    async fn update_workspace_layout(&self, project_id: &ProjectId, layout: &WorkspaceLayout) -> Result<(), RepositoryError>;
+    async fn update_workspace_layout(
+        &self,
+        project_id: &ProjectId,
+        layout: &WorkspaceLayout,
+    ) -> Result<(), RepositoryError>;
 }
 
 /// Common error types for repository operations
@@ -206,7 +247,7 @@ mod tests {
         let repo_error = RepositoryError::from(serde_error);
 
         match repo_error {
-            RepositoryError::SerializationError(_) => {},
+            RepositoryError::SerializationError(_) => {}
             _ => panic!("Expected SerializationError"),
         }
     }

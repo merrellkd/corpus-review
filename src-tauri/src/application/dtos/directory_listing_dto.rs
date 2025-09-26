@@ -1,5 +1,5 @@
-use serde::{Deserialize, Serialize};
 use crate::application::dtos::FileEntryDto;
+use serde::{Deserialize, Serialize};
 
 /// DTO for transferring directory listing data
 ///
@@ -133,7 +133,11 @@ mod tests {
         FileEntryDto {
             name: name.to_string(),
             path: format!("/test/{}", name),
-            entry_type: if is_directory { "directory".to_string() } else { "file".to_string() },
+            entry_type: if is_directory {
+                "directory".to_string()
+            } else {
+                "file".to_string()
+            },
             size: if is_directory { None } else { Some(1024) },
             modified: "2025-09-25T12:00:00Z".to_string(),
         }
@@ -146,12 +150,7 @@ mod tests {
             create_test_file_entry("file.txt", false),
         ];
 
-        let listing = DirectoryListingDto::new(
-            entries,
-            true,
-            None,
-            false,
-        );
+        let listing = DirectoryListingDto::new(entries, true, None, false);
 
         assert_eq!(listing.entry_count(), 2);
         assert_eq!(listing.directory_count(), 1);
@@ -203,7 +202,7 @@ mod tests {
 
     #[test]
     fn test_sorting() {
-        let mut entries = vec![
+        let entries = vec![
             create_test_file_entry("zebra.txt", false),
             create_test_file_entry("apple", true),
             create_test_file_entry("banana.txt", false),

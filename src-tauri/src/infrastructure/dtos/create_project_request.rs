@@ -19,11 +19,7 @@ pub struct CreateProjectRequest {
 
 impl CreateProjectRequest {
     /// Create a new CreateProjectRequest
-    pub fn new(
-        name: String,
-        source_folder: String,
-        note: Option<String>,
-    ) -> Self {
+    pub fn new(name: String, source_folder: String, note: Option<String>) -> Self {
         CreateProjectRequest {
             name,
             source_folder,
@@ -80,13 +76,11 @@ impl CreateProjectRequest {
     }
 
     /// Convert to domain creation parameters after validation
-    pub fn to_domain_params(&self) -> Result<(String, String, Option<String>), CreateProjectRequestError> {
+    pub fn to_domain_params(
+        &self,
+    ) -> Result<(String, String, Option<String>), CreateProjectRequestError> {
         self.validate()?;
-        Ok((
-            self.get_name(),
-            self.get_source_folder(),
-            self.get_note(),
-        ))
+        Ok((self.get_name(), self.get_source_folder(), self.get_note()))
     }
 
     /// Check if the request has a meaningful note
@@ -96,9 +90,7 @@ impl CreateProjectRequest {
 
     /// Get the character count of the note (0 if no note)
     pub fn note_length(&self) -> usize {
-        self.get_note()
-            .map(|n| n.len())
-            .unwrap_or(0)
+        self.get_note().map(|n| n.len()).unwrap_or(0)
     }
 
     /// Get validation summary for debugging
@@ -137,7 +129,10 @@ impl ValidationSummary {
             if self.name_length == 0 {
                 issues.push("Name is required".to_string());
             } else {
-                issues.push(format!("Name is too long ({} > 255 characters)", self.name_length));
+                issues.push(format!(
+                    "Name is too long ({} > 255 characters)",
+                    self.name_length
+                ));
             }
         }
 
@@ -146,7 +141,10 @@ impl ValidationSummary {
         }
 
         if !self.note_valid {
-            issues.push(format!("Note is too long ({} > 1000 characters)", self.note_length));
+            issues.push(format!(
+                "Note is too long ({} > 1000 characters)",
+                self.note_length
+            ));
         }
 
         if issues.is_empty() {
@@ -173,11 +171,7 @@ pub struct UpdateProjectRequest {
 
 impl UpdateProjectRequest {
     /// Create a new UpdateProjectRequest
-    pub fn new(
-        id: String,
-        name: Option<String>,
-        note: Option<String>,
-    ) -> Self {
+    pub fn new(id: String, name: Option<String>, note: Option<String>) -> Self {
         UpdateProjectRequest { id, name, note }
     }
 
@@ -201,7 +195,8 @@ impl UpdateProjectRequest {
 
         // Validate note if provided
         if let Some(note) = &self.note {
-            if note.len() > 1000 { // Don't trim for update - allow clearing with empty string
+            if note.len() > 1000 {
+                // Don't trim for update - allow clearing with empty string
                 return Err(UpdateProjectRequestError::NoteTooLong);
             }
         }
@@ -346,33 +341,22 @@ mod tests {
         assert!(valid_request.validate().is_ok());
 
         // Empty name
-        let empty_name = CreateProjectRequest::new(
-            "".to_string(),
-            "/valid/path".to_string(),
-            None,
-        );
+        let empty_name = CreateProjectRequest::new("".to_string(), "/valid/path".to_string(), None);
         assert!(matches!(
             empty_name.validate().unwrap_err(),
             CreateProjectRequestError::NameRequired
         ));
 
         // Name too long
-        let long_name = CreateProjectRequest::new(
-            "x".repeat(256),
-            "/valid/path".to_string(),
-            None,
-        );
+        let long_name = CreateProjectRequest::new("x".repeat(256), "/valid/path".to_string(), None);
         assert!(matches!(
             long_name.validate().unwrap_err(),
             CreateProjectRequestError::NameTooLong
         ));
 
         // Empty source folder
-        let empty_folder = CreateProjectRequest::new(
-            "Valid Name".to_string(),
-            "".to_string(),
-            None,
-        );
+        let empty_folder =
+            CreateProjectRequest::new("Valid Name".to_string(), "".to_string(), None);
         assert!(matches!(
             empty_folder.validate().unwrap_err(),
             CreateProjectRequestError::SourceFolderRequired
@@ -427,11 +411,8 @@ mod tests {
         assert!(valid_update.validate().is_ok());
 
         // Invalid ID format
-        let invalid_id = UpdateProjectRequest::new(
-            "invalid_id".to_string(),
-            Some("Name".to_string()),
-            None,
-        );
+        let invalid_id =
+            UpdateProjectRequest::new("invalid_id".to_string(), Some("Name".to_string()), None);
         assert!(matches!(
             invalid_id.validate().unwrap_err(),
             UpdateProjectRequestError::InvalidIdFormat
@@ -482,10 +463,7 @@ mod tests {
         ));
 
         // Invalid ID
-        let invalid_id = DeleteProjectRequest::new(
-            "invalid_id".to_string(),
-            Some(true),
-        );
+        let invalid_id = DeleteProjectRequest::new("invalid_id".to_string(), Some(true));
         assert!(matches!(
             invalid_id.validate().unwrap_err(),
             DeleteProjectRequestError::InvalidIdFormat
@@ -513,8 +491,8 @@ mod tests {
     #[test]
     fn test_validation_summary_with_issues() {
         let bad_request = CreateProjectRequest::new(
-            "x".repeat(256), // Too long
-            "".to_string(),  // Empty
+            "x".repeat(256),        // Too long
+            "".to_string(),         // Empty
             Some("x".repeat(1001)), // Too long
         );
 

@@ -24,21 +24,32 @@ async fn test_save_workspace_layout_with_valid_data() {
             }
         },
         "lastModified": "2025-09-19T20:00:00Z"
-    }"#.to_string();
+    }"#
+    .to_string();
 
     // Act
     let result = save_workspace_layout(layout_json).await;
 
     // Assert
-    assert!(result.is_ok(), "save_workspace_layout should return Ok for valid data");
+    assert!(
+        result.is_ok(),
+        "save_workspace_layout should return Ok for valid data"
+    );
     let response_json = result.unwrap();
 
     // Should return a success response matching SaveWorkspaceLayoutResponse
-    let parsed: serde_json::Value = serde_json::from_str(&response_json)
-        .expect("Result should be valid JSON");
+    let parsed: serde_json::Value =
+        serde_json::from_str(&response_json).expect("Result should be valid JSON");
 
-    assert!(parsed.get("success").is_some(), "Response should have a success field");
-    assert_eq!(parsed.get("success").unwrap().as_bool(), Some(true), "Success should be true");
+    assert!(
+        parsed.get("success").is_some(),
+        "Response should have a success field"
+    );
+    assert_eq!(
+        parsed.get("success").unwrap().as_bool(),
+        Some(true),
+        "Success should be true"
+    );
 }
 
 #[tokio::test]
@@ -50,7 +61,10 @@ async fn test_save_workspace_layout_with_invalid_json() {
     let result = save_workspace_layout(invalid_json).await;
 
     // Assert
-    assert!(result.is_err(), "save_workspace_layout should return error for invalid JSON");
+    assert!(
+        result.is_err(),
+        "save_workspace_layout should return error for invalid JSON"
+    );
     let error_message = result.unwrap_err();
     assert!(
         error_message.contains("invalid") || error_message.contains("JSON"),
@@ -64,13 +78,17 @@ async fn test_save_workspace_layout_with_missing_required_fields() {
     // Arrange
     let incomplete_json = r#"{
         "id": "workspace_550e8400-e29b-41d4-a716-446655440000"
-    }"#.to_string();
+    }"#
+    .to_string();
 
     // Act
     let result = save_workspace_layout(incomplete_json).await;
 
     // Assert
-    assert!(result.is_err(), "save_workspace_layout should return error for incomplete data");
+    assert!(
+        result.is_err(),
+        "save_workspace_layout should return error for incomplete data"
+    );
     let error_message = result.unwrap_err();
     assert!(
         error_message.contains("missing") || error_message.contains("required"),
@@ -97,13 +115,17 @@ async fn test_save_workspace_layout_with_invalid_uuid() {
             "panelHeights": {}
         },
         "lastModified": "2025-09-19T20:00:00Z"
-    }"#.to_string();
+    }"#
+    .to_string();
 
     // Act
     let result = save_workspace_layout(layout_with_invalid_uuid).await;
 
     // Assert
-    assert!(result.is_err(), "save_workspace_layout should return error for invalid UUID");
+    assert!(
+        result.is_err(),
+        "save_workspace_layout should return error for invalid UUID"
+    );
     let error_message = result.unwrap_err();
     assert!(
         error_message.contains("invalid") || error_message.contains("UUID"),
@@ -130,16 +152,22 @@ async fn test_save_workspace_layout_with_invalid_panel_dimensions() {
             "panelHeights": {}
         },
         "lastModified": "2025-09-19T20:00:00Z"
-    }"#.to_string();
+    }"#
+    .to_string();
 
     // Act
     let result = save_workspace_layout(layout_with_invalid_dimensions).await;
 
     // Assert
-    assert!(result.is_err(), "save_workspace_layout should return error for invalid dimensions");
+    assert!(
+        result.is_err(),
+        "save_workspace_layout should return error for invalid dimensions"
+    );
     let error_message = result.unwrap_err();
     assert!(
-        error_message.contains("invalid") || error_message.contains("dimension") || error_message.contains("range"),
+        error_message.contains("invalid")
+            || error_message.contains("dimension")
+            || error_message.contains("range"),
         "Error message should indicate invalid dimensions: {}",
         error_message
     );

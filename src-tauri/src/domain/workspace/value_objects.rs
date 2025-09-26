@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
-use uuid::Uuid;
-use std::path::PathBuf;
 use std::fmt::{self, Display};
+use std::path::PathBuf;
+use uuid::Uuid;
 
 pub mod workspace_context;
 pub use workspace_context::WorkspaceContext;
@@ -92,8 +92,7 @@ impl WorkspaceLayoutId {
         }
 
         // Validate UUID format
-        Uuid::parse_str(uuid_part)
-            .map_err(|_| "Invalid UUID format".to_string())?;
+        Uuid::parse_str(uuid_part).map_err(|_| "Invalid UUID format".to_string())?;
 
         Ok(Self { id })
     }
@@ -134,8 +133,7 @@ impl ProjectId {
         }
 
         // Validate UUID format
-        Uuid::parse_str(uuid_part)
-            .map_err(|_| "Invalid UUID format".to_string())?;
+        Uuid::parse_str(uuid_part).map_err(|_| "Invalid UUID format".to_string())?;
 
         Ok(Self { id })
     }
@@ -176,8 +174,7 @@ impl DocumentCaddyId {
         }
 
         // Validate UUID format
-        Uuid::parse_str(uuid_part)
-            .map_err(|_| "Invalid UUID format".to_string())?;
+        Uuid::parse_str(uuid_part).map_err(|_| "Invalid UUID format".to_string())?;
 
         Ok(Self { id })
     }

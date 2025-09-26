@@ -1,10 +1,10 @@
+use crate::domain::project::value_objects::ProjectId;
+use crate::domain::workspace::aggregates::DirectoryListing;
+use crate::domain::workspace::entities::FileEntry;
+use crate::domain::workspace::errors::WorkspaceError;
+use crate::domain::workspace::value_objects::WorkspaceContext;
 use async_trait::async_trait;
 use std::path::Path;
-use crate::domain::project::value_objects::ProjectId;
-use crate::domain::workspace::value_objects::WorkspaceContext;
-use crate::domain::workspace::entities::FileEntry;
-use crate::domain::workspace::aggregates::DirectoryListing;
-use crate::domain::workspace::errors::WorkspaceError;
 
 /// Repository interface for workspace navigation operations
 ///
@@ -25,7 +25,10 @@ pub trait WorkspaceRepository: Send + Sync {
     /// - Project not found
     /// - Source folder inaccessible
     /// - Permission denied
-    async fn load_workspace(&self, project_id: &ProjectId) -> Result<WorkspaceContext, WorkspaceError>;
+    async fn load_workspace(
+        &self,
+        project_id: &ProjectId,
+    ) -> Result<WorkspaceContext, WorkspaceError>;
 
     /// List directory contents within a workspace
     ///
@@ -41,7 +44,10 @@ pub trait WorkspaceRepository: Send + Sync {
     /// - Access denied
     /// - Path outside workspace boundaries
     /// - File system error
-    async fn list_directory(&self, workspace_context: &WorkspaceContext) -> Result<DirectoryListing, WorkspaceError>;
+    async fn list_directory(
+        &self,
+        workspace_context: &WorkspaceContext,
+    ) -> Result<DirectoryListing, WorkspaceError>;
 
     /// Validate that a path is accessible within workspace boundaries
     ///
@@ -54,7 +60,11 @@ pub trait WorkspaceRepository: Send + Sync {
     ///
     /// # Errors
     /// Returns `WorkspaceError` if validation fails due to system errors
-    async fn validate_path_access(&self, path: &Path, workspace_root: &Path) -> Result<bool, WorkspaceError>;
+    async fn validate_path_access(
+        &self,
+        path: &Path,
+        workspace_root: &Path,
+    ) -> Result<bool, WorkspaceError>;
 
     /// Get metadata for a specific file or directory
     ///
@@ -71,7 +81,11 @@ pub trait WorkspaceRepository: Send + Sync {
     /// - Access denied
     /// - Path outside workspace boundaries
     /// - Metadata retrieval fails
-    async fn get_file_metadata(&self, path: &Path, workspace_root: &Path) -> Result<Option<FileEntry>, WorkspaceError>;
+    async fn get_file_metadata(
+        &self,
+        path: &Path,
+        workspace_root: &Path,
+    ) -> Result<Option<FileEntry>, WorkspaceError>;
 
     /// Check if a directory exists and is accessible
     ///
@@ -81,7 +95,11 @@ pub trait WorkspaceRepository: Send + Sync {
     ///
     /// # Returns
     /// `true` if directory exists and is accessible, `false` otherwise
-    async fn directory_exists(&self, path: &Path, workspace_root: &Path) -> Result<bool, WorkspaceError>;
+    async fn directory_exists(
+        &self,
+        path: &Path,
+        workspace_root: &Path,
+    ) -> Result<bool, WorkspaceError>;
 
     /// Check if a path points to a directory (not a file)
     ///
@@ -91,7 +109,11 @@ pub trait WorkspaceRepository: Send + Sync {
     ///
     /// # Returns
     /// `true` if path is a directory, `false` if it's a file or doesn't exist
-    async fn is_directory(&self, path: &Path, workspace_root: &Path) -> Result<bool, WorkspaceError>;
+    async fn is_directory(
+        &self,
+        path: &Path,
+        workspace_root: &Path,
+    ) -> Result<bool, WorkspaceError>;
 
     /// Get the size of a directory (sum of all files, excluding subdirectories)
     ///
@@ -107,7 +129,11 @@ pub trait WorkspaceRepository: Send + Sync {
     /// - Directory not found
     /// - Access denied
     /// - Path outside workspace boundaries
-    async fn get_directory_size(&self, path: &Path, workspace_root: &Path) -> Result<u64, WorkspaceError>;
+    async fn get_directory_size(
+        &self,
+        path: &Path,
+        workspace_root: &Path,
+    ) -> Result<u64, WorkspaceError>;
 
     /// Watch a directory for changes (optional capability for future use)
     ///
@@ -119,7 +145,10 @@ pub trait WorkspaceRepository: Send + Sync {
     ///
     /// # Note
     /// This is designed for future real-time file updates but not required for MVP
-    async fn watch_workspace(&self, workspace_context: &WorkspaceContext) -> Result<(), WorkspaceError>;
+    async fn watch_workspace(
+        &self,
+        workspace_context: &WorkspaceContext,
+    ) -> Result<(), WorkspaceError>;
 
     /// Refresh directory listing (for cache invalidation if implemented)
     ///
@@ -128,7 +157,10 @@ pub trait WorkspaceRepository: Send + Sync {
     ///
     /// # Returns
     /// Updated directory listing
-    async fn refresh_directory(&self, workspace_context: &WorkspaceContext) -> Result<DirectoryListing, WorkspaceError>;
+    async fn refresh_directory(
+        &self,
+        workspace_context: &WorkspaceContext,
+    ) -> Result<DirectoryListing, WorkspaceError>;
 }
 
 /// Extended workspace repository interface for advanced operations
@@ -174,7 +206,10 @@ pub trait AdvancedWorkspaceRepository: WorkspaceRepository {
     ///
     /// # Returns
     /// Statistics about the workspace
-    async fn get_workspace_stats(&self, workspace_context: &WorkspaceContext) -> Result<WorkspaceStats, WorkspaceError>;
+    async fn get_workspace_stats(
+        &self,
+        workspace_context: &WorkspaceContext,
+    ) -> Result<WorkspaceStats, WorkspaceError>;
 
     /// Validate workspace integrity (all paths exist, permissions correct, etc.)
     ///
@@ -183,7 +218,10 @@ pub trait AdvancedWorkspaceRepository: WorkspaceRepository {
     ///
     /// # Returns
     /// Validation report with any issues found
-    async fn validate_workspace_integrity(&self, workspace_context: &WorkspaceContext) -> Result<WorkspaceIntegrityReport, WorkspaceError>;
+    async fn validate_workspace_integrity(
+        &self,
+        workspace_context: &WorkspaceContext,
+    ) -> Result<WorkspaceIntegrityReport, WorkspaceError>;
 }
 
 /// Statistics about a workspace
@@ -247,7 +285,7 @@ pub enum WorkspaceIssueType {
 }
 
 /// Severity levels for workspace issues
-#[derive(Debug, Clone, PartialEq, PartialOrd)]
+#[derive(Debug, Clone, PartialEq, PartialOrd, Eq, Ord)]
 pub enum IssueSeverity {
     /// Informational only
     Info,

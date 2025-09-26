@@ -1,6 +1,6 @@
+use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use std::fmt;
-use chrono::{DateTime, Utc};
 
 /// CreatedAt value object for tracking project creation timestamp
 ///
@@ -30,7 +30,8 @@ impl CreatedAt {
 
     /// Create a CreatedAt from a string in RFC3339 format
     pub fn from_string(value: String) -> Result<Self, CreatedAtError> {
-        let datetime = value.parse::<DateTime<Utc>>()
+        let datetime = value
+            .parse::<DateTime<Utc>>()
             .map_err(|_| CreatedAtError::InvalidFormat)?;
         Self::new(datetime)
     }
@@ -107,7 +108,7 @@ pub enum CreatedAtError {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use chrono::{TimeZone, Duration};
+    use chrono::{Duration, TimeZone};
 
     #[test]
     fn test_now_creates_valid_timestamp() {
@@ -134,7 +135,10 @@ mod tests {
         let created_at = CreatedAt::new(future_date);
 
         assert!(created_at.is_err());
-        assert!(matches!(created_at.unwrap_err(), CreatedAtError::FutureDate));
+        assert!(matches!(
+            created_at.unwrap_err(),
+            CreatedAtError::FutureDate
+        ));
     }
 
     #[test]
@@ -155,7 +159,10 @@ mod tests {
         let created_at = CreatedAt::from_string(invalid_str);
 
         assert!(created_at.is_err());
-        assert!(matches!(created_at.unwrap_err(), CreatedAtError::InvalidFormat));
+        assert!(matches!(
+            created_at.unwrap_err(),
+            CreatedAtError::InvalidFormat
+        ));
     }
 
     #[test]

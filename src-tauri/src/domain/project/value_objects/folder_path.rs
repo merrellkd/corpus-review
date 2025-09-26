@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
-use std::path::{Path, PathBuf};
 use std::fmt;
+use std::path::{Path, PathBuf};
 
 /// FolderPath value object ensuring source folder validation
 ///
@@ -191,7 +191,8 @@ mod tests {
         // Test with relative path
         let current_dir = std::env::current_dir().unwrap();
         let relative_path = if test_folder.starts_with(&current_dir.to_string_lossy()) {
-            test_folder.strip_prefix(&format!("{}/", current_dir.to_string_lossy()))
+            test_folder
+                .strip_prefix(&format!("{}/", current_dir.to_string_lossy()))
                 .unwrap_or(&test_folder)
                 .to_string()
         } else {

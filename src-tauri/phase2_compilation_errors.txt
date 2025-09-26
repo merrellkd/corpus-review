@@ -1,0 +1,183 @@
+   Compiling corpus-review v0.1.0 (/Users/kdm/projects/digital-ext/CORPUS_REVIEW/src-tauri)
+warning: unused import: `FileEntryDto`
+ --> src/commands/workspace_commands.rs:4:47
+  |
+4 |     dtos::{WorkspaceDto, DirectoryListingDto, FileEntryDto},
+  |                                               ^^^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` on by default
+
+warning: unused import: `ProjectDto`
+ --> src/commands/workspace_commands.rs:7:29
+  |
+7 | use crate::infrastructure::{ProjectDto, AppError};
+  |                             ^^^^^^^^^^
+
+warning: unused import: `FileSystemServiceError`
+ --> src/commands/file_system_commands.rs:3:46
+  |
+3 |     file_system_service::{FileSystemService, FileSystemServiceError},
+  |                                              ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `AppResult`
+ --> src/commands/create_project.rs:4:63
+  |
+4 | use crate::infrastructure::{CreateProjectRequest, ProjectDto, AppResult};
+  |                                                               ^^^^^^^^^
+
+warning: unused import: `AppResult`
+ --> src/commands/list_projects.rs:4:77
+  |
+4 | use crate::infrastructure::{ProjectDto, ProjectListDto, RepositoryStatsDto, AppResult};
+  |                                                                             ^^^^^^^^^
+
+warning: unused import: `AppResult`
+ --> src/commands/delete_project.rs:4:63
+  |
+4 | use crate::infrastructure::{DeleteProjectRequest, ProjectDto, AppResult};
+  |                                                               ^^^^^^^^^
+
+warning: unused import: `AppResult`
+ --> src/commands/open_project.rs:4:41
+  |
+4 | use crate::infrastructure::{ProjectDto, AppResult};
+  |                                         ^^^^^^^^^
+
+warning: unused import: `ProjectError`
+ --> src/domain/project/repositories/project_repository.rs:4:43
+  |
+4 | use super::super::errors::project_error::{ProjectError, ProjectResult};
+  |                                           ^^^^^^^^^^^^
+
+warning: unused imports: `DocumentCaddyId`, `DocumentCaddy`, `FilePath`, `PanelType`, `ProjectId`, `WorkspaceLayoutId`, and `WorkspaceLayout`
+ --> src/application/workspace_service.rs:2:16
+  |
+2 |     entities::{WorkspaceLayout, DocumentCaddy},
+  |                ^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^
+3 |     value_objects::{ProjectId, WorkspaceLayoutId, DocumentCaddyId, FilePath},
+  |                     ^^^^^^^^^  ^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^  ^^^^^^^^
+4 |     repositories::{RepositoryError, RepositoryFactory},
+5 |     PanelType,
+  |     ^^^^^^^^^
+
+warning: unused imports: `FilePath`, `FileSystemItemType`, `FileSystemItem`, `ProjectId`, and `Project`
+ --> src/application/file_system_service.rs:2:16
+  |
+2 |     entities::{FileSystemItem, FileSystemItemType, Project},
+  |                ^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^  ^^^^^^^
+3 |     value_objects::{FilePath, ProjectId},
+  |                     ^^^^^^^^  ^^^^^^^^^
+
+warning: unused import: `crate::infrastructure::ProjectDto`
+ --> src/application/file_system_service.rs:7:5
+  |
+7 | use crate::infrastructure::ProjectDto;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `ProjectError`, `ProjectResult`, and `RepositoryStats`
+ --> src/application/services/project_service.rs:5:44
+  |
+5 |     Project, ProjectId, ProjectRepository, RepositoryStats, ProjectResult, ProjectError
+  |                                            ^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^  ^^^^^^^^^^^^
+
+warning: unused import: `DatabaseHealth`
+ --> src/application/app_state.rs:7:50
+  |
+7 |     SqliteProjectRepository, DatabaseConnection, DatabaseHealth, AppError, AppResult
+  |                                                  ^^^^^^^^^^^^^^
+
+warning: unused import: `PanelType`
+ --> src/infrastructure/repositories/workspace_layout_repository.rs:7:5
+  |
+7 |     PanelType,
+  |     ^^^^^^^^^
+
+warning: unused variable: `project_id`
+  --> src/application/services/workspace_service.rs:38:9
+   |
+38 |         project_id: &str,
+   |         ^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_project_id`
+   |
+   = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `project_name`
+  --> src/application/services/workspace_service.rs:39:9
+   |
+39 |         project_name: &str,
+   |         ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_project_name`
+
+warning: unused variable: `source_folder`
+  --> src/application/services/workspace_service.rs:40:9
+   |
+40 |         source_folder: &str,
+   |         ^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_source_folder`
+
+warning: unused variable: `project_id`
+   --> src/application/services/workspace_service.rs:131:9
+    |
+131 |         project_id: &str,
+    |         ^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_project_id`
+
+warning: unused variable: `project_name`
+   --> src/application/services/workspace_service.rs:132:9
+    |
+132 |         project_name: &str,
+    |         ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_project_name`
+
+warning: unused variable: `project_id`
+   --> src/application/services/workspace_service.rs:147:9
+    |
+147 |         project_id: &str,
+    |         ^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_project_id`
+
+warning: unused variable: `project_name`
+   --> src/application/services/workspace_service.rs:148:9
+    |
+148 |         project_name: &str,
+    |         ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_project_name`
+
+warning: unused variable: `metadata`
+  --> src/infrastructure/dtos/project_dto.rs:27:13
+   |
+27 |         let metadata = project.metadata();
+   |             ^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_metadata`
+
+warning: field `repository_factory` is never read
+  --> src/application/workspace_service.rs:20:5
+   |
+19 | pub struct WorkspaceService {
+   |            ---------------- field in this struct
+20 |     repository_factory: Arc<dyn RepositoryFactory>,
+   |     ^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` on by default
+
+warning: field `repository_factory` is never read
+  --> src/application/file_system_service.rs:12:5
+   |
+11 | pub struct FileSystemService {
+   |            ----------------- field in this struct
+12 |     repository_factory: Arc<dyn RepositoryFactory>,
+   |     ^^^^^^^^^^^^^^^^^^
+
+warning: `corpus-review` (lib) generated 24 warnings (run `cargo fix --lib -p corpus-review` to apply 14 suggestions)
+warning: unused import: `LegacyWorkspaceService`
+  --> src/main.rs:14:5
+   |
+14 |     LegacyWorkspaceService,
+   |     ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `std::sync::Arc`
+  --> src/main.rs:18:5
+   |
+18 | use std::sync::Arc;
+   |     ^^^^^^^^^^^^^^
+
+warning: unused variable: `legacy_database`
+  --> src/main.rs:32:9
+   |
+32 |     let legacy_database = initialize_database().await.expect("Failed to initialize legacy database");
+   |         ^^^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_legacy_database`
+
+warning: `corpus-review` (bin "corpus-review") generated 27 warnings (24 duplicates) (run `cargo fix --bin "corpus-review"` to apply 2 suggestions)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 1.90s

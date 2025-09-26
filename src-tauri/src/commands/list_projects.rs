@@ -1,7 +1,7 @@
 use tauri::{AppHandle, State};
 
 use crate::application::{AppState, StateManager};
-use crate::infrastructure::{ProjectDto, ProjectListDto, RepositoryStatsDto, AppResult};
+use crate::infrastructure::{ProjectDto, ProjectListDto, RepositoryStatsDto};
 
 /// Tauri command to list all projects
 ///
@@ -30,16 +30,25 @@ pub async fn list_projects(
             if app_error.should_log() {
                 match app_error.log_level() {
                     crate::infrastructure::errors::app_error::LogLevel::Error => {
-                        tracing::error!("Failed to list projects: {} - {}",
-                            app_error.code, app_error.message);
+                        tracing::error!(
+                            "Failed to list projects: {} - {}",
+                            app_error.code,
+                            app_error.message
+                        );
                     }
                     crate::infrastructure::errors::app_error::LogLevel::Warning => {
-                        tracing::warn!("Failed to list projects: {} - {}",
-                            app_error.code, app_error.message);
+                        tracing::warn!(
+                            "Failed to list projects: {} - {}",
+                            app_error.code,
+                            app_error.message
+                        );
                     }
                     crate::infrastructure::errors::app_error::LogLevel::Info => {
-                        tracing::info!("Failed to list projects: {} - {}",
-                            app_error.code, app_error.message);
+                        tracing::info!(
+                            "Failed to list projects: {} - {}",
+                            app_error.code,
+                            app_error.message
+                        );
                     }
                 }
             }
@@ -63,25 +72,37 @@ pub async fn list_projects_paged(
     // Record command execution
     StateManager::record_command(&app).await;
 
-    tracing::debug!("Listing projects with pagination: offset={}, limit={}", offset, limit);
+    tracing::debug!(
+        "Listing projects with pagination: offset={}, limit={}",
+        offset,
+        limit
+    );
 
     // Execute the business logic through the application service
-    let result = state.project_service().list_projects_paged(offset, limit).await;
+    let result = state
+        .project_service()
+        .list_projects_paged(offset, limit)
+        .await;
 
     match result {
         Ok(project_list) => {
-            tracing::info!("Listed {} projects (page {}/{}, total: {})",
+            tracing::info!(
+                "Listed {} projects (page {}/{}, total: {})",
                 project_list.projects.len(),
                 project_list.current_page(),
                 project_list.total_pages(),
-                project_list.total_count);
+                project_list.total_count
+            );
 
             Ok(project_list)
         }
         Err(app_error) => {
             if app_error.should_log() {
-                tracing::error!("Failed to list projects with pagination: {} - {}",
-                    app_error.code, app_error.message);
+                tracing::error!(
+                    "Failed to list projects with pagination: {} - {}",
+                    app_error.code,
+                    app_error.message
+                );
             }
 
             Err(app_error.user_message())
@@ -107,14 +128,23 @@ pub async fn search_projects(
     let offset = offset.unwrap_or(0);
     let limit = limit.unwrap_or(50);
 
-    tracing::debug!("Searching projects with query: '{}', offset: {}, limit: {}", query, offset, limit);
+    tracing::debug!(
+        "Searching projects with query: '{}', offset: {}, limit: {}",
+        query,
+        offset,
+        limit
+    );
 
     // Execute the business logic through the application service
     let result = state.project_service().search_projects(&query).await;
 
     match result {
         Ok(projects) => {
-            tracing::info!("Found {} projects matching query '{}'", projects.len(), query);
+            tracing::info!(
+                "Found {} projects matching query '{}'",
+                projects.len(),
+                query
+            );
 
             // Apply pagination to results
             let total_count = projects.len();
@@ -133,8 +163,11 @@ pub async fn search_projects(
         }
         Err(app_error) => {
             if app_error.should_log() {
-                tracing::error!("Failed to search projects: {} - {}",
-                    app_error.code, app_error.message);
+                tracing::error!(
+                    "Failed to search projects: {} - {}",
+                    app_error.code,
+                    app_error.message
+                );
             }
 
             Err(app_error.user_message())
@@ -162,15 +195,20 @@ pub async fn get_project(
     match result {
         Ok(project_option) => {
             match &project_option {
-                Some(project) => tracing::info!("Retrieved project: {} - {}", project.id, project.name),
+                Some(project) => {
+                    tracing::info!("Retrieved project: {} - {}", project.id, project.name)
+                }
                 None => tracing::info!("Project not found: {}", id),
             }
             Ok(project_option)
         }
         Err(app_error) => {
             if app_error.should_log() {
-                tracing::error!("Failed to get project: {} - {}",
-                    app_error.code, app_error.message);
+                tracing::error!(
+                    "Failed to get project: {} - {}",
+                    app_error.code,
+                    app_error.message
+                );
             }
 
             Err(app_error.user_message())
@@ -198,15 +236,22 @@ pub async fn get_project_by_name(
     match result {
         Ok(project_option) => {
             match &project_option {
-                Some(project) => tracing::info!("Retrieved project by name: {} - {}", project.id, project.name),
+                Some(project) => tracing::info!(
+                    "Retrieved project by name: {} - {}",
+                    project.id,
+                    project.name
+                ),
                 None => tracing::info!("Project not found with name: {}", name),
             }
             Ok(project_option)
         }
         Err(app_error) => {
             if app_error.should_log() {
-                tracing::error!("Failed to get project by name: {} - {}",
-                    app_error.code, app_error.message);
+                tracing::error!(
+                    "Failed to get project by name: {} - {}",
+                    app_error.code,
+                    app_error.message
+                );
             }
 
             Err(app_error.user_message())
@@ -233,14 +278,20 @@ pub async fn get_repository_stats(
 
     match result {
         Ok(stats) => {
-            tracing::info!("Retrieved repository statistics: {} projects, {:.1}% accessible",
-                stats.total_projects, stats.accessibility_percentage);
+            tracing::info!(
+                "Retrieved repository statistics: {} projects, {:.1}% accessible",
+                stats.total_projects,
+                stats.accessibility_percentage
+            );
             Ok(stats)
         }
         Err(app_error) => {
             if app_error.should_log() {
-                tracing::error!("Failed to get repository statistics: {} - {}",
-                    app_error.code, app_error.message);
+                tracing::error!(
+                    "Failed to get repository statistics: {} - {}",
+                    app_error.code,
+                    app_error.message
+                );
             }
 
             Err(app_error.user_message())
@@ -272,8 +323,11 @@ pub async fn get_inaccessible_projects(
         }
         Err(app_error) => {
             if app_error.should_log() {
-                tracing::error!("Failed to get inaccessible projects: {} - {}",
-                    app_error.code, app_error.message);
+                tracing::error!(
+                    "Failed to get inaccessible projects: {} - {}",
+                    app_error.code,
+                    app_error.message
+                );
             }
 
             Err(app_error.user_message())
@@ -295,30 +349,44 @@ pub async fn find_projects_by_date_range(
     // Record command execution
     StateManager::record_command(&app).await;
 
-    tracing::debug!("Finding projects by date range: {} to {}", start_date, end_date);
+    tracing::debug!(
+        "Finding projects by date range: {} to {}",
+        start_date,
+        end_date
+    );
 
     // Parse dates
-    let start_datetime = start_date.parse::<chrono::DateTime<chrono::Utc>>()
+    let start_datetime = start_date
+        .parse::<chrono::DateTime<chrono::Utc>>()
         .map_err(|e| format!("Invalid start date format: {}", e))?;
 
-    let end_datetime = end_date.parse::<chrono::DateTime<chrono::Utc>>()
+    let end_datetime = end_date
+        .parse::<chrono::DateTime<chrono::Utc>>()
         .map_err(|e| format!("Invalid end date format: {}", e))?;
 
     // Execute the business logic through the application service
-    let result = state.project_service()
+    let result = state
+        .project_service()
         .find_projects_by_date_range(start_datetime, end_datetime)
         .await;
 
     match result {
         Ok(projects) => {
-            tracing::info!("Found {} projects in date range {} to {}",
-                projects.len(), start_date, end_date);
+            tracing::info!(
+                "Found {} projects in date range {} to {}",
+                projects.len(),
+                start_date,
+                end_date
+            );
             Ok(projects)
         }
         Err(app_error) => {
             if app_error.should_log() {
-                tracing::error!("Failed to find projects by date range: {} - {}",
-                    app_error.code, app_error.message);
+                tracing::error!(
+                    "Failed to find projects by date range: {} - {}",
+                    app_error.code,
+                    app_error.message
+                );
             }
 
             Err(app_error.user_message())
@@ -370,7 +438,11 @@ mod tests {
         for (offset, limit, should_be_valid) in test_cases {
             // These would be validated by the service layer
             let result = limit > 0 && limit <= 1000;
-            assert_eq!(result, should_be_valid, "Failed for offset={}, limit={}", offset, limit);
+            assert_eq!(
+                result, should_be_valid,
+                "Failed for offset={}, limit={}",
+                offset, limit
+            );
         }
     }
 
@@ -389,11 +461,8 @@ mod tests {
 
         // Create some test projects first
         for i in 1..=3 {
-            let request = CreateProjectRequest::new(
-                format!("Test Project {}", i),
-                test_folder.clone(),
-                None,
-            );
+            let request =
+                CreateProjectRequest::new(format!("Test Project {}", i), test_folder.clone(), None);
             // Would call create_project command here
         }
 

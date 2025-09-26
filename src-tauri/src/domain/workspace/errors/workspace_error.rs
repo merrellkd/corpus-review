@@ -20,7 +20,10 @@ pub enum WorkspaceError {
 
     /// Attempted navigation outside workspace boundaries
     #[error("Navigation boundary violation: attempted to access {path} which is outside workspace root {workspace_root}")]
-    NavigationBoundaryViolation { path: String, workspace_root: String },
+    NavigationBoundaryViolation {
+        path: String,
+        workspace_root: String,
+    },
 
     /// Failed to list directory contents
     #[error("Directory listing failed for {path}: {reason}")]
@@ -43,7 +46,7 @@ pub enum WorkspaceError {
     FileSystemError {
         operation: String,
         path: String,
-        reason: String
+        reason: String,
     },
 
     /// Empty directory handling error
@@ -66,58 +69,56 @@ impl WorkspaceError {
     pub fn invalid_path(path: impl Into<String>, reason: impl Into<String>) -> Self {
         Self::InvalidPath {
             path: path.into(),
-            reason: reason.into()
+            reason: reason.into(),
         }
     }
 
     /// Create a navigation boundary violation error
     pub fn navigation_boundary_violation(
         path: impl Into<String>,
-        workspace_root: impl Into<String>
+        workspace_root: impl Into<String>,
     ) -> Self {
         Self::NavigationBoundaryViolation {
             path: path.into(),
-            workspace_root: workspace_root.into()
+            workspace_root: workspace_root.into(),
         }
     }
 
     /// Create a directory listing failed error
-    pub fn directory_listing_failed(
-        path: impl Into<String>,
-        reason: impl Into<String>
-    ) -> Self {
+    pub fn directory_listing_failed(path: impl Into<String>, reason: impl Into<String>) -> Self {
         Self::DirectoryListingFailed {
             path: path.into(),
-            reason: reason.into()
+            reason: reason.into(),
         }
     }
 
     /// Create a metadata retrieval failed error
-    pub fn metadata_retrieval_failed(
-        path: impl Into<String>,
-        reason: impl Into<String>
-    ) -> Self {
+    pub fn metadata_retrieval_failed(path: impl Into<String>, reason: impl Into<String>) -> Self {
         Self::MetadataRetrievalFailed {
             path: path.into(),
-            reason: reason.into()
+            reason: reason.into(),
         }
     }
 
     /// Create an invalid workspace context error
     pub fn invalid_workspace_context(reason: impl Into<String>) -> Self {
-        Self::InvalidWorkspaceContext { reason: reason.into() }
+        Self::InvalidWorkspaceContext {
+            reason: reason.into(),
+        }
     }
 
     /// Create an invalid project ID error
     pub fn invalid_project_id(project_id: impl Into<String>) -> Self {
-        Self::InvalidProjectId { project_id: project_id.into() }
+        Self::InvalidProjectId {
+            project_id: project_id.into(),
+        }
     }
 
     /// Create a file system error
     pub fn file_system_error(
         operation: impl Into<String>,
         path: impl Into<String>,
-        reason: impl Into<String>
+        reason: impl Into<String>,
     ) -> Self {
         Self::FileSystemError {
             operation: operation.into(),
@@ -127,13 +128,10 @@ impl WorkspaceError {
     }
 
     /// Create an empty directory error
-    pub fn empty_directory_error(
-        path: impl Into<String>,
-        reason: impl Into<String>
-    ) -> Self {
+    pub fn empty_directory_error(path: impl Into<String>, reason: impl Into<String>) -> Self {
         Self::EmptyDirectoryError {
             path: path.into(),
-            reason: reason.into()
+            reason: reason.into(),
         }
     }
 
@@ -184,10 +182,7 @@ mod tests {
 
     #[test]
     fn test_navigation_boundary_violation() {
-        let error = WorkspaceError::navigation_boundary_violation(
-            "/evil/path",
-            "/safe/workspace"
-        );
+        let error = WorkspaceError::navigation_boundary_violation("/evil/path", "/safe/workspace");
         assert!(!error.is_recoverable());
         assert!(!error.requires_user_attention());
         assert!(error.to_string().contains("/evil/path"));
@@ -196,11 +191,8 @@ mod tests {
 
     #[test]
     fn test_file_system_error_recoverability() {
-        let error = WorkspaceError::file_system_error(
-            "read",
-            "/some/file",
-            "temporary network issue"
-        );
+        let error =
+            WorkspaceError::file_system_error("read", "/some/file", "temporary network issue");
         assert!(error.is_recoverable());
         assert!(error.requires_user_attention());
     }

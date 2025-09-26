@@ -1,10 +1,10 @@
-use sqlx::sqlite::{SqlitePool, SqlitePoolOptions, SqliteConnectOptions};
+use sqlx::sqlite::{SqliteConnectOptions, SqlitePool, SqlitePoolOptions};
 use sqlx::{ConnectOptions, Executor, Row};
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::time::Duration;
 use tokio::fs;
-use tracing::{info, error};
+use tracing::{error, info};
 
 use crate::domain::project::{ProjectError, ProjectResult};
 
@@ -33,10 +33,12 @@ impl DatabaseConnection {
 
         // Ensure the parent directory exists
         if let Some(parent) = database_path.parent() {
-            fs::create_dir_all(parent).await
-                .map_err(|e| ProjectError::repository_error(
-                    format!("Failed to create database directory: {}", e)
-                ))?;
+            fs::create_dir_all(parent).await.map_err(|e| {
+                ProjectError::repository_error(format!(
+                    "Failed to create database directory: {}",
+                    e
+                ))
+            })?;
         }
 
         // Configure SQLite connection options
@@ -88,20 +90,30 @@ impl DatabaseConnection {
         info!("Running database migrations");
 
         // First, ensure the migrations table exists
-        self.pool.execute(sqlx::query(r#"
+        self.pool
+            .execute(sqlx::query(
+                r#"
             CREATE TABLE IF NOT EXISTS schema_migrations (
                 version INTEGER PRIMARY KEY,
                 name TEXT NOT NULL,
                 applied_at DATETIME DEFAULT CURRENT_TIMESTAMP
             );
-        "#)).await
-        .map_err(|e| ProjectError::repository_error(
-            format!("Failed to create schema_migrations table: {}", e)
-        ))?;
+        "#,
+            ))
+            .await
+            .map_err(|e| {
+                ProjectError::repository_error(format!(
+                    "Failed to create schema_migrations table: {}",
+                    e
+                ))
+            })?;
 
         let migrations = vec![
             // Initial schema
-            (1, "create_projects_table", r#"
+            (
+                1,
+                "create_projects_table",
+                r#"
                 CREATE TABLE IF NOT EXISTS projects (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     uuid TEXT UNIQUE NOT NULL,
@@ -110,44 +122,59 @@ impl DatabaseConnection {
                     note TEXT CHECK(length(note) <= 1000),
                     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
                 );
-            "#),
+            "#,
+            ),
             // Indexes for performance
-            (2, "create_indexes", r#"
+            (
+                2,
+                "create_indexes",
+                r#"
                 CREATE INDEX IF NOT EXISTS idx_projects_uuid ON projects(uuid);
                 CREATE INDEX IF NOT EXISTS idx_projects_name ON projects(name COLLATE NOCASE);
                 CREATE INDEX IF NOT EXISTS idx_projects_created_at ON projects(created_at);
-            "#),
+            "#,
+            ),
         ];
 
         for (version, name, sql) in migrations {
             if !self.is_migration_applied(version).await? {
                 info!("Applying migration {}: {}", version, name);
 
-                let mut tx = self.pool.begin().await
-                    .map_err(|e| ProjectError::repository_error(
-                        format!("Failed to start migration transaction: {}", e)
-                    ))?;
+                let mut tx = self.pool.begin().await.map_err(|e| {
+                    ProjectError::repository_error(format!(
+                        "Failed to start migration transaction: {}",
+                        e
+                    ))
+                })?;
 
                 // Execute the migration
-                tx.execute(sqlx::query(sql)).await
-                    .map_err(|e| ProjectError::repository_error(
-                        format!("Failed to execute migration {}: {}", version, e)
-                    ))?;
+                tx.execute(sqlx::query(sql)).await.map_err(|e| {
+                    ProjectError::repository_error(format!(
+                        "Failed to execute migration {}: {}",
+                        version, e
+                    ))
+                })?;
 
                 // Record the migration
                 let record_sql = r#"
                     INSERT OR IGNORE INTO schema_migrations (version, name)
                     VALUES (?1, ?2)
                 "#;
-                tx.execute(sqlx::query(record_sql).bind(version).bind(name)).await
-                    .map_err(|e| ProjectError::repository_error(
-                        format!("Failed to record migration {}: {}", version, e)
-                    ))?;
+                tx.execute(sqlx::query(record_sql).bind(version).bind(name))
+                    .await
+                    .map_err(|e| {
+                        ProjectError::repository_error(format!(
+                            "Failed to record migration {}: {}",
+                            version, e
+                        ))
+                    })?;
 
-                tx.commit().await
-                    .map_err(|e| ProjectError::repository_error(
-                        format!("Failed to commit migration {}: {}", version, e)
-                    ))?;
+                tx.commit().await.map_err(|e| {
+                    ProjectError::repository_error(format!(
+                        "Failed to commit migration {}: {}",
+                        version, e
+                    ))
+                })?;
 
                 info!("Migration {} applied successfully", version);
             }
@@ -168,9 +195,9 @@ impl DatabaseConnection {
         let table_exists = sqlx::query(table_exists_sql)
             .fetch_optional(&*self.pool)
             .await
-            .map_err(|e| ProjectError::repository_error(
-                format!("Failed to check migrations table: {}", e)
-            ))?
+            .map_err(|e| {
+                ProjectError::repository_error(format!("Failed to check migrations table: {}", e))
+            })?
             .is_some();
 
         if !table_exists {
@@ -186,9 +213,12 @@ impl DatabaseConnection {
             .bind(version)
             .fetch_optional(&*self.pool)
             .await
-            .map_err(|e| ProjectError::repository_error(
-                format!("Failed to check migration {}: {}", version, e)
-            ))?
+            .map_err(|e| {
+                ProjectError::repository_error(format!(
+                    "Failed to check migration {}: {}",
+                    version, e
+                ))
+            })?
             .is_some();
 
         Ok(migration_exists)
@@ -199,9 +229,7 @@ impl DatabaseConnection {
         let start_time = std::time::Instant::now();
 
         // Test basic connectivity
-        let connectivity_result = sqlx::query("SELECT 1")
-            .fetch_one(&*self.pool)
-            .await;
+        let connectivity_result = sqlx::query("SELECT 1").fetch_one(&*self.pool).await;
 
         let is_connected = connectivity_result.is_ok();
         let response_time = start_time.elapsed();
@@ -242,26 +270,35 @@ impl DatabaseConnection {
         let page_count_row = sqlx::query(page_count_query)
             .fetch_one(&*self.pool)
             .await
-            .map_err(|e| ProjectError::repository_error(format!("Failed to get page count: {}", e)))?;
+            .map_err(|e| {
+                ProjectError::repository_error(format!("Failed to get page count: {}", e))
+            })?;
 
         let page_size_row = sqlx::query(page_size_query)
             .fetch_one(&*self.pool)
             .await
-            .map_err(|e| ProjectError::repository_error(format!("Failed to get page size: {}", e)))?;
+            .map_err(|e| {
+                ProjectError::repository_error(format!("Failed to get page size: {}", e))
+            })?;
 
         let tables_row = sqlx::query(user_tables_query)
             .fetch_one(&*self.pool)
             .await
-            .map_err(|e| ProjectError::repository_error(format!("Failed to get table count: {}", e)))?;
+            .map_err(|e| {
+                ProjectError::repository_error(format!("Failed to get table count: {}", e))
+            })?;
 
-        let page_count: i64 = page_count_row.try_get(0)
-            .map_err(|e| ProjectError::repository_error(format!("Failed to parse page count: {}", e)))?;
+        let page_count: i64 = page_count_row.try_get(0).map_err(|e| {
+            ProjectError::repository_error(format!("Failed to parse page count: {}", e))
+        })?;
 
-        let page_size: i64 = page_size_row.try_get(0)
-            .map_err(|e| ProjectError::repository_error(format!("Failed to parse page size: {}", e)))?;
+        let page_size: i64 = page_size_row.try_get(0).map_err(|e| {
+            ProjectError::repository_error(format!("Failed to parse page size: {}", e))
+        })?;
 
-        let table_count: i64 = tables_row.try_get("table_count")
-            .map_err(|e| ProjectError::repository_error(format!("Failed to parse table count: {}", e)))?;
+        let table_count: i64 = tables_row.try_get("table_count").map_err(|e| {
+            ProjectError::repository_error(format!("Failed to parse table count: {}", e))
+        })?;
 
         Ok(DatabaseStats {
             database_size_bytes: (page_count * page_size) as u64,
@@ -293,8 +330,9 @@ impl DatabaseConnection {
     /// Create a temporary database for testing
     #[cfg(test)]
     pub async fn new_temp() -> ProjectResult<(Self, tempfile::TempDir)> {
-        let temp_dir = tempfile::tempdir()
-            .map_err(|e| ProjectError::repository_error(format!("Failed to create temp dir: {}", e)))?;
+        let temp_dir = tempfile::tempdir().map_err(|e| {
+            ProjectError::repository_error(format!("Failed to create temp dir: {}", e))
+        })?;
 
         let db_path = temp_dir.path().join("test.db");
         let connection = Self::new_with_path(db_path).await?;
@@ -310,10 +348,9 @@ impl DatabaseConnection {
 
         // Ensure backup directory exists
         if let Some(parent) = backup_path.parent() {
-            fs::create_dir_all(parent).await
-                .map_err(|e| ProjectError::repository_error(
-                    format!("Failed to create backup directory: {}", e)
-                ))?;
+            fs::create_dir_all(parent).await.map_err(|e| {
+                ProjectError::repository_error(format!("Failed to create backup directory: {}", e))
+            })?;
         }
 
         // Use SQLite's VACUUM INTO command for atomic backup
@@ -322,9 +359,9 @@ impl DatabaseConnection {
         sqlx::query(&backup_sql)
             .execute(&*self.pool)
             .await
-            .map_err(|e| ProjectError::repository_error(
-                format!("Failed to create backup: {}", e)
-            ))?;
+            .map_err(|e| {
+                ProjectError::repository_error(format!("Failed to create backup: {}", e))
+            })?;
 
         info!("Database backup created successfully");
         Ok(())
@@ -398,10 +435,12 @@ mod tests {
         let (connection, _temp_dir) = DatabaseConnection::new_temp().await.unwrap();
 
         // Check that projects table exists
-        let table_exists = sqlx::query(r#"
+        let table_exists = sqlx::query(
+            r#"
             SELECT name FROM sqlite_master
             WHERE type='table' AND name='projects'
-        "#)
+        "#,
+        )
         .fetch_optional(&*connection.pool())
         .await
         .unwrap();
@@ -409,10 +448,12 @@ mod tests {
         assert!(table_exists.is_some());
 
         // Check that indexes exist
-        let index_exists = sqlx::query(r#"
+        let index_exists = sqlx::query(
+            r#"
             SELECT name FROM sqlite_master
             WHERE type='index' AND name='idx_projects_uuid'
-        "#)
+        "#,
+        )
         .fetch_optional(&*connection.pool())
         .await
         .unwrap();
@@ -440,10 +481,12 @@ mod tests {
         let (connection, temp_dir) = DatabaseConnection::new_temp().await.unwrap();
 
         // Insert some test data
-        sqlx::query(r#"
+        sqlx::query(
+            r#"
             INSERT INTO projects (uuid, name, source_folder, note)
             VALUES ('proj_test', 'Test Project', '/tmp/test', 'Test note')
-        "#)
+        "#,
+        )
         .execute(&*connection.pool())
         .await
         .unwrap();
@@ -474,10 +517,12 @@ mod tests {
         let (connection, _temp_dir) = DatabaseConnection::new_temp().await.unwrap();
 
         // Check that migration tracking table exists
-        let migrations_table = sqlx::query(r#"
+        let migrations_table = sqlx::query(
+            r#"
             SELECT name FROM sqlite_master
             WHERE type='table' AND name='schema_migrations'
-        "#)
+        "#,
+        )
         .fetch_optional(&*connection.pool())
         .await
         .unwrap();

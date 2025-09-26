@@ -1,8 +1,8 @@
-use async_trait::async_trait;
-use crate::domain::workspace::entities::project::Project;
+use crate::domain::project::aggregates::Project;
 use crate::domain::workspace::entities::workspace_layout::WorkspaceLayout;
 use crate::domain::workspace::repositories::{ProjectRepository, RepositoryError};
-use crate::domain::workspace::value_objects::{ProjectId, FilePath};
+use crate::domain::workspace::value_objects::{FilePath, ProjectId};
+use async_trait::async_trait;
 
 /// Mock implementation of ProjectRepository for development
 pub struct MockProjectRepository;
@@ -23,9 +23,10 @@ impl ProjectRepository for MockProjectRepository {
 
         let project = Project::new(
             "Test Project".to_string(),
-            source_path,
-            reports_path,
-        ).map_err(|e| RepositoryError::ValidationError(e))?;
+            source_path.as_str().to_string(),
+            Some(reports_path.as_str().to_string()),
+        )
+        .map_err(|e| RepositoryError::ValidationError(e.to_string()))?;
 
         Ok(Some(project))
     }
@@ -39,9 +40,10 @@ impl ProjectRepository for MockProjectRepository {
 
             let project = Project::new(
                 name.to_string(),
-                source_path,
-                reports_path,
-            ).map_err(|e| RepositoryError::ValidationError(e))?;
+                source_path.as_str().to_string(),
+                Some(reports_path.as_str().to_string()),
+            )
+            .map_err(|e| RepositoryError::ValidationError(e.to_string()))?;
 
             Ok(Some(project))
         } else {
@@ -58,9 +60,10 @@ impl ProjectRepository for MockProjectRepository {
 
         let project = Project::new(
             "Test Project".to_string(),
-            source_path,
-            reports_path,
-        ).map_err(|e| RepositoryError::ValidationError(e))?;
+            source_path.as_str().to_string(),
+            Some(reports_path.as_str().to_string()),
+        )
+        .map_err(|e| RepositoryError::ValidationError(e.to_string()))?;
 
         Ok(vec![project])
     }
@@ -70,12 +73,20 @@ impl ProjectRepository for MockProjectRepository {
         Ok(())
     }
 
-    async fn is_name_unique(&self, name: &str, _excluding_id: Option<&ProjectId>) -> Result<bool, RepositoryError> {
+    async fn is_name_unique(
+        &self,
+        name: &str,
+        _excluding_id: Option<&ProjectId>,
+    ) -> Result<bool, RepositoryError> {
         // For mock, only "Test Project" exists
         Ok(name != "Test Project")
     }
 
-    async fn update_workspace_layout(&self, _project_id: &ProjectId, _layout: &WorkspaceLayout) -> Result<(), RepositoryError> {
+    async fn update_workspace_layout(
+        &self,
+        _project_id: &ProjectId,
+        _layout: &WorkspaceLayout,
+    ) -> Result<(), RepositoryError> {
         // Mock implementation - just return success
         Ok(())
     }

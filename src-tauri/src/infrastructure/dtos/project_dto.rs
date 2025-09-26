@@ -1,7 +1,7 @@
-use serde::{Deserialize, Serialize};
 use chrono::{DateTime, Utc};
+use serde::{Deserialize, Serialize};
 
-use crate::domain::project::{Project, ProjectMetadata, ProjectError};
+use crate::domain::project::{Project, ProjectError, ProjectMetadata};
 
 /// Data Transfer Object for Project aggregate
 ///
@@ -24,7 +24,7 @@ pub struct ProjectDto {
 impl ProjectDto {
     /// Convert from domain Project to DTO
     pub fn from_project(project: &Project) -> Self {
-        let metadata = project.metadata();
+        let _metadata = project.metadata();
 
         ProjectDto {
             id: project.id().value().to_string(),
@@ -68,21 +68,22 @@ impl ProjectDto {
     /// Get a display-friendly summary
     pub fn display_summary(&self) -> String {
         let unknown = "Unknown".to_string();
-        let folder_name = self.source_folder_name
-            .as_ref()
-            .unwrap_or(&unknown);
+        let folder_name = self.source_folder_name.as_ref().unwrap_or(&unknown);
 
-        let note_suffix = self.note_preview
+        let note_suffix = self
+            .note_preview
             .as_ref()
             .map(|n| format!(" - {}", n))
             .unwrap_or_default();
 
-        format!("{} ({}){}",self.name, folder_name, note_suffix)
+        format!("{} ({}){}", self.name, folder_name, note_suffix)
     }
 
     /// Get formatted creation date for display
     pub fn formatted_date(&self) -> Result<String, ProjectError> {
-        let datetime: DateTime<Utc> = self.created_at.parse()
+        let datetime: DateTime<Utc> = self
+            .created_at
+            .parse()
             .map_err(|_| ProjectError::InvalidId)?;
 
         Ok(datetime.format("%Y-%m-%d %H:%M UTC").to_string())
@@ -147,12 +148,7 @@ pub struct ProjectListDto {
 
 impl ProjectListDto {
     /// Create a new ProjectListDto
-    pub fn new(
-        projects: Vec<ProjectDto>,
-        total_count: usize,
-        offset: usize,
-        limit: usize,
-    ) -> Self {
+    pub fn new(projects: Vec<ProjectDto>, total_count: usize, offset: usize, limit: usize) -> Self {
         let has_more = offset + projects.len() < total_count;
 
         ProjectListDto {
@@ -171,9 +167,7 @@ impl ProjectListDto {
         offset: usize,
         limit: usize,
     ) -> Self {
-        let project_dtos = projects.iter()
-            .map(ProjectDto::from_project)
-            .collect();
+        let project_dtos = projects.iter().map(ProjectDto::from_project).collect();
 
         Self::new(project_dtos, total_count, offset, limit)
     }
@@ -307,8 +301,9 @@ mod tests {
         let project = Project::new(
             "Test Project".to_string(),
             test_folder.clone(),
-            Some("Test note content".to_string())
-        ).unwrap();
+            Some("Test note content".to_string()),
+        )
+        .unwrap();
 
         let dto = ProjectDto::from_project(&project);
 
@@ -343,7 +338,10 @@ mod tests {
         assert!(result.is_ok());
 
         let project = result.unwrap();
-        assert_eq!(project.id().value(), "proj_550e8400-e29b-41d4-a716-446655440000");
+        assert_eq!(
+            project.id().value(),
+            "proj_550e8400-e29b-41d4-a716-446655440000"
+        );
         assert_eq!(project.name().value(), "Test Project");
 
         cleanup_test_folder(&test_folder);
@@ -368,27 +366,42 @@ mod tests {
         // Test invalid ID format
         let mut invalid_dto = valid_dto.clone();
         invalid_dto.id = "invalid_id".to_string();
-        assert!(matches!(invalid_dto.validate().unwrap_err(), ProjectDtoError::InvalidIdFormat));
+        assert!(matches!(
+            invalid_dto.validate().unwrap_err(),
+            ProjectDtoError::InvalidIdFormat
+        ));
 
         // Test empty name
         let mut invalid_dto = valid_dto.clone();
         invalid_dto.name = "".to_string();
-        assert!(matches!(invalid_dto.validate().unwrap_err(), ProjectDtoError::EmptyName));
+        assert!(matches!(
+            invalid_dto.validate().unwrap_err(),
+            ProjectDtoError::EmptyName
+        ));
 
         // Test long name
         let mut invalid_dto = valid_dto.clone();
         invalid_dto.name = "x".repeat(256);
-        assert!(matches!(invalid_dto.validate().unwrap_err(), ProjectDtoError::NameTooLong));
+        assert!(matches!(
+            invalid_dto.validate().unwrap_err(),
+            ProjectDtoError::NameTooLong
+        ));
 
         // Test long note
         let mut invalid_dto = valid_dto.clone();
         invalid_dto.note = Some("x".repeat(1001));
-        assert!(matches!(invalid_dto.validate().unwrap_err(), ProjectDtoError::NoteTooLong));
+        assert!(matches!(
+            invalid_dto.validate().unwrap_err(),
+            ProjectDtoError::NoteTooLong
+        ));
 
         // Test invalid timestamp
         let mut invalid_dto = valid_dto.clone();
         invalid_dto.created_at = "invalid-timestamp".to_string();
-        assert!(matches!(invalid_dto.validate().unwrap_err(), ProjectDtoError::InvalidTimestamp));
+        assert!(matches!(
+            invalid_dto.validate().unwrap_err(),
+            ProjectDtoError::InvalidTimestamp
+        ));
     }
 
     #[test]

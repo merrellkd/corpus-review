@@ -1,7 +1,7 @@
-use async_trait::async_trait;
 use super::super::aggregates::project::Project;
+use super::super::errors::project_error::ProjectResult;
 use super::super::value_objects::project_id::ProjectId;
-use super::super::errors::project_error::{ProjectError, ProjectResult};
+use async_trait::async_trait;
 
 /// Repository trait for Project aggregate persistence
 ///
@@ -120,9 +120,9 @@ impl RepositoryStats {
 #[cfg(test)]
 pub mod mock {
     use super::*;
+    use chrono::Utc;
     use std::collections::HashMap;
     use std::sync::{Arc, Mutex};
-    use chrono::Utc;
 
     #[derive(Debug, Clone)]
     pub struct MockProjectRepository {
@@ -352,7 +352,10 @@ pub mod mock {
                 return Ok(RepositoryStats::empty());
             }
 
-            let accessible = projects.values().filter(|p| p.is_source_accessible()).count();
+            let accessible = projects
+                .values()
+                .filter(|p| p.is_source_accessible())
+                .count();
             let with_notes = projects.values().filter(|p| p.note().is_some()).count();
             let total_name_length: usize = projects.values().map(|p| p.name().len()).sum();
             let avg_name_length = total_name_length as f64 / total as f64;
@@ -377,8 +380,8 @@ pub mod mock {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use super::mock::MockProjectRepository;
+    use super::*;
     use std::fs;
 
     fn setup_test_folder(name: &str) -> String {
@@ -396,11 +399,7 @@ mod tests {
         let repo = MockProjectRepository::new();
         let test_folder = setup_test_folder("mock_create");
 
-        let project = Project::new(
-            "Test Project".to_string(),
-            test_folder.clone(),
-            None
-        ).unwrap();
+        let project = Project::new("Test Project".to_string(), test_folder.clone(), None).unwrap();
 
         // Test create
         let result = repo.create(&project).await;
@@ -423,17 +422,11 @@ mod tests {
         let repo = MockProjectRepository::new();
         let test_folder = setup_test_folder("mock_duplicate");
 
-        let project1 = Project::new(
-            "Duplicate Name".to_string(),
-            test_folder.clone(),
-            None
-        ).unwrap();
+        let project1 =
+            Project::new("Duplicate Name".to_string(), test_folder.clone(), None).unwrap();
 
-        let project2 = Project::new(
-            "Duplicate Name".to_string(),
-            test_folder.clone(),
-            None
-        ).unwrap();
+        let project2 =
+            Project::new("Duplicate Name".to_string(), test_folder.clone(), None).unwrap();
 
         // First create should succeed
         assert!(repo.create(&project1).await.is_ok());
@@ -441,7 +434,10 @@ mod tests {
         // Second create should fail with duplicate name error
         let result = repo.create(&project2).await;
         assert!(result.is_err());
-        assert!(matches!(result.unwrap_err(), ProjectError::DuplicateName { .. }));
+        assert!(matches!(
+            result.unwrap_err(),
+            ProjectError::DuplicateName { .. }
+        ));
 
         cleanup_test_folder(&test_folder);
     }
@@ -451,11 +447,8 @@ mod tests {
         let repo = MockProjectRepository::new();
         let test_folder = setup_test_folder("mock_update_delete");
 
-        let mut project = Project::new(
-            "Original Name".to_string(),
-            test_folder.clone(),
-            None
-        ).unwrap();
+        let mut project =
+            Project::new("Original Name".to_string(), test_folder.clone(), None).unwrap();
 
         // Create project
         repo.create(&project).await.unwrap();
@@ -535,11 +528,7 @@ mod tests {
         repo.set_should_fail(true);
 
         let test_folder = setup_test_folder("mock_failure");
-        let project = Project::new(
-            "Test Project".to_string(),
-            test_folder.clone(),
-            None
-        ).unwrap();
+        let project = Project::new("Test Project".to_string(), test_folder.clone(), None).unwrap();
 
         // All operations should fail
         assert!(repo.create(&project).await.is_err());

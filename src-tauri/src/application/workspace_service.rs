@@ -1,9 +1,4 @@
-use crate::domain::workspace::{
-    entities::{WorkspaceLayout, DocumentCaddy},
-    value_objects::{ProjectId, WorkspaceLayoutId, DocumentCaddyId, FilePath},
-    repositories::{RepositoryError, RepositoryFactory},
-    PanelType,
-};
+use crate::domain::workspace::repositories::{RepositoryError, RepositoryFactory};
 use std::sync::Arc;
 
 /// Legacy workspace service for advanced workspace layout and document caddy management
@@ -19,7 +14,6 @@ use std::sync::Arc;
 pub struct WorkspaceService {
     repository_factory: Arc<dyn RepositoryFactory>,
 }
-
 
 #[derive(Debug, Clone)]
 pub enum WorkspaceServiceError {
@@ -51,7 +45,9 @@ impl From<RepositoryError> for WorkspaceServiceError {
             RepositoryError::AccessError(msg) => WorkspaceServiceError::ValidationError(msg),
             RepositoryError::SerializationError(msg) => WorkspaceServiceError::InternalError(msg),
             RepositoryError::FileSystemError(msg) => WorkspaceServiceError::ValidationError(msg),
-            RepositoryError::ConstraintViolation(msg) => WorkspaceServiceError::ValidationError(msg),
+            RepositoryError::ConstraintViolation(msg) => {
+                WorkspaceServiceError::ValidationError(msg)
+            }
             RepositoryError::InternalError(msg) => WorkspaceServiceError::InternalError(msg),
         }
     }

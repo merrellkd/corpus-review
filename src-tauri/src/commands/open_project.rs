@@ -1,7 +1,7 @@
 use tauri::{AppHandle, State};
 
 use crate::application::{AppState, StateManager};
-use crate::infrastructure::{ProjectDto, AppResult};
+use crate::infrastructure::ProjectDto;
 
 /// Tauri command to open a project
 ///
@@ -36,8 +36,11 @@ pub async fn open_project(
 
     match result {
         Ok(project_dto) => {
-            tracing::info!("Project opened successfully: {} - {}",
-                project_dto.id, project_dto.name);
+            tracing::info!(
+                "Project opened successfully: {} - {}",
+                project_dto.id,
+                project_dto.name
+            );
             Ok(project_dto)
         }
         Err(app_error) => {
@@ -45,16 +48,25 @@ pub async fn open_project(
             if app_error.should_log() {
                 match app_error.log_level() {
                     crate::infrastructure::errors::app_error::LogLevel::Error => {
-                        tracing::error!("Failed to open project: {} - {}",
-                            app_error.code, app_error.message);
+                        tracing::error!(
+                            "Failed to open project: {} - {}",
+                            app_error.code,
+                            app_error.message
+                        );
                     }
                     crate::infrastructure::errors::app_error::LogLevel::Warning => {
-                        tracing::warn!("Failed to open project: {} - {}",
-                            app_error.code, app_error.message);
+                        tracing::warn!(
+                            "Failed to open project: {} - {}",
+                            app_error.code,
+                            app_error.message
+                        );
                     }
                     crate::infrastructure::errors::app_error::LogLevel::Info => {
-                        tracing::info!("Failed to open project: {} - {}",
-                            app_error.code, app_error.message);
+                        tracing::info!(
+                            "Failed to open project: {} - {}",
+                            app_error.code,
+                            app_error.message
+                        );
                     }
                 }
             }
@@ -80,27 +92,36 @@ pub async fn open_project_by_name(
     tracing::debug!("Opening project by name: {}", name);
 
     // Find the project by name
-    let project_option = state.project_service()
+    let project_option = state
+        .project_service()
         .get_project_by_name(&name)
         .await
         .map_err(|e| e.user_message())?;
 
-    let project = project_option
-        .ok_or_else(|| format!("Project not found: {}", name))?;
+    let project = project_option.ok_or_else(|| format!("Project not found: {}", name))?;
 
     // Validate accessibility
-    let result = state.project_service().validate_project_access(&project.id).await;
+    let result = state
+        .project_service()
+        .validate_project_access(&project.id)
+        .await;
 
     match result {
         Ok(project_dto) => {
-            tracing::info!("Project opened by name successfully: {} - {}",
-                project_dto.id, project_dto.name);
+            tracing::info!(
+                "Project opened by name successfully: {} - {}",
+                project_dto.id,
+                project_dto.name
+            );
             Ok(project_dto)
         }
         Err(app_error) => {
             if app_error.should_log() {
-                tracing::error!("Failed to open project by name: {} - {}",
-                    app_error.code, app_error.message);
+                tracing::error!(
+                    "Failed to open project by name: {} - {}",
+                    app_error.code,
+                    app_error.message
+                );
             }
 
             Err(app_error.user_message())
@@ -187,8 +208,11 @@ pub async fn get_recent_projects(
         }
         Err(app_error) => {
             if app_error.should_log() {
-                tracing::error!("Failed to get recent projects: {} - {}",
-                    app_error.code, app_error.message);
+                tracing::error!(
+                    "Failed to get recent projects: {} - {}",
+                    app_error.code,
+                    app_error.message
+                );
             }
 
             Err(app_error.user_message())
@@ -212,7 +236,8 @@ pub async fn open_project_folder(
     tracing::debug!("Opening project folder in file manager: {}", id);
 
     // Get the project
-    let project = state.project_service()
+    let project = state
+        .project_service()
         .get_project(&id)
         .await
         .map_err(|e| e.user_message())?
@@ -228,19 +253,22 @@ pub async fn open_project_folder(
     let shell = app.shell();
 
     #[cfg(target_os = "macos")]
-    let result = shell.command("open")
+    let result = shell
+        .command("open")
         .args([&project.source_folder])
         .status()
         .await;
 
     #[cfg(target_os = "windows")]
-    let result = shell.command("explorer")
+    let result = shell
+        .command("explorer")
         .args([&project.source_folder])
         .status()
         .await;
 
     #[cfg(target_os = "linux")]
-    let result = shell.command("xdg-open")
+    let result = shell
+        .command("xdg-open")
         .args([&project.source_folder])
         .status()
         .await;
@@ -248,10 +276,16 @@ pub async fn open_project_folder(
     match result {
         Ok(status) => {
             if status.success() {
-                tracing::info!("Successfully opened project folder: {}", project.source_folder);
+                tracing::info!(
+                    "Successfully opened project folder: {}",
+                    project.source_folder
+                );
                 Ok(())
             } else {
-                let error_msg = format!("Failed to open folder: command failed with status {}", status.code().unwrap_or(-1));
+                let error_msg = format!(
+                    "Failed to open folder: command failed with status {}",
+                    status.code().unwrap_or(-1)
+                );
                 tracing::error!("{}", error_msg);
                 Err(error_msg)
             }
@@ -278,7 +312,8 @@ pub async fn get_project_opening_stats(
 
     tracing::debug!("Getting project opening statistics");
 
-    let repository_stats = state.project_service()
+    let repository_stats = state
+        .project_service()
         .get_statistics()
         .await
         .map_err(|e| e.user_message())?;
@@ -310,10 +345,7 @@ async fn get_access_warnings(project: &ProjectDto) -> Vec<String> {
 }
 
 /// Helper function to get access recommendations
-async fn get_access_recommendations(
-    project: &ProjectDto,
-    warnings: &[String],
-) -> Vec<String> {
+async fn get_access_recommendations(project: &ProjectDto, warnings: &[String]) -> Vec<String> {
     let mut recommendations = Vec::new();
 
     if !project.is_accessible {
@@ -444,8 +476,11 @@ mod tests {
 
         for (input_limit, expected_limit) in test_cases {
             let actual_limit = input_limit.unwrap_or(10).min(50);
-            assert_eq!(actual_limit, expected_limit,
-                "Failed for input_limit: {:?}", input_limit);
+            assert_eq!(
+                actual_limit, expected_limit,
+                "Failed for input_limit: {:?}",
+                input_limit
+            );
         }
     }
 
@@ -453,9 +488,9 @@ mod tests {
     #[cfg(feature = "integration-tests")]
     #[tokio::test]
     async fn test_open_project_integration() {
-        use tauri::test::{mock_app, MockRuntime};
         use crate::infrastructure::CreateProjectRequest;
         use std::fs;
+        use tauri::test::{mock_app, MockRuntime};
 
         fn setup_test_folder(name: &str) -> String {
             let test_path = format!("/tmp/open_command_test_{}", name);

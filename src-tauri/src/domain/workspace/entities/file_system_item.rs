@@ -1,7 +1,7 @@
-use serde::{Deserialize, Serialize};
-use chrono::{DateTime, Utc};
-use std::path::{Path, PathBuf};
 use crate::domain::workspace::value_objects::FilePath;
+use chrono::{DateTime, Utc};
+use serde::{Deserialize, Serialize};
+use std::path::{Path, PathBuf};
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct FileSystemItem {
@@ -111,7 +111,9 @@ impl FileSystemItem {
     pub fn get_display_title(&self) -> String {
         if let Some(extension) = self.get_extension() {
             // Remove extension for display title
-            self.name.trim_end_matches(&format!(".{}", extension)).to_string()
+            self.name
+                .trim_end_matches(&format!(".{}", extension))
+                .to_string()
         } else {
             self.name.clone()
         }
@@ -150,7 +152,8 @@ mod tests {
             Utc::now(),
             Some(1024),
             true,
-        ).unwrap();
+        )
+        .unwrap();
 
         assert_eq!(item.path, path);
         assert_eq!(item.name, "document.txt");
@@ -162,13 +165,9 @@ mod tests {
     #[test]
     fn test_file_extension() {
         let path = FilePath::new("/Users/test/Documents/Source/document.txt".to_string()).unwrap();
-        let item = FileSystemItem::new(
-            path,
-            FileSystemItemType::File,
-            Utc::now(),
-            Some(1024),
-            true,
-        ).unwrap();
+        let item =
+            FileSystemItem::new(path, FileSystemItemType::File, Utc::now(), Some(1024), true)
+                .unwrap();
 
         assert_eq!(item.get_extension(), Some("txt".to_string()));
     }
@@ -176,13 +175,8 @@ mod tests {
     #[test]
     fn test_directory_no_size() {
         let path = FilePath::new("/Users/test/Documents/Source/folder".to_string()).unwrap();
-        let item = FileSystemItem::new(
-            path,
-            FileSystemItemType::Directory,
-            Utc::now(),
-            None,
-            true,
-        ).unwrap();
+        let item = FileSystemItem::new(path, FileSystemItemType::Directory, Utc::now(), None, true)
+            .unwrap();
 
         assert!(item.is_directory());
         assert_eq!(item.size, None);
@@ -200,13 +194,9 @@ mod tests {
     #[test]
     fn test_within_allowed_directory() {
         let path = FilePath::new("/Users/test/Documents/Source/document.txt".to_string()).unwrap();
-        let item = FileSystemItem::new(
-            path,
-            FileSystemItemType::File,
-            Utc::now(),
-            Some(1024),
-            true,
-        ).unwrap();
+        let item =
+            FileSystemItem::new(path, FileSystemItemType::File, Utc::now(), Some(1024), true)
+                .unwrap();
 
         assert!(item.is_within_allowed_directory(
             "/Users/test/Documents/Source",
@@ -221,14 +211,11 @@ mod tests {
 
     #[test]
     fn test_display_title() {
-        let path = FilePath::new("/Users/test/Documents/Source/My Document.txt".to_string()).unwrap();
-        let item = FileSystemItem::new(
-            path,
-            FileSystemItemType::File,
-            Utc::now(),
-            Some(1024),
-            true,
-        ).unwrap();
+        let path =
+            FilePath::new("/Users/test/Documents/Source/My Document.txt".to_string()).unwrap();
+        let item =
+            FileSystemItem::new(path, FileSystemItemType::File, Utc::now(), Some(1024), true)
+                .unwrap();
 
         assert_eq!(item.get_display_title(), "My Document");
     }
@@ -242,7 +229,8 @@ mod tests {
             Utc::now(),
             Some(1024),
             true,
-        ).unwrap();
+        )
+        .unwrap();
 
         let inaccessible_file = FileSystemItem::new(
             path,
@@ -250,7 +238,8 @@ mod tests {
             Utc::now(),
             Some(1024),
             false,
-        ).unwrap();
+        )
+        .unwrap();
 
         assert!(accessible_file.can_be_opened());
         assert!(!inaccessible_file.can_be_opened());

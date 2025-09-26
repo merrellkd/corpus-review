@@ -1,13 +1,10 @@
-use std::sync::Arc;
 use chrono::{DateTime, Utc};
+use std::sync::Arc;
 
-use crate::domain::project::{
-    Project, ProjectId, ProjectRepository, RepositoryStats, ProjectResult, ProjectError
-};
+use crate::domain::project::{Project, ProjectId, ProjectRepository};
 use crate::infrastructure::{
-    ProjectDto, ProjectListDto, RepositoryStatsDto,
-    CreateProjectRequest, UpdateProjectRequest, DeleteProjectRequest,
-    AppError, AppResult
+    AppError, AppResult, CreateProjectRequest, DeleteProjectRequest, ProjectDto, ProjectListDto,
+    RepositoryStatsDto, UpdateProjectRequest,
 };
 
 /// Application service for Project operations
@@ -28,19 +25,18 @@ impl ProjectService {
     /// Create a new project from a request
     pub async fn create_project(&self, request: CreateProjectRequest) -> AppResult<ProjectDto> {
         // Validate the request
-        let (name, source_folder, note) = request.to_domain_params()
-            .map_err(AppError::from)?;
+        let (name, source_folder, note) = request.to_domain_params().map_err(AppError::from)?;
 
         // Create domain object
-        let project = Project::new(name, source_folder, note)
-            .map_err(AppError::from)?;
+        let project = Project::new(name, source_folder, note).map_err(AppError::from)?;
 
         // Validate project business rules
-        project.validate()
-            .map_err(AppError::from)?;
+        project.validate().map_err(AppError::from)?;
 
         // Save to repository
-        self.repository.create(&project).await
+        self.repository
+            .create(&project)
+            .await
             .map_err(AppError::from)?;
 
         // Return DTO
@@ -50,37 +46,40 @@ impl ProjectService {
     /// Update an existing project
     pub async fn update_project(&self, request: UpdateProjectRequest) -> AppResult<ProjectDto> {
         // Validate the request
-        request.validate()
-            .map_err(AppError::from)?;
+        request.validate().map_err(AppError::from)?;
 
         // Find the existing project
         let project_id = ProjectId::from_string(request.get_id().to_string())
             .map_err(|_| AppError::validation_error("Invalid project ID format", None))?;
 
-        let mut project = self.repository.find_by_id(&project_id).await
+        let mut project = self
+            .repository
+            .find_by_id(&project_id)
+            .await
             .map_err(AppError::from)?
             .ok_or_else(|| AppError::not_found("Project"))?;
 
         // Apply updates
         if let Some(new_name) = request.get_name() {
-            project.update_name(new_name)
-                .map_err(AppError::from)?;
+            project.update_name(new_name).map_err(AppError::from)?;
         }
 
         if let Some(note_update) = request.get_note() {
             match note_update {
-                Some(new_note) => project.update_note(Some(new_note))
+                Some(new_note) => project
+                    .update_note(Some(new_note))
                     .map_err(AppError::from)?,
                 None => project.clear_note(),
             }
         }
 
         // Validate updated project
-        project.validate()
-            .map_err(AppError::from)?;
+        project.validate().map_err(AppError::from)?;
 
         // Save changes
-        self.repository.update(&project).await
+        self.repository
+            .update(&project)
+            .await
             .map_err(AppError::from)?;
 
         // Return updated DTO
@@ -90,15 +89,17 @@ impl ProjectService {
     /// Delete a project
     pub async fn delete_project(&self, request: DeleteProjectRequest) -> AppResult<()> {
         // Validate the request
-        request.validate()
-            .map_err(AppError::from)?;
+        request.validate().map_err(AppError::from)?;
 
         // Parse project ID
         let project_id = ProjectId::from_string(request.get_id().to_string())
             .map_err(|_| AppError::validation_error("Invalid project ID format", None))?;
 
         // Check if project exists
-        let exists = self.repository.exists_by_id(&project_id).await
+        let exists = self
+            .repository
+            .exists_by_id(&project_id)
+            .await
             .map_err(AppError::from)?;
 
         if !exists {
@@ -106,7 +107,9 @@ impl ProjectService {
         }
 
         // Delete the project
-        self.repository.delete(&project_id).await
+        self.repository
+            .delete(&project_id)
+            .await
             .map_err(AppError::from)?;
 
         Ok(())
@@ -119,7 +122,10 @@ impl ProjectService {
             .map_err(|_| AppError::validation_error("Invalid project ID format", None))?;
 
         // Find the project
-        let project = self.repository.find_by_id(&project_id).await
+        let project = self
+            .repository
+            .find_by_id(&project_id)
+            .await
             .map_err(AppError::from)?;
 
         // Convert to DTO
@@ -129,11 +135,17 @@ impl ProjectService {
     /// Get a project by name
     pub async fn get_project_by_name(&self, name: &str) -> AppResult<Option<ProjectDto>> {
         if name.trim().is_empty() {
-            return Err(AppError::validation_error("Project name cannot be empty", None));
+            return Err(AppError::validation_error(
+                "Project name cannot be empty",
+                None,
+            ));
         }
 
         // Find the project
-        let project = self.repository.find_by_name(name).await
+        let project = self
+            .repository
+            .find_by_name(name)
+            .await
             .map_err(AppError::from)?;
 
         // Convert to DTO
@@ -142,12 +154,9 @@ impl ProjectService {
 
     /// List all projects
     pub async fn list_projects(&self) -> AppResult<Vec<ProjectDto>> {
-        let projects = self.repository.list_all().await
-            .map_err(AppError::from)?;
+        let projects = self.repository.list_all().await.map_err(AppError::from)?;
 
-        let dtos = projects.iter()
-            .map(ProjectDto::from_project)
-            .collect();
+        let dtos = projects.iter().map(ProjectDto::from_project).collect();
 
         Ok(dtos)
     }
@@ -160,7 +169,10 @@ impl ProjectService {
     ) -> AppResult<ProjectListDto> {
         // Validate pagination parameters
         if limit == 0 {
-            return Err(AppError::validation_error("Limit must be greater than 0", None));
+            return Err(AppError::validation_error(
+                "Limit must be greater than 0",
+                None,
+            ));
         }
 
         if limit > 1000 {
@@ -168,29 +180,40 @@ impl ProjectService {
         }
 
         // Get total count
-        let total_count = self.repository.count().await
-            .map_err(AppError::from)?;
+        let total_count = self.repository.count().await.map_err(AppError::from)?;
 
         // Get projects for this page
-        let projects = self.repository.list_paged(offset, limit).await
+        let projects = self
+            .repository
+            .list_paged(offset, limit)
+            .await
             .map_err(AppError::from)?;
 
         // Create paginated response
-        Ok(ProjectListDto::from_projects(projects, total_count, offset, limit))
+        Ok(ProjectListDto::from_projects(
+            projects,
+            total_count,
+            offset,
+            limit,
+        ))
     }
 
     /// Search projects by name pattern
     pub async fn search_projects(&self, pattern: &str) -> AppResult<Vec<ProjectDto>> {
         if pattern.trim().is_empty() {
-            return Err(AppError::validation_error("Search pattern cannot be empty", None));
+            return Err(AppError::validation_error(
+                "Search pattern cannot be empty",
+                None,
+            ));
         }
 
-        let projects = self.repository.search_by_name(pattern).await
+        let projects = self
+            .repository
+            .search_by_name(pattern)
+            .await
             .map_err(AppError::from)?;
 
-        let dtos = projects.iter()
-            .map(ProjectDto::from_project)
-            .collect();
+        let dtos = projects.iter().map(ProjectDto::from_project).collect();
 
         Ok(dtos)
     }
@@ -204,24 +227,24 @@ impl ProjectService {
         if start_date >= end_date {
             return Err(AppError::validation_error(
                 "Start date must be before end date",
-                None
+                None,
             ));
         }
 
-        let projects = self.repository.find_by_date_range(&start_date, &end_date).await
+        let projects = self
+            .repository
+            .find_by_date_range(&start_date, &end_date)
+            .await
             .map_err(AppError::from)?;
 
-        let dtos = projects.iter()
-            .map(ProjectDto::from_project)
-            .collect();
+        let dtos = projects.iter().map(ProjectDto::from_project).collect();
 
         Ok(dtos)
     }
 
     /// Get repository statistics
     pub async fn get_statistics(&self) -> AppResult<RepositoryStatsDto> {
-        let stats = self.repository.get_stats().await
-            .map_err(AppError::from)?;
+        let stats = self.repository.get_stats().await.map_err(AppError::from)?;
 
         Ok(RepositoryStatsDto::from_stats(&stats))
     }
@@ -229,10 +252,16 @@ impl ProjectService {
     /// Check if a project name is available
     pub async fn is_name_available(&self, name: &str) -> AppResult<bool> {
         if name.trim().is_empty() {
-            return Err(AppError::validation_error("Project name cannot be empty", None));
+            return Err(AppError::validation_error(
+                "Project name cannot be empty",
+                None,
+            ));
         }
 
-        let exists = self.repository.exists_by_name(name).await
+        let exists = self
+            .repository
+            .exists_by_name(name)
+            .await
             .map_err(AppError::from)?;
 
         Ok(!exists)
@@ -240,12 +269,14 @@ impl ProjectService {
 
     /// Validate a project exists and is accessible
     pub async fn validate_project_access(&self, id: &str) -> AppResult<ProjectDto> {
-        let project_dto = self.get_project(id).await?
+        let project_dto = self
+            .get_project(id)
+            .await?
             .ok_or_else(|| AppError::not_found("Project"))?;
 
         if !project_dto.is_accessible {
             return Err(AppError::filesystem_error(
-                "Project source folder is not accessible"
+                "Project source folder is not accessible",
             ));
         }
 
@@ -254,14 +285,12 @@ impl ProjectService {
 
     /// Perform health check on the repository
     pub async fn health_check(&self) -> AppResult<()> {
-        self.repository.health_check().await
-            .map_err(AppError::from)
+        self.repository.health_check().await.map_err(AppError::from)
     }
 
     /// Get a summary of inaccessible projects
     pub async fn get_inaccessible_projects(&self) -> AppResult<Vec<ProjectDto>> {
-        let all_projects = self.repository.list_all().await
-            .map_err(AppError::from)?;
+        let all_projects = self.repository.list_all().await.map_err(AppError::from)?;
 
         let inaccessible: Vec<ProjectDto> = all_projects
             .iter()
@@ -421,11 +450,8 @@ mod tests {
         let test_folder = setup_test_folder("update_service");
 
         // First create a project
-        let create_request = CreateProjectRequest::new(
-            "Original Name".to_string(),
-            test_folder.clone(),
-            None,
-        );
+        let create_request =
+            CreateProjectRequest::new("Original Name".to_string(), test_folder.clone(), None);
         let created_dto = service.create_project(create_request).await.unwrap();
 
         // Then update it
@@ -451,18 +477,12 @@ mod tests {
         let test_folder = setup_test_folder("delete_service");
 
         // Create a project
-        let create_request = CreateProjectRequest::new(
-            "Project To Delete".to_string(),
-            test_folder.clone(),
-            None,
-        );
+        let create_request =
+            CreateProjectRequest::new("Project To Delete".to_string(), test_folder.clone(), None);
         let created_dto = service.create_project(create_request).await.unwrap();
 
         // Delete it
-        let delete_request = DeleteProjectRequest::new(
-            created_dto.id.clone(),
-            Some(true),
-        );
+        let delete_request = DeleteProjectRequest::new(created_dto.id.clone(), Some(true));
 
         let result = service.delete_project(delete_request).await;
         assert!(result.is_ok());
@@ -481,11 +501,8 @@ mod tests {
 
         // Create multiple projects
         for i in 1..=5 {
-            let request = CreateProjectRequest::new(
-                format!("Project {}", i),
-                test_folder.clone(),
-                None,
-            );
+            let request =
+                CreateProjectRequest::new(format!("Project {}", i), test_folder.clone(), None);
             service.create_project(request).await.unwrap();
         }
 
@@ -508,18 +525,10 @@ mod tests {
         let test_folder = setup_test_folder("search");
 
         // Create projects with different names
-        let projects = vec![
-            "Alpha Project",
-            "Beta Project",
-            "Gamma Analysis",
-        ];
+        let projects = vec!["Alpha Project", "Beta Project", "Gamma Analysis"];
 
         for name in projects {
-            let request = CreateProjectRequest::new(
-                name.to_string(),
-                test_folder.clone(),
-                None,
-            );
+            let request = CreateProjectRequest::new(name.to_string(), test_folder.clone(), None);
             service.create_project(request).await.unwrap();
         }
 
@@ -543,11 +552,8 @@ mod tests {
         assert!(available);
 
         // Create project
-        let request = CreateProjectRequest::new(
-            "Unique Name".to_string(),
-            test_folder.clone(),
-            None,
-        );
+        let request =
+            CreateProjectRequest::new("Unique Name".to_string(), test_folder.clone(), None);
         service.create_project(request).await.unwrap();
 
         // No longer available
@@ -582,7 +588,10 @@ mod tests {
     fn test_batch_result() {
         let batch_result = BatchResult {
             successful: vec!["success1", "success2"],
-            failed: vec![BatchError { index: 2, error: AppError::validation_error("test", None) }],
+            failed: vec![BatchError {
+                index: 2,
+                error: AppError::validation_error("test", None),
+            }],
         };
 
         assert_eq!(batch_result.success_count(), 2);

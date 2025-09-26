@@ -5,17 +5,13 @@ use tauri::Manager;
 use tracing::{info, Level};
 use tracing_subscriber;
 
+pub mod application;
 pub mod commands;
 pub mod domain;
-pub mod application;
 pub mod infrastructure;
 
-use application::{
-    LegacyWorkspaceService,
-    StateManager,
-};
+use application::StateManager;
 use infrastructure::database::initialize_database;
-use std::sync::Arc;
 
 #[tokio::main]
 async fn main() {
@@ -29,7 +25,9 @@ async fn main() {
     // Initialize legacy workspace services (keep existing functionality)
     // Note: This uses the old database system for workspace management
     // TODO: Migrate workspace services to use the new project management system
-    let legacy_database = initialize_database().await.expect("Failed to initialize legacy database");
+    let _legacy_database = initialize_database()
+        .await
+        .expect("Failed to initialize legacy database");
 
     // For now, we'll create a simple adapter or use a mock for the workspace service
     // Since WorkspaceService needs a RepositoryFactory, we'll skip it for now
@@ -54,7 +52,10 @@ async fn main() {
             let app_handle = app.handle().clone();
             tauri::async_runtime::spawn(async move {
                 if let Err(error) = StateManager::initialize_tauri_state(&app_handle).await {
-                    tracing::error!("Failed to initialize project management state: {}", error.message);
+                    tracing::error!(
+                        "Failed to initialize project management state: {}",
+                        error.message
+                    );
                     // Don't fail the entire app startup, but log the error
                 }
             });
@@ -73,13 +74,11 @@ async fn main() {
             // commands::file_system_commands::search_files_recursive,
             // commands::file_system_commands::get_file_info,
             commands::file_system_commands::is_path_accessible,
-
             // New project management commands
             commands::create_project::create_project,
             commands::create_project::validate_create_project_request,
             commands::create_project::check_project_name_availability,
             commands::create_project::get_project_creation_stats,
-
             commands::list_projects::list_projects,
             commands::list_projects::list_projects_paged,
             commands::list_projects::search_projects,
@@ -88,26 +87,22 @@ async fn main() {
             commands::list_projects::get_repository_stats,
             commands::list_projects::get_inaccessible_projects,
             commands::list_projects::find_projects_by_date_range,
-
             commands::delete_project::delete_project,
             commands::delete_project::validate_delete_project_request,
             commands::delete_project::get_project_for_deletion,
             commands::delete_project::delete_projects_bulk,
             commands::delete_project::check_deletion_safety,
-
             commands::open_project::open_project,
             commands::open_project::open_project_by_name,
             commands::open_project::validate_project_access,
             commands::open_project::get_recent_projects,
             commands::open_project::open_project_folder,
             commands::open_project::get_project_opening_stats,
-
             // Workspace navigation commands
             commands::workspace_commands::open_workspace_navigation,
             commands::workspace_commands::list_directory,
             commands::workspace_commands::navigate_to_folder,
             commands::workspace_commands::navigate_to_parent,
-
             // Application state commands
             application::app_state::get_app_status,
             application::app_state::health_check

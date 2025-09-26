@@ -1,8 +1,8 @@
-use std::path::{Path, PathBuf};
-use serde::{Deserialize, Serialize};
-use crate::domain::workspace::value_objects::WorkspaceContext;
 use crate::domain::workspace::entities::{FileEntry, FileEntryType};
 use crate::domain::workspace::errors::WorkspaceError;
+use crate::domain::workspace::value_objects::WorkspaceContext;
+use serde::{Deserialize, Serialize};
+use std::path::{Path, PathBuf};
 
 /// DirectoryListing aggregate root that manages a collection of file entries
 /// with navigation operations and business rules for workspace navigation
@@ -116,21 +116,27 @@ impl DirectoryListing {
     /// - Folder not found
     /// - Folder name is invalid
     /// - Target is not a directory
-    pub fn navigate_to_folder(&self, folder_name: &str) -> Result<WorkspaceContext, WorkspaceError> {
+    pub fn navigate_to_folder(
+        &self,
+        folder_name: &str,
+    ) -> Result<WorkspaceContext, WorkspaceError> {
         // Find the folder entry
-        let folder_entry = self.entries
+        let folder_entry = self
+            .entries
             .iter()
             .find(|entry| entry.name() == folder_name)
-            .ok_or_else(|| WorkspaceError::directory_listing_failed(
-                self.workspace_context.current_path().display().to_string(),
-                format!("Folder '{}' not found", folder_name)
-            ))?;
+            .ok_or_else(|| {
+                WorkspaceError::directory_listing_failed(
+                    self.workspace_context.current_path().display().to_string(),
+                    format!("Folder '{}' not found", folder_name),
+                )
+            })?;
 
         // Verify it's a directory
         if !folder_entry.is_directory() {
             return Err(WorkspaceError::invalid_path(
                 folder_name.to_string(),
-                "Target is not a directory"
+                "Target is not a directory",
             ));
         }
 
@@ -241,7 +247,8 @@ impl DirectoryListing {
 
     /// Remove entries by name (for dynamic updates)
     pub fn without_entries(&self, entry_names: &[&str]) -> Result<Self, WorkspaceError> {
-        let filtered_entries = self.entries
+        let filtered_entries = self
+            .entries
             .iter()
             .filter(|entry| !entry_names.contains(&entry.name()))
             .cloned()
@@ -262,20 +269,19 @@ impl DirectoryListing {
 
         for entry in &self.entries {
             let entry_parent = entry.parent().ok_or_else(|| {
-                WorkspaceError::invalid_workspace_context(
-                    format!("Entry '{}' has no parent directory", entry.name())
-                )
+                WorkspaceError::invalid_workspace_context(format!(
+                    "Entry '{}' has no parent directory",
+                    entry.name()
+                ))
             })?;
 
             if entry_parent != current_path {
-                return Err(WorkspaceError::invalid_workspace_context(
-                    format!(
-                        "Entry '{}' does not belong to current directory '{}' (parent: '{}')",
-                        entry.name(),
-                        current_path.display(),
-                        entry_parent.display()
-                    )
-                ));
+                return Err(WorkspaceError::invalid_workspace_context(format!(
+                    "Entry '{}' does not belong to current directory '{}' (parent: '{}')",
+                    entry.name(),
+                    current_path.display(),
+                    entry_parent.display()
+                )));
             }
         }
 
@@ -295,9 +301,7 @@ impl DirectoryListing {
         } else {
             relative_path
                 .components()
-                .filter_map(|component| {
-                    component.as_os_str().to_str().map(|s| s.to_string())
-                })
+                .filter_map(|component| component.as_os_str().to_str().map(|s| s.to_string()))
                 .collect()
         }
     }
@@ -307,15 +311,19 @@ impl DirectoryListing {
         // Validate workspace context consistency
         if self.is_root != self.workspace_context.is_at_root() {
             return Err(WorkspaceError::invalid_workspace_context(
-                "Root status inconsistent with workspace context"
+                "Root status inconsistent with workspace context",
             ));
         }
 
         // Validate parent path consistency
-        let expected_parent = if self.is_root { None } else { self.workspace_context.get_parent_path() };
+        let expected_parent = if self.is_root {
+            None
+        } else {
+            self.workspace_context.get_parent_path()
+        };
         if self.parent_path != expected_parent {
             return Err(WorkspaceError::invalid_workspace_context(
-                "Parent path inconsistent with workspace context"
+                "Parent path inconsistent with workspace context",
             ));
         }
 
@@ -329,17 +337,12 @@ impl DirectoryListing {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use tempfile::TempDir;
-    use std::time::SystemTime;
     use crate::domain::project::value_objects::ProjectId;
+    use std::time::SystemTime;
+    use tempfile::TempDir;
 
     fn create_test_workspace_context(temp_dir: &TempDir) -> WorkspaceContext {
-        WorkspaceContext::new(
-            ProjectId::new(),
-            "Test Project",
-            temp_dir.path(),
-            None,
-        ).unwrap()
+        WorkspaceContext::new(ProjectId::new(), "Test Project", temp_dir.path(), None::<&str>).unwrap()
     }
 
     fn create_test_file_entry(name: &str, temp_dir: &TempDir, is_directory: bool) -> FileEntry {
@@ -406,9 +409,7 @@ mod tests {
         let temp_dir = TempDir::new().unwrap();
         let context = create_test_workspace_context(&temp_dir);
 
-        let entries = vec![
-            create_test_file_entry("documents", &temp_dir, true),
-        ];
+        let entries = vec![create_test_file_entry("documents", &temp_dir, true)];
 
         let listing = DirectoryListing::new(context, entries).unwrap();
 
@@ -416,7 +417,7 @@ mod tests {
         assert!(result.is_err());
 
         match result.unwrap_err() {
-            WorkspaceError::DirectoryListingFailed { .. } => {},
+            WorkspaceError::DirectoryListingFailed { .. } => {}
             _ => panic!("Expected DirectoryListingFailed error"),
         }
     }
@@ -426,9 +427,7 @@ mod tests {
         let temp_dir = TempDir::new().unwrap();
         let context = create_test_workspace_context(&temp_dir);
 
-        let entries = vec![
-            create_test_file_entry("document.pdf", &temp_dir, false),
-        ];
+        let entries = vec![create_test_file_entry("document.pdf", &temp_dir, false)];
 
         let listing = DirectoryListing::new(context, entries).unwrap();
 
@@ -438,7 +437,7 @@ mod tests {
         match result.unwrap_err() {
             WorkspaceError::InvalidPath { reason, .. } => {
                 assert!(reason.contains("not a directory"));
-            },
+            }
             _ => panic!("Expected InvalidPath error"),
         }
     }
@@ -450,16 +449,19 @@ mod tests {
 
         let entries = vec![
             create_test_file_entry("zebra.txt", &temp_dir, false),
-            create_test_file_entry("apple", &temp_dir, true),   // Directory
+            create_test_file_entry("apple", &temp_dir, true), // Directory
             create_test_file_entry("banana.txt", &temp_dir, false),
-            create_test_file_entry("zebra", &temp_dir, true),  // Directory
+            create_test_file_entry("zebra", &temp_dir, true), // Directory
         ];
 
         let listing = DirectoryListing::new(context, entries).unwrap();
 
         // Should be sorted: directories first (apple, zebra), then files (banana.txt, zebra.txt)
         let entry_names: Vec<&str> = listing.entries().iter().map(|e| e.name()).collect();
-        assert_eq!(entry_names, vec!["apple", "zebra", "banana.txt", "zebra.txt"]);
+        assert_eq!(
+            entry_names,
+            vec!["apple", "zebra", "banana.txt", "zebra.txt"]
+        );
     }
 
     #[test]
@@ -489,9 +491,21 @@ mod tests {
         let context = create_test_workspace_context(&temp_dir);
 
         let entries = vec![
-            create_test_file_entry("documents", &temp_dir, true),   // No size
-            FileEntry::file("file1.txt", temp_dir.path().join("file1.txt"), Some(1000), SystemTime::now()).unwrap(),
-            FileEntry::file("file2.txt", temp_dir.path().join("file2.txt"), Some(2000), SystemTime::now()).unwrap(),
+            create_test_file_entry("documents", &temp_dir, true), // No size
+            FileEntry::file(
+                "file1.txt",
+                temp_dir.path().join("file1.txt"),
+                Some(1000),
+                SystemTime::now(),
+            )
+            .unwrap(),
+            FileEntry::file(
+                "file2.txt",
+                temp_dir.path().join("file2.txt"),
+                Some(2000),
+                SystemTime::now(),
+            )
+            .unwrap(),
         ];
 
         let listing = DirectoryListing::new(context, entries).unwrap();
@@ -515,10 +529,14 @@ mod tests {
             "Test Project",
             temp_dir.path(),
             Some(&sub_path),
-        ).unwrap();
+        )
+        .unwrap();
 
         let sub_listing = DirectoryListing::empty(sub_context);
-        assert_eq!(sub_listing.breadcrumb_trail(), vec!["documents", "archived"]);
+        assert_eq!(
+            sub_listing.breadcrumb_trail(),
+            vec!["documents", "archived"]
+        );
     }
 
     #[test]
@@ -526,9 +544,7 @@ mod tests {
         let temp_dir = TempDir::new().unwrap();
         let context = create_test_workspace_context(&temp_dir);
 
-        let initial_entries = vec![
-            create_test_file_entry("file1.txt", &temp_dir, false),
-        ];
+        let initial_entries = vec![create_test_file_entry("file1.txt", &temp_dir, false)];
 
         let listing = DirectoryListing::new(context, initial_entries).unwrap();
         assert_eq!(listing.entry_count(), 1);
@@ -556,7 +572,9 @@ mod tests {
         let listing = DirectoryListing::new(context, entries).unwrap();
         assert_eq!(listing.entry_count(), 3);
 
-        let filtered_listing = listing.without_entries(&["file1.txt", "documents"]).unwrap();
+        let filtered_listing = listing
+            .without_entries(&["file1.txt", "documents"])
+            .unwrap();
         assert_eq!(filtered_listing.entry_count(), 1);
         assert_eq!(filtered_listing.entries()[0].name(), "file2.txt");
     }

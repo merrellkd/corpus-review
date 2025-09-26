@@ -1,6 +1,6 @@
-use std::path::PathBuf;
-use crate::application::dtos::{WorkspaceDto, DirectoryListingDto, FileEntryDto};
+use crate::application::dtos::{DirectoryListingDto, FileEntryDto, WorkspaceDto};
 use crate::infrastructure::AppError;
+use std::path::PathBuf;
 
 /// Simplified workspace navigation service for MVP implementation
 ///
@@ -57,7 +57,10 @@ impl WorkspaceNavigationService {
 
         // Validate that the new path is within the workspace boundaries
         if !new_path_str.starts_with(source_folder) {
-            return Err(AppError::validation_error("Navigation outside workspace boundaries", None));
+            return Err(AppError::validation_error(
+                "Navigation outside workspace boundaries",
+                None,
+            ));
         }
 
         let directory_listing = self.list_directory_contents(&new_path_str).await?;
@@ -80,14 +83,18 @@ impl WorkspaceNavigationService {
         current_path: &str,
     ) -> Result<WorkspaceDto, AppError> {
         let current_path_buf = PathBuf::from(current_path);
-        let parent_path = current_path_buf.parent()
+        let parent_path = current_path_buf
+            .parent()
             .ok_or_else(|| AppError::validation_error("Cannot navigate above root", None))?;
 
         let parent_path_str = parent_path.to_string_lossy().to_string();
 
         // Ensure we don't navigate above the source folder
         if !parent_path_str.starts_with(source_folder) {
-            return Err(AppError::validation_error("Cannot navigate above workspace root", None));
+            return Err(AppError::validation_error(
+                "Cannot navigate above workspace root",
+                None,
+            ));
         }
 
         let directory_listing = self.list_directory_contents(&parent_path_str).await?;
@@ -111,7 +118,10 @@ impl WorkspaceNavigationService {
     ) -> Result<WorkspaceDto, AppError> {
         // Validate that the target path is within workspace boundaries
         if !target_path.starts_with(source_folder) {
-            return Err(AppError::validation_error("Navigation outside workspace boundaries", None));
+            return Err(AppError::validation_error(
+                "Navigation outside workspace boundaries",
+                None,
+            ));
         }
 
         let directory_listing = self.list_directory_contents(target_path).await?;
@@ -135,7 +145,10 @@ impl WorkspaceNavigationService {
     ) -> Result<FileEntryDto, AppError> {
         // Validate path is within workspace
         if !entry_path.starts_with(source_folder) {
-            return Err(AppError::validation_error("Path outside workspace boundaries", None));
+            return Err(AppError::validation_error(
+                "Path outside workspace boundaries",
+                None,
+            ));
         }
 
         self.get_file_metadata(entry_path).await
@@ -177,7 +190,8 @@ impl WorkspaceNavigationService {
                     match entry {
                         Ok(dir_entry) => {
                             let entry_path = dir_entry.path();
-                            let name = entry_path.file_name()
+                            let name = entry_path
+                                .file_name()
                                 .and_then(|n| n.to_str())
                                 .unwrap_or("Unknown")
                                 .to_string();
@@ -187,21 +201,35 @@ impl WorkspaceNavigationService {
                             })?;
 
                             let is_directory = metadata.is_dir();
-                            let size = if is_directory { None } else { Some(metadata.len()) };
-                            let modified = metadata.modified()
-                                .map_err(|_| AppError::filesystem_error("Failed to read modification time"))?
+                            let size = if is_directory {
+                                None
+                            } else {
+                                Some(metadata.len())
+                            };
+                            let modified = metadata
+                                .modified()
+                                .map_err(|_| {
+                                    AppError::filesystem_error("Failed to read modification time")
+                                })?
                                 .duration_since(std::time::UNIX_EPOCH)
-                                .map_err(|_| AppError::filesystem_error("Invalid modification time"))?;
+                                .map_err(|_| {
+                                    AppError::filesystem_error("Invalid modification time")
+                                })?;
 
                             // Convert to ISO string format
-                            let modified_str = chrono::DateTime::from_timestamp(modified.as_secs() as i64, 0)
-                                .unwrap_or_default()
-                                .to_rfc3339();
+                            let modified_str =
+                                chrono::DateTime::from_timestamp(modified.as_secs() as i64, 0)
+                                    .unwrap_or_default()
+                                    .to_rfc3339();
 
                             let file_entry = FileEntryDto::new(
                                 name,
                                 entry_path.to_string_lossy().to_string(),
-                                if is_directory { "directory".to_string() } else { "file".to_string() },
+                                if is_directory {
+                                    "directory".to_string()
+                                } else {
+                                    "file".to_string()
+                                },
                                 size,
                                 modified_str,
                             );
@@ -248,18 +276,24 @@ impl WorkspaceNavigationService {
             return Err(AppError::filesystem_error("File not found"));
         }
 
-        let name = path_buf.file_name()
+        let name = path_buf
+            .file_name()
             .and_then(|n| n.to_str())
             .unwrap_or("Unknown")
             .to_string();
 
-        let metadata = path_buf.metadata().map_err(|_| {
-            AppError::filesystem_error("Failed to read file metadata")
-        })?;
+        let metadata = path_buf
+            .metadata()
+            .map_err(|_| AppError::filesystem_error("Failed to read file metadata"))?;
 
         let is_directory = metadata.is_dir();
-        let size = if is_directory { None } else { Some(metadata.len()) };
-        let modified = metadata.modified()
+        let size = if is_directory {
+            None
+        } else {
+            Some(metadata.len())
+        };
+        let modified = metadata
+            .modified()
             .map_err(|_| AppError::filesystem_error("Failed to read modification time"))?
             .duration_since(std::time::UNIX_EPOCH)
             .map_err(|_| AppError::filesystem_error("Invalid modification time"))?;
@@ -272,7 +306,11 @@ impl WorkspaceNavigationService {
         Ok(FileEntryDto::new(
             name,
             path.to_string(),
-            if is_directory { "directory".to_string() } else { "file".to_string() },
+            if is_directory {
+                "directory".to_string()
+            } else {
+                "file".to_string()
+            },
             size,
             modified_str,
         ))

@@ -1,17 +1,11 @@
-use crate::domain::workspace::{
-    entities::{FileSystemItem, FileSystemItemType, Project},
-    value_objects::{FilePath, ProjectId},
-    repositories::{RepositoryError, RepositoryFactory},
-};
+use crate::domain::workspace::repositories::{RepositoryError, RepositoryFactory};
 // use crate::application::dtos::{FileSystemItemDto, ProjectDto}; // DTOs not implemented yet
-use crate::infrastructure::ProjectDto;
 use std::sync::Arc;
 
 /// Application service for file system operations
 pub struct FileSystemService {
     repository_factory: Arc<dyn RepositoryFactory>,
 }
-
 
 #[derive(Debug, Clone)]
 pub enum FileSystemServiceError {
@@ -43,7 +37,9 @@ impl From<RepositoryError> for FileSystemServiceError {
             RepositoryError::AccessError(msg) => FileSystemServiceError::AccessError(msg),
             RepositoryError::SerializationError(msg) => FileSystemServiceError::InternalError(msg),
             RepositoryError::FileSystemError(msg) => FileSystemServiceError::AccessError(msg),
-            RepositoryError::ConstraintViolation(msg) => FileSystemServiceError::ValidationError(msg),
+            RepositoryError::ConstraintViolation(msg) => {
+                FileSystemServiceError::ValidationError(msg)
+            }
             RepositoryError::InternalError(msg) => FileSystemServiceError::InternalError(msg),
         }
     }
@@ -323,10 +319,10 @@ impl FileSystemService {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::domain::workspace::repositories::*;
-    use std::collections::HashMap;
+    use crate::domain::{project::aggregates::Project, workspace::{entities::*, repositories::*, value_objects::*}};
     use async_trait::async_trait;
     use chrono::Utc;
+    use std::collections::HashMap;
     use tokio;
 
     // Mock repository implementations for testing
@@ -351,7 +347,8 @@ mod tests {
                 Utc::now(),
                 Some(1024),
                 true,
-            ).unwrap();
+            )
+            .unwrap();
 
             files.insert("/Users/test/Documents/Source".to_string(), file);
             accessible_paths.push("/Users/test/Documents/Source/document.txt".to_string());
@@ -365,10 +362,17 @@ mod tests {
 
     #[async_trait]
     impl FileSystemRepository for MockFileSystemRepository {
-        async fn list_directory_contents(&self, path: &FilePath) -> Result<Vec<FileSystemItem>, RepositoryError> {
-            let items: Vec<FileSystemItem> = self.files.values()
+        async fn list_directory_contents(
+            &self,
+            path: &FilePath,
+        ) -> Result<Vec<FileSystemItem>, RepositoryError> {
+            let items: Vec<FileSystemItem> = self
+                .files
+                .values()
                 .filter(|item| {
-                    item.parent_path.as_ref().map_or(false, |parent| parent.as_str() == path.as_str())
+                    item.parent_path
+                        .as_ref()
+                        .map_or(false, |parent| parent.as_str() == path.as_str())
                 })
                 .cloned()
                 .collect();
@@ -376,15 +380,18 @@ mod tests {
         }
 
         async fn path_exists(&self, path: &FilePath) -> Result<bool, RepositoryError> {
-            Ok(self.accessible_paths.contains(&path.as_str().to_string()) ||
-               self.files.contains_key(path.as_str()))
+            Ok(self.accessible_paths.contains(&path.as_str().to_string())
+                || self.files.contains_key(path.as_str()))
         }
 
         async fn is_path_accessible(&self, path: &FilePath) -> Result<bool, RepositoryError> {
             Ok(self.accessible_paths.contains(&path.as_str().to_string()))
         }
 
-        async fn get_item_metadata(&self, path: &FilePath) -> Result<Option<FileSystemItem>, RepositoryError> {
+        async fn get_item_metadata(
+            &self,
+            path: &FilePath,
+        ) -> Result<Option<FileSystemItem>, RepositoryError> {
             Ok(self.files.get(path.as_str()).cloned())
         }
 
@@ -392,7 +399,11 @@ mod tests {
             Ok(())
         }
 
-        async fn validate_path_within_project(&self, path: &FilePath, project: &Project) -> Result<bool, RepositoryError> {
+        async fn validate_path_within_project(
+            &self,
+            path: &FilePath,
+            project: &Project,
+        ) -> Result<bool, RepositoryError> {
             Ok(project.is_path_within_project(path.as_str()))
         }
     }
@@ -409,7 +420,8 @@ mod tests {
                 "Test Project".to_string(),
                 FilePath::new("/Users/test/Documents/Source".to_string()).unwrap(),
                 FilePath::new("/Users/test/Documents/Reports".to_string()).unwrap(),
-            ).unwrap();
+            )
+            .unwrap();
 
             projects.insert(project.id.as_str().to_string(), project);
 
@@ -439,11 +451,19 @@ mod tests {
             Ok(())
         }
 
-        async fn is_name_unique(&self, _name: &str, _excluding_id: Option<&ProjectId>) -> Result<bool, RepositoryError> {
+        async fn is_name_unique(
+            &self,
+            _name: &str,
+            _excluding_id: Option<&ProjectId>,
+        ) -> Result<bool, RepositoryError> {
             Ok(true)
         }
 
-        async fn update_workspace_layout(&self, _project_id: &ProjectId, _layout: &crate::domain::workspace::WorkspaceLayout) -> Result<(), RepositoryError> {
+        async fn update_workspace_layout(
+            &self,
+            _project_id: &ProjectId,
+            _layout: &crate::domain::workspace::WorkspaceLayout,
+        ) -> Result<(), RepositoryError> {
             Ok(())
         }
     }
@@ -485,7 +505,9 @@ mod tests {
         let factory = Arc::new(MockRepositoryFactory::new());
         let service = FileSystemService::new(factory);
 
-        let result = service.list_folder_contents("/Users/test/Documents/Source").await;
+        let result = service
+            .list_folder_contents("/Users/test/Documents/Source")
+            .await;
         assert!(result.is_ok());
     }
 

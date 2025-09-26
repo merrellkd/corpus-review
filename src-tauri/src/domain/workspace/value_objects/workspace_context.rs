@@ -1,7 +1,7 @@
-use std::path::{Path, PathBuf};
-use serde::{Deserialize, Serialize};
 use crate::domain::project::value_objects::ProjectId;
 use crate::domain::workspace::errors::WorkspaceError;
+use serde::{Deserialize, Serialize};
+use std::path::{Path, PathBuf};
 
 /// WorkspaceContext represents the context and state of an active project workspace
 ///
@@ -48,14 +48,14 @@ impl WorkspaceContext {
         // Validate project name
         if project_name.trim().is_empty() {
             return Err(WorkspaceError::invalid_workspace_context(
-                "Project name cannot be empty"
+                "Project name cannot be empty",
             ));
         }
 
         // Validate paths
         if !source_folder.is_absolute() {
             return Err(WorkspaceError::invalid_workspace_context(
-                "Source folder must be an absolute path"
+                "Source folder must be an absolute path",
             ));
         }
 
@@ -150,14 +150,14 @@ impl WorkspaceContext {
         if folder_name.contains("..") || folder_name.contains('/') || folder_name.contains('\\') {
             return Err(WorkspaceError::invalid_path(
                 folder_name.to_string(),
-                "Folder name contains invalid characters or path traversal"
+                "Folder name contains invalid characters or path traversal",
             ));
         }
 
         if folder_name.trim().is_empty() {
             return Err(WorkspaceError::invalid_path(
                 folder_name.to_string(),
-                "Folder name cannot be empty"
+                "Folder name cannot be empty",
             ));
         }
 
@@ -174,7 +174,7 @@ impl WorkspaceContext {
             Some(parent_path) => self.with_current_path(parent_path),
             None => Err(WorkspaceError::invalid_path(
                 self.current_path.display().to_string(),
-                "Already at workspace root, cannot navigate up"
+                "Already at workspace root, cannot navigate up",
             )),
         }
     }
@@ -184,40 +184,55 @@ impl WorkspaceContext {
     /// This is a critical security function that prevents path traversal attacks
     fn is_path_within_boundary(path: &Path, boundary: &Path) -> Result<bool, WorkspaceError> {
         // Canonicalize both paths to resolve any symlinks or relative components
-        let canonical_path = path.canonicalize()
+        let canonical_path = path
+            .canonicalize()
             .or_else(|_| {
                 // If path doesn't exist yet, canonicalize the parent and join the filename
                 if let Some(parent) = path.parent() {
                     if let Some(filename) = path.file_name() {
-                        parent.canonicalize()
+                        parent
+                            .canonicalize()
                             .map(|canonical_parent| canonical_parent.join(filename))
                     } else {
-                        Err(std::io::Error::new(std::io::ErrorKind::InvalidInput, "Invalid path"))
+                        Err(std::io::Error::new(
+                            std::io::ErrorKind::InvalidInput,
+                            "Invalid path",
+                        ))
                     }
                 } else {
-                    Err(std::io::Error::new(std::io::ErrorKind::InvalidInput, "Invalid path"))
+                    Err(std::io::Error::new(
+                        std::io::ErrorKind::InvalidInput,
+                        "Invalid path",
+                    ))
                 }
             })
-            .map_err(|e| WorkspaceError::invalid_path(
-                path.display().to_string(),
-                format!("Failed to canonicalize path: {}", e)
-            ))?;
+            .map_err(|e| {
+                WorkspaceError::invalid_path(
+                    path.display().to_string(),
+                    format!("Failed to canonicalize path: {}", e),
+                )
+            })?;
 
-        let canonical_boundary = boundary.canonicalize()
-            .map_err(|e| WorkspaceError::source_folder_not_found(
-                format!("Workspace boundary path invalid: {}", e)
-            ))?;
+        let canonical_boundary = boundary.canonicalize().map_err(|e| {
+            WorkspaceError::source_folder_not_found(format!(
+                "Workspace boundary path invalid: {}",
+                e
+            ))
+        })?;
 
         Ok(canonical_path.starts_with(canonical_boundary))
     }
 
     /// Get relative path from workspace root
     pub fn relative_path(&self) -> Result<PathBuf, WorkspaceError> {
-        self.current_path.strip_prefix(&self.source_folder)
+        self.current_path
+            .strip_prefix(&self.source_folder)
             .map(|p| p.to_path_buf())
-            .map_err(|_| WorkspaceError::invalid_workspace_context(
-                "Current path is not within workspace source folder"
-            ))
+            .map_err(|_| {
+                WorkspaceError::invalid_workspace_context(
+                    "Current path is not within workspace source folder",
+                )
+            })
     }
 }
 
@@ -235,12 +250,9 @@ mod tests {
         let temp_dir = TempDir::new().unwrap();
         let project_id = create_test_project_id();
 
-        let context = WorkspaceContext::new(
-            project_id.clone(),
-            "Test Project",
-            temp_dir.path(),
-            None,
-        ).unwrap();
+        let context =
+            WorkspaceContext::new(project_id.clone(), "Test Project", temp_dir.path(), None::<&str>)
+                .unwrap();
 
         assert_eq!(context.project_id(), &project_id);
         assert_eq!(context.project_name(), "Test Project");
@@ -254,12 +266,7 @@ mod tests {
         let temp_dir = TempDir::new().unwrap();
         let project_id = create_test_project_id();
 
-        let result = WorkspaceContext::new(
-            project_id,
-            "",
-            temp_dir.path(),
-            None,
-        );
+        let result = WorkspaceContext::new(project_id, "", temp_dir.path(), None::<&str>);
 
         assert!(result.is_err());
         match result.unwrap_err() {
@@ -283,8 +290,9 @@ mod tests {
             project_id,
             "Test Project",
             temp_dir.path(),
-            None,
-        ).unwrap();
+            None::<&str>,
+        )
+        .unwrap();
 
         let navigated_context = context.navigate_to_folder("documents").unwrap();
 
@@ -302,12 +310,9 @@ mod tests {
         let sub_dir = temp_dir.path().join("documents");
         std::fs::create_dir(&sub_dir).unwrap();
 
-        let context = WorkspaceContext::new(
-            project_id,
-            "Test Project",
-            temp_dir.path(),
-            Some(&sub_dir),
-        ).unwrap();
+        let context =
+            WorkspaceContext::new(project_id, "Test Project", temp_dir.path(), Some(&sub_dir))
+                .unwrap();
 
         let parent_context = context.navigate_to_parent().unwrap();
 
@@ -324,8 +329,9 @@ mod tests {
             project_id,
             "Test Project",
             temp_dir.path(),
-            None,
-        ).unwrap();
+            None::<&str>,
+        )
+        .unwrap();
 
         // Try to navigate with path traversal
         let result = context.navigate_to_folder("../evil");
@@ -349,8 +355,9 @@ mod tests {
             project_id,
             "Test Project",
             temp_dir.path(),
-            None,
-        ).unwrap();
+            None::<&str>,
+        )
+        .unwrap();
 
         let result = context.navigate_to_parent();
         assert!(result.is_err());
@@ -372,12 +379,9 @@ mod tests {
         let sub_dir = temp_dir.path().join("documents").join("archived");
         std::fs::create_dir_all(&sub_dir).unwrap();
 
-        let context = WorkspaceContext::new(
-            project_id,
-            "Test Project",
-            temp_dir.path(),
-            Some(&sub_dir),
-        ).unwrap();
+        let context =
+            WorkspaceContext::new(project_id, "Test Project", temp_dir.path(), Some(&sub_dir))
+                .unwrap();
 
         let relative = context.relative_path().unwrap();
         assert_eq!(relative, PathBuf::from("documents").join("archived"));

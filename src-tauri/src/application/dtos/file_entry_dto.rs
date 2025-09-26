@@ -42,21 +42,12 @@ impl FileEntryDto {
     }
 
     /// Create a file entry DTO
-    pub fn file(
-        name: String,
-        path: String,
-        size: Option<u64>,
-        modified: String,
-    ) -> Self {
+    pub fn file(name: String, path: String, size: Option<u64>, modified: String) -> Self {
         FileEntryDto::new(name, path, "file".to_string(), size, modified)
     }
 
     /// Create a directory entry DTO
-    pub fn directory(
-        name: String,
-        path: String,
-        modified: String,
-    ) -> Self {
+    pub fn directory(name: String, path: String, modified: String) -> Self {
         FileEntryDto::new(name, path, "directory".to_string(), None, modified)
     }
 
@@ -309,18 +300,40 @@ mod tests {
 
     #[test]
     fn test_listing_sort_order() {
-        let file1 = FileEntryDto::file("zebra.txt".to_string(), "/zebra.txt".to_string(), Some(100), "2025-09-25T12:00:00Z".to_string());
-        let file2 = FileEntryDto::file("apple.txt".to_string(), "/apple.txt".to_string(), Some(200), "2025-09-25T12:00:00Z".to_string());
-        let dir1 = FileEntryDto::directory("zebra_dir".to_string(), "/zebra_dir".to_string(), "2025-09-25T12:00:00Z".to_string());
-        let dir2 = FileEntryDto::directory("apple_dir".to_string(), "/apple_dir".to_string(), "2025-09-25T12:00:00Z".to_string());
+        let file1 = FileEntryDto::file(
+            "zebra.txt".to_string(),
+            "/zebra.txt".to_string(),
+            Some(100),
+            "2025-09-25T12:00:00Z".to_string(),
+        );
+        let file2 = FileEntryDto::file(
+            "apple.txt".to_string(),
+            "/apple.txt".to_string(),
+            Some(200),
+            "2025-09-25T12:00:00Z".to_string(),
+        );
+        let dir1 = FileEntryDto::directory(
+            "zebra_dir".to_string(),
+            "/zebra_dir".to_string(),
+            "2025-09-25T12:00:00Z".to_string(),
+        );
+        let dir2 = FileEntryDto::directory(
+            "apple_dir".to_string(),
+            "/apple_dir".to_string(),
+            "2025-09-25T12:00:00Z".to_string(),
+        );
 
         // Directories should come before files
         assert_eq!(dir1.compare_for_listing(&file1), std::cmp::Ordering::Less);
-        assert_eq!(file1.compare_for_listing(&dir1), std::cmp::Ordering::Greater);
+        assert_eq!(
+            file1.compare_for_listing(&dir1),
+            std::cmp::Ordering::Greater
+        );
 
         // Within same type, alphabetical order
         assert_eq!(dir2.compare_for_listing(&dir1), std::cmp::Ordering::Less); // apple < zebra
-        assert_eq!(file2.compare_for_listing(&file1), std::cmp::Ordering::Less); // apple < zebra
+        assert_eq!(file2.compare_for_listing(&file1), std::cmp::Ordering::Less);
+        // apple < zebra
     }
 
     #[test]

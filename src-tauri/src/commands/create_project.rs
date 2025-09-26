@@ -1,7 +1,7 @@
 use tauri::{AppHandle, State};
 
 use crate::application::{AppState, StateManager};
-use crate::infrastructure::{CreateProjectRequest, ProjectDto, AppResult};
+use crate::infrastructure::{CreateProjectRequest, ProjectDto};
 
 /// Tauri command to create a new project
 ///
@@ -27,8 +27,12 @@ pub async fn create_project(
 
     // Log the request for debugging in development
     if cfg!(debug_assertions) {
-        tracing::debug!("Creating project: name={}, folder={}, has_note={}",
-            request.name, request.source_folder, request.has_note());
+        tracing::debug!(
+            "Creating project: name={}, folder={}, has_note={}",
+            request.name,
+            request.source_folder,
+            request.has_note()
+        );
     }
 
     // Execute the business logic through the application service
@@ -41,8 +45,11 @@ pub async fn create_project(
             // Record successful project creation
             state.record_project_created().await;
 
-            tracing::info!("Project created successfully: id={}, name={}",
-                project_dto.id, project_dto.name);
+            tracing::info!(
+                "Project created successfully: id={}, name={}",
+                project_dto.id,
+                project_dto.name
+            );
 
             Ok(project_dto)
         }
@@ -51,16 +58,25 @@ pub async fn create_project(
             if app_error.should_log() {
                 match app_error.log_level() {
                     crate::infrastructure::errors::app_error::LogLevel::Error => {
-                        tracing::error!("Failed to create project: {} - {}",
-                            app_error.code, app_error.message);
+                        tracing::error!(
+                            "Failed to create project: {} - {}",
+                            app_error.code,
+                            app_error.message
+                        );
                     }
                     crate::infrastructure::errors::app_error::LogLevel::Warning => {
-                        tracing::warn!("Failed to create project: {} - {}",
-                            app_error.code, app_error.message);
+                        tracing::warn!(
+                            "Failed to create project: {} - {}",
+                            app_error.code,
+                            app_error.message
+                        );
                     }
                     crate::infrastructure::errors::app_error::LogLevel::Info => {
-                        tracing::info!("Failed to create project: {} - {}",
-                            app_error.code, app_error.message);
+                        tracing::info!(
+                            "Failed to create project: {} - {}",
+                            app_error.code,
+                            app_error.message
+                        );
                     }
                 }
             }
@@ -101,9 +117,7 @@ pub async fn check_project_name_availability(
 
     tracing::debug!("Checking name availability: {}", name);
 
-    let result = state.project_service()
-        .is_name_available(&name)
-        .await;
+    let result = state.project_service().is_name_available(&name).await;
 
     match &result {
         Ok(available) => {
@@ -129,7 +143,8 @@ pub async fn get_project_creation_stats(
     StateManager::record_command(&app).await;
 
     let app_status = state.get_status().await;
-    let repository_stats = state.project_service()
+    let repository_stats = state
+        .project_service()
         .get_statistics()
         .await
         .map_err(|e| e.user_message())?;

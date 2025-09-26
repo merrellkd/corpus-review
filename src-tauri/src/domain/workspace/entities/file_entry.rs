@@ -1,7 +1,7 @@
+use crate::domain::workspace::errors::WorkspaceError;
 use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
 use std::time::SystemTime;
-use crate::domain::workspace::errors::WorkspaceError;
 
 /// FileEntry represents a file or folder within the workspace with metadata
 ///
@@ -58,7 +58,7 @@ impl FileEntry {
         // Validate name
         if name.trim().is_empty() {
             return Err(WorkspaceError::invalid_workspace_context(
-                "File entry name cannot be empty"
+                "File entry name cannot be empty",
             ));
         }
 
@@ -66,7 +66,7 @@ impl FileEntry {
         if !path.is_absolute() {
             return Err(WorkspaceError::invalid_path(
                 path.display().to_string(),
-                "Path must be absolute"
+                "Path must be absolute",
             ));
         }
 
@@ -74,7 +74,7 @@ impl FileEntry {
         match (entry_type, size) {
             (FileEntryType::Directory, Some(_)) => {
                 return Err(WorkspaceError::invalid_workspace_context(
-                    "Directories cannot have a size"
+                    "Directories cannot have a size",
                 ));
             }
             _ => {} // Files can have size or None (if unknown)
@@ -159,16 +159,16 @@ impl FileEntry {
 
     /// Check if the entry is within the given workspace boundary
     pub fn is_within_workspace(&self, workspace_root: &Path) -> Result<bool, WorkspaceError> {
-        let canonical_path = self.path.canonicalize()
-            .map_err(|e| WorkspaceError::metadata_retrieval_failed(
+        let canonical_path = self.path.canonicalize().map_err(|e| {
+            WorkspaceError::metadata_retrieval_failed(
                 self.path.display().to_string(),
-                format!("Failed to canonicalize path: {}", e)
-            ))?;
+                format!("Failed to canonicalize path: {}", e),
+            )
+        })?;
 
-        let canonical_workspace = workspace_root.canonicalize()
-            .map_err(|e| WorkspaceError::source_folder_not_found(
-                format!("Workspace root invalid: {}", e)
-            ))?;
+        let canonical_workspace = workspace_root.canonicalize().map_err(|e| {
+            WorkspaceError::source_folder_not_found(format!("Workspace root invalid: {}", e))
+        })?;
 
         Ok(canonical_path.starts_with(canonical_workspace))
     }
@@ -177,7 +177,13 @@ impl FileEntry {
     pub fn size_display(&self) -> String {
         match self.size {
             Some(bytes) => format_file_size(bytes),
-            None => if self.is_directory() { "-".to_string() } else { "Unknown".to_string() }
+            None => {
+                if self.is_directory() {
+                    "-".to_string()
+                } else {
+                    "Unknown".to_string()
+                }
+            }
         }
     }
 
@@ -211,9 +217,10 @@ impl FileEntryType {
         match s.to_lowercase().as_str() {
             "file" => Ok(FileEntryType::File),
             "directory" => Ok(FileEntryType::Directory),
-            _ => Err(WorkspaceError::invalid_workspace_context(
-                format!("Invalid file entry type: {}", s)
-            )),
+            _ => Err(WorkspaceError::invalid_workspace_context(format!(
+                "Invalid file entry type: {}",
+                s
+            ))),
         }
     }
 }
@@ -245,8 +252,8 @@ fn format_file_size(bytes: u64) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use tempfile::TempDir;
     use std::time::UNIX_EPOCH;
+    use tempfile::TempDir;
 
     #[test]
     fn test_file_entry_creation() {
@@ -254,12 +261,7 @@ mod tests {
         let file_path = temp_dir.path().join("test.txt");
         let modified = SystemTime::now();
 
-        let file_entry = FileEntry::file(
-            "test.txt",
-            &file_path,
-            Some(1024),
-            modified
-        ).unwrap();
+        let file_entry = FileEntry::file("test.txt", &file_path, Some(1024), modified).unwrap();
 
         assert_eq!(file_entry.name(), "test.txt");
         assert_eq!(file_entry.path(), file_path.as_path());
@@ -275,11 +277,7 @@ mod tests {
         let dir_path = temp_dir.path().join("subdir");
         let modified = SystemTime::now();
 
-        let dir_entry = FileEntry::directory(
-            "subdir",
-            &dir_path,
-            modified
-        ).unwrap();
+        let dir_entry = FileEntry::directory("subdir", &dir_path, modified).unwrap();
 
         assert_eq!(dir_entry.name(), "subdir");
         assert_eq!(dir_entry.path(), dir_path.as_path());
@@ -294,12 +292,7 @@ mod tests {
         let temp_dir = TempDir::new().unwrap();
         let file_path = temp_dir.path().join("test.txt");
 
-        let result = FileEntry::file(
-            "",
-            &file_path,
-            Some(1024),
-            SystemTime::now()
-        );
+        let result = FileEntry::file("", &file_path, Some(1024), SystemTime::now());
 
         assert!(result.is_err());
         match result.unwrap_err() {
@@ -320,7 +313,7 @@ mod tests {
             &dir_path,
             FileEntryType::Directory,
             Some(1024), // Invalid - directories can't have size
-            SystemTime::now()
+            SystemTime::now(),
         );
 
         assert!(result.is_err());
@@ -331,21 +324,13 @@ mod tests {
         let temp_dir = TempDir::new().unwrap();
         let file_path = temp_dir.path().join("document.pdf");
 
-        let file_entry = FileEntry::file(
-            "document.pdf",
-            &file_path,
-            Some(2048),
-            SystemTime::now()
-        ).unwrap();
+        let file_entry =
+            FileEntry::file("document.pdf", &file_path, Some(2048), SystemTime::now()).unwrap();
 
         assert_eq!(file_entry.extension(), Some("pdf"));
 
         // Test directory - should return None
-        let dir_entry = FileEntry::directory(
-            "folder",
-            temp_dir.path(),
-            SystemTime::now()
-        ).unwrap();
+        let dir_entry = FileEntry::directory("folder", temp_dir.path(), SystemTime::now()).unwrap();
 
         assert_eq!(dir_entry.extension(), None);
     }
@@ -355,12 +340,8 @@ mod tests {
         let temp_dir = TempDir::new().unwrap();
         let file_path = temp_dir.path().join("subfolder").join("file.txt");
 
-        let file_entry = FileEntry::file(
-            "file.txt",
-            &file_path,
-            Some(512),
-            SystemTime::now()
-        ).unwrap();
+        let file_entry =
+            FileEntry::file("file.txt", &file_path, Some(512), SystemTime::now()).unwrap();
 
         let parent = file_entry.parent().unwrap();
         assert_eq!(parent, temp_dir.path().join("subfolder"));
@@ -375,16 +356,15 @@ mod tests {
             "large.bin",
             temp_dir.path().join("large.bin"),
             Some(1536), // 1.5 KB
-            SystemTime::now()
-        ).unwrap();
+            SystemTime::now(),
+        )
+        .unwrap();
         assert_eq!(file_entry.size_display(), "1.5 KB");
 
         // Test directory (no size)
-        let dir_entry = FileEntry::directory(
-            "folder",
-            temp_dir.path().join("folder"),
-            SystemTime::now()
-        ).unwrap();
+        let dir_entry =
+            FileEntry::directory("folder", temp_dir.path().join("folder"), SystemTime::now())
+                .unwrap();
         assert_eq!(dir_entry.size_display(), "-");
 
         // Test file without size
@@ -392,8 +372,9 @@ mod tests {
             "unknown.dat",
             temp_dir.path().join("unknown.dat"),
             None,
-            SystemTime::now()
-        ).unwrap();
+            SystemTime::now(),
+        )
+        .unwrap();
         assert_eq!(unknown_file.size_display(), "Unknown");
     }
 
@@ -402,18 +383,36 @@ mod tests {
         let temp_dir = TempDir::new().unwrap();
         let now = SystemTime::now();
 
-        let file1 = FileEntry::file("zebra.txt", temp_dir.path().join("zebra.txt"), Some(100), now).unwrap();
-        let file2 = FileEntry::file("apple.txt", temp_dir.path().join("apple.txt"), Some(200), now).unwrap();
-        let dir1 = FileEntry::directory("zebra_dir", temp_dir.path().join("zebra_dir"), now).unwrap();
-        let dir2 = FileEntry::directory("apple_dir", temp_dir.path().join("apple_dir"), now).unwrap();
+        let file1 = FileEntry::file(
+            "zebra.txt",
+            temp_dir.path().join("zebra.txt"),
+            Some(100),
+            now,
+        )
+        .unwrap();
+        let file2 = FileEntry::file(
+            "apple.txt",
+            temp_dir.path().join("apple.txt"),
+            Some(200),
+            now,
+        )
+        .unwrap();
+        let dir1 =
+            FileEntry::directory("zebra_dir", temp_dir.path().join("zebra_dir"), now).unwrap();
+        let dir2 =
+            FileEntry::directory("apple_dir", temp_dir.path().join("apple_dir"), now).unwrap();
 
         // Directories should come before files
         assert_eq!(dir1.compare_for_listing(&file1), std::cmp::Ordering::Less);
-        assert_eq!(file1.compare_for_listing(&dir1), std::cmp::Ordering::Greater);
+        assert_eq!(
+            file1.compare_for_listing(&dir1),
+            std::cmp::Ordering::Greater
+        );
 
         // Within same type, alphabetical order
         assert_eq!(dir2.compare_for_listing(&dir1), std::cmp::Ordering::Less); // apple < zebra
-        assert_eq!(file2.compare_for_listing(&file1), std::cmp::Ordering::Less); // apple < zebra
+        assert_eq!(file2.compare_for_listing(&file1), std::cmp::Ordering::Less);
+        // apple < zebra
     }
 
     #[test]
@@ -421,9 +420,18 @@ mod tests {
         assert_eq!(FileEntryType::File.as_str(), "file");
         assert_eq!(FileEntryType::Directory.as_str(), "directory");
 
-        assert_eq!(FileEntryType::from_str("file").unwrap(), FileEntryType::File);
-        assert_eq!(FileEntryType::from_str("directory").unwrap(), FileEntryType::Directory);
-        assert_eq!(FileEntryType::from_str("FILE").unwrap(), FileEntryType::File); // Case insensitive
+        assert_eq!(
+            FileEntryType::from_str("file").unwrap(),
+            FileEntryType::File
+        );
+        assert_eq!(
+            FileEntryType::from_str("directory").unwrap(),
+            FileEntryType::Directory
+        );
+        assert_eq!(
+            FileEntryType::from_str("FILE").unwrap(),
+            FileEntryType::File
+        ); // Case insensitive
 
         assert!(FileEntryType::from_str("invalid").is_err());
     }
@@ -447,23 +455,15 @@ mod tests {
         let inside_file = workspace.path().join("inside.txt");
         std::fs::write(&inside_file, "test").unwrap();
 
-        let inside_entry = FileEntry::file(
-            "inside.txt",
-            &inside_file,
-            Some(4),
-            SystemTime::now()
-        ).unwrap();
+        let inside_entry =
+            FileEntry::file("inside.txt", &inside_file, Some(4), SystemTime::now()).unwrap();
 
         // Create file outside workspace
         let outside_file = outside.path().join("outside.txt");
         std::fs::write(&outside_file, "test").unwrap();
 
-        let outside_entry = FileEntry::file(
-            "outside.txt",
-            &outside_file,
-            Some(4),
-            SystemTime::now()
-        ).unwrap();
+        let outside_entry =
+            FileEntry::file("outside.txt", &outside_file, Some(4), SystemTime::now()).unwrap();
 
         // Test boundary checks
         assert!(inside_entry.is_within_workspace(workspace.path()).unwrap());

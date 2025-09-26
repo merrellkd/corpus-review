@@ -1,10 +1,8 @@
-use thiserror::Error;
 use super::super::value_objects::{
-    project_name::ProjectNameError,
-    folder_path::FolderPathError,
+    created_at::CreatedAtError, folder_path::FolderPathError, project_name::ProjectNameError,
     project_note::ProjectNoteError,
-    created_at::CreatedAtError,
 };
+use thiserror::Error;
 
 /// Domain errors for Project aggregate and related operations
 ///
@@ -75,17 +73,23 @@ impl ProjectError {
 
     /// Create a CannotDelete error with a specific reason
     pub fn cannot_delete(reason: impl Into<String>) -> Self {
-        ProjectError::CannotDelete { reason: reason.into() }
+        ProjectError::CannotDelete {
+            reason: reason.into(),
+        }
     }
 
     /// Create a CannotUpdate error with a specific reason
     pub fn cannot_update(reason: impl Into<String>) -> Self {
-        ProjectError::CannotUpdate { reason: reason.into() }
+        ProjectError::CannotUpdate {
+            reason: reason.into(),
+        }
     }
 
     /// Create a RepositoryError for a specific operation
     pub fn repository_error(operation: impl Into<String>) -> Self {
-        ProjectError::RepositoryError { operation: operation.into() }
+        ProjectError::RepositoryError {
+            operation: operation.into(),
+        }
     }
 
     /// Create a DataCorruption error for a specific project ID
@@ -97,27 +101,26 @@ impl ProjectError {
     pub fn is_recoverable(&self) -> bool {
         match self {
             // These errors are due to invalid input - user can fix and retry
-            ProjectError::InvalidName(_) |
-            ProjectError::InvalidPath(_) |
-            ProjectError::InvalidNote(_) |
-            ProjectError::InvalidTimestamp(_) |
-            ProjectError::InvalidId => true,
+            ProjectError::InvalidName(_)
+            | ProjectError::InvalidPath(_)
+            | ProjectError::InvalidNote(_)
+            | ProjectError::InvalidTimestamp(_)
+            | ProjectError::InvalidId => true,
 
             // These might be temporary issues
-            ProjectError::DatabaseConnection |
-            ProjectError::RepositoryError { .. } |
-            ProjectError::Locked => true,
+            ProjectError::DatabaseConnection
+            | ProjectError::RepositoryError { .. }
+            | ProjectError::Locked => true,
 
             // These are permanent issues that can't be retried
-            ProjectError::SourceNotAccessible |
-            ProjectError::NotFound { .. } |
-            ProjectError::DuplicateName { .. } |
-            ProjectError::DataCorruption { .. } |
-            ProjectError::VersionConflict => false,
+            ProjectError::SourceNotAccessible
+            | ProjectError::NotFound { .. }
+            | ProjectError::DuplicateName { .. }
+            | ProjectError::DataCorruption { .. }
+            | ProjectError::VersionConflict => false,
 
             // Business rule violations depend on context
-            ProjectError::CannotDelete { .. } |
-            ProjectError::CannotUpdate { .. } => false,
+            ProjectError::CannotDelete { .. } | ProjectError::CannotUpdate { .. } => false,
         }
     }
 
@@ -125,15 +128,15 @@ impl ProjectError {
     pub fn requires_user_attention(&self) -> bool {
         match self {
             // User input validation errors always need user attention
-            ProjectError::InvalidName(_) |
-            ProjectError::InvalidPath(_) |
-            ProjectError::InvalidNote(_) |
-            ProjectError::DuplicateName { .. } => true,
+            ProjectError::InvalidName(_)
+            | ProjectError::InvalidPath(_)
+            | ProjectError::InvalidNote(_)
+            | ProjectError::DuplicateName { .. } => true,
 
             // System errors might be handled automatically
-            ProjectError::DatabaseConnection |
-            ProjectError::RepositoryError { .. } |
-            ProjectError::Locked => false,
+            ProjectError::DatabaseConnection
+            | ProjectError::RepositoryError { .. }
+            | ProjectError::Locked => false,
 
             // Everything else should be shown to the user
             _ => true,
@@ -147,16 +150,29 @@ impl ProjectError {
             ProjectError::InvalidPath(e) => format!("Folder path is invalid: {}", e),
             ProjectError::InvalidNote(e) => format!("Project note is invalid: {}", e),
             ProjectError::InvalidId => "Project ID format is invalid".to_string(),
-            ProjectError::SourceNotAccessible => "The project's source folder cannot be accessed. It may have been moved or deleted.".to_string(),
+            ProjectError::SourceNotAccessible => {
+                "The project's source folder cannot be accessed. It may have been moved or deleted."
+                    .to_string()
+            }
             ProjectError::NotFound { id } => format!("Project not found (ID: {})", id),
-            ProjectError::DuplicateName { name } => format!("A project named '{}' already exists", name),
+            ProjectError::DuplicateName { name } => {
+                format!("A project named '{}' already exists", name)
+            }
             ProjectError::CannotDelete { reason } => format!("Cannot delete project: {}", reason),
             ProjectError::CannotUpdate { reason } => format!("Cannot update project: {}", reason),
             ProjectError::DatabaseConnection => "Unable to connect to the database".to_string(),
-            ProjectError::DataCorruption { id } => format!("Data corruption detected in project (ID: {})", id),
-            ProjectError::Locked => "Project is currently being edited by another process".to_string(),
-            ProjectError::VersionConflict => "Project was modified by another process. Please refresh and try again.".to_string(),
-            ProjectError::RepositoryError { operation } => format!("Database operation failed: {}", operation),
+            ProjectError::DataCorruption { id } => {
+                format!("Data corruption detected in project (ID: {})", id)
+            }
+            ProjectError::Locked => {
+                "Project is currently being edited by another process".to_string()
+            }
+            ProjectError::VersionConflict => {
+                "Project was modified by another process. Please refresh and try again.".to_string()
+            }
+            ProjectError::RepositoryError { operation } => {
+                format!("Database operation failed: {}", operation)
+            }
             ProjectError::InvalidTimestamp(e) => format!("Invalid timestamp: {}", e),
         }
     }
@@ -176,13 +192,19 @@ mod tests {
         assert!(matches!(not_found, ProjectError::NotFound { id } if id == "proj_123"));
 
         let duplicate = ProjectError::duplicate_name("Test Project");
-        assert!(matches!(duplicate, ProjectError::DuplicateName { name } if name == "Test Project"));
+        assert!(
+            matches!(duplicate, ProjectError::DuplicateName { name } if name == "Test Project")
+        );
 
         let cannot_delete = ProjectError::cannot_delete("Project in use");
-        assert!(matches!(cannot_delete, ProjectError::CannotDelete { reason } if reason == "Project in use"));
+        assert!(
+            matches!(cannot_delete, ProjectError::CannotDelete { reason } if reason == "Project in use")
+        );
 
         let repo_error = ProjectError::repository_error("SELECT failed");
-        assert!(matches!(repo_error, ProjectError::RepositoryError { operation } if operation == "SELECT failed"));
+        assert!(
+            matches!(repo_error, ProjectError::RepositoryError { operation } if operation == "SELECT failed")
+        );
 
         let corruption = ProjectError::data_corruption("proj_456");
         assert!(matches!(corruption, ProjectError::DataCorruption { id } if id == "proj_456"));
@@ -196,7 +218,10 @@ mod tests {
         assert!(ProjectError::Locked.is_recoverable());
 
         // Non-recoverable errors
-        assert!(!ProjectError::NotFound { id: "test".to_string() }.is_recoverable());
+        assert!(!ProjectError::NotFound {
+            id: "test".to_string()
+        }
+        .is_recoverable());
         assert!(!ProjectError::SourceNotAccessible.is_recoverable());
         assert!(!ProjectError::VersionConflict.is_recoverable());
     }
@@ -205,7 +230,10 @@ mod tests {
     fn test_user_attention_requirements() {
         // Requires user attention
         assert!(ProjectError::InvalidName(ProjectNameError::Required).requires_user_attention());
-        assert!(ProjectError::DuplicateName { name: "test".to_string() }.requires_user_attention());
+        assert!(ProjectError::DuplicateName {
+            name: "test".to_string()
+        }
+        .requires_user_attention());
         assert!(ProjectError::SourceNotAccessible.requires_user_attention());
 
         // May be handled automatically
@@ -216,20 +244,28 @@ mod tests {
     #[test]
     fn test_user_messages() {
         let name_error = ProjectError::InvalidName(ProjectNameError::Required);
-        assert!(name_error.user_message().contains("Project name is invalid"));
+        assert!(name_error
+            .user_message()
+            .contains("Project name is invalid"));
 
-        let not_found = ProjectError::NotFound { id: "proj_123".to_string() };
+        let not_found = ProjectError::NotFound {
+            id: "proj_123".to_string(),
+        };
         assert!(not_found.user_message().contains("Project not found"));
         assert!(not_found.user_message().contains("proj_123"));
 
-        let duplicate = ProjectError::DuplicateName { name: "My Project".to_string() };
+        let duplicate = ProjectError::DuplicateName {
+            name: "My Project".to_string(),
+        };
         assert!(duplicate.user_message().contains("already exists"));
         assert!(duplicate.user_message().contains("My Project"));
     }
 
     #[test]
     fn test_error_display() {
-        let error = ProjectError::NotFound { id: "test_id".to_string() };
+        let error = ProjectError::NotFound {
+            id: "test_id".to_string(),
+        };
         let display_string = format!("{}", error);
         assert!(display_string.contains("Project not found"));
         assert!(display_string.contains("test_id"));
@@ -241,7 +277,9 @@ mod tests {
         let project_error: ProjectError = name_error.into();
         assert!(matches!(project_error, ProjectError::InvalidName(_)));
 
-        let path_error = FolderPathError::NotFound { path: "test".to_string() };
+        let path_error = FolderPathError::NotFound {
+            path: "test".to_string(),
+        };
         let project_error: ProjectError = path_error.into();
         assert!(matches!(project_error, ProjectError::InvalidPath(_)));
     }

@@ -12,19 +12,34 @@ async fn test_get_workspace_layout_with_valid_project_id() {
     let result = get_workspace_layout(project_id).await;
 
     // Assert
-    assert!(result.is_ok(), "get_workspace_layout should return Ok for valid project ID");
+    assert!(
+        result.is_ok(),
+        "get_workspace_layout should return Ok for valid project ID"
+    );
     let layout_json = result.unwrap();
 
     // Should return a valid JSON structure matching WorkspaceLayoutDto
-    let parsed: serde_json::Value = serde_json::from_str(&layout_json)
-        .expect("Result should be valid JSON");
+    let parsed: serde_json::Value =
+        serde_json::from_str(&layout_json).expect("Result should be valid JSON");
 
     // Verify required fields are present (even if null initially)
     assert!(parsed.get("id").is_some(), "Layout should have an id field");
-    assert!(parsed.get("projectId").is_some(), "Layout should have a projectId field");
-    assert!(parsed.get("panelStates").is_some(), "Layout should have a panelStates field");
-    assert!(parsed.get("panelSizes").is_some(), "Layout should have a panelSizes field");
-    assert!(parsed.get("lastModified").is_some(), "Layout should have a lastModified field");
+    assert!(
+        parsed.get("projectId").is_some(),
+        "Layout should have a projectId field"
+    );
+    assert!(
+        parsed.get("panelStates").is_some(),
+        "Layout should have a panelStates field"
+    );
+    assert!(
+        parsed.get("panelSizes").is_some(),
+        "Layout should have a panelSizes field"
+    );
+    assert!(
+        parsed.get("lastModified").is_some(),
+        "Layout should have a lastModified field"
+    );
 }
 
 #[tokio::test]
@@ -36,12 +51,15 @@ async fn test_get_workspace_layout_with_nonexistent_project() {
     let result = get_workspace_layout(nonexistent_project_id).await;
 
     // Assert - should return Ok with null/empty layout for nonexistent project
-    assert!(result.is_ok(), "get_workspace_layout should handle nonexistent projects gracefully");
+    assert!(
+        result.is_ok(),
+        "get_workspace_layout should handle nonexistent projects gracefully"
+    );
     let layout_json = result.unwrap();
 
     // Should return null or empty object for nonexistent project
-    let parsed: serde_json::Value = serde_json::from_str(&layout_json)
-        .expect("Result should be valid JSON");
+    let parsed: serde_json::Value =
+        serde_json::from_str(&layout_json).expect("Result should be valid JSON");
 
     // Could be null or an empty object, both are valid responses
     assert!(
@@ -59,7 +77,10 @@ async fn test_get_workspace_layout_with_invalid_project_id() {
     let result = get_workspace_layout(invalid_project_id).await;
 
     // Assert - should return error for invalid UUID format
-    assert!(result.is_err(), "get_workspace_layout should return error for invalid project ID format");
+    assert!(
+        result.is_err(),
+        "get_workspace_layout should return error for invalid project ID format"
+    );
     let error_message = result.unwrap_err();
     assert!(
         error_message.contains("invalid") || error_message.contains("format"),
@@ -79,8 +100,8 @@ async fn test_get_workspace_layout_response_schema() {
     // Assert
     assert!(result.is_ok(), "get_workspace_layout should return Ok");
     let layout_json = result.unwrap();
-    let parsed: serde_json::Value = serde_json::from_str(&layout_json)
-        .expect("Result should be valid JSON");
+    let parsed: serde_json::Value =
+        serde_json::from_str(&layout_json).expect("Result should be valid JSON");
 
     // If layout exists, verify schema matches GetWorkspaceLayoutResponse
     if !parsed.is_null() {

@@ -1,3 +1,3 @@
 pub mod app_error;
 
-pub use app_error::{AppError, AppResult, ErrorResponse, LogLevel, IntoAppResult};
+pub use app_error::{AppError, AppResult, ErrorResponse, IntoAppResult, LogLevel};

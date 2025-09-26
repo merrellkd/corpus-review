@@ -1,10 +1,10 @@
 use async_trait::async_trait;
-use sqlx::{SqlitePool, Row};
 use chrono::{DateTime, Utc};
+use sqlx::{Row, SqlitePool};
 use std::sync::Arc;
 
 use crate::domain::project::{
-    Project, ProjectId, ProjectRepository, RepositoryStats, ProjectError, ProjectResult
+    Project, ProjectError, ProjectId, ProjectRepository, ProjectResult, RepositoryStats,
 };
 
 /// SQLite implementation of the ProjectRepository trait
@@ -24,28 +24,27 @@ impl SqliteProjectRepository {
 
     /// Convert database row to Project domain object
     fn row_to_project(&self, row: &sqlx::sqlite::SqliteRow) -> ProjectResult<Project> {
-        let id: String = row.try_get("uuid")
+        let id: String = row
+            .try_get("uuid")
             .map_err(|e| ProjectError::repository_error(format!("Failed to get uuid: {}", e)))?;
 
-        let name: String = row.try_get("name")
+        let name: String = row
+            .try_get("name")
             .map_err(|e| ProjectError::repository_error(format!("Failed to get name: {}", e)))?;
 
-        let source_folder: String = row.try_get("source_folder")
-            .map_err(|e| ProjectError::repository_error(format!("Failed to get source_folder: {}", e)))?;
+        let source_folder: String = row.try_get("source_folder").map_err(|e| {
+            ProjectError::repository_error(format!("Failed to get source_folder: {}", e))
+        })?;
 
-        let note: Option<String> = row.try_get("note")
+        let note: Option<String> = row
+            .try_get("note")
             .map_err(|e| ProjectError::repository_error(format!("Failed to get note: {}", e)))?;
 
-        let created_at: DateTime<Utc> = row.try_get("created_at")
-            .map_err(|e| ProjectError::repository_error(format!("Failed to get created_at: {}", e)))?;
+        let created_at: DateTime<Utc> = row.try_get("created_at").map_err(|e| {
+            ProjectError::repository_error(format!("Failed to get created_at: {}", e))
+        })?;
 
-        Project::from_data(
-            id,
-            name,
-            source_folder,
-            note,
-            created_at.to_rfc3339(),
-        )
+        Project::from_data(id, name, source_folder, note, created_at.to_rfc3339())
     }
 }
 
@@ -73,7 +72,9 @@ impl ProjectRepository for SqliteProjectRepository {
             .bind(created_at_str)
             .execute(&*self.pool)
             .await
-            .map_err(|e| ProjectError::repository_error(format!("Failed to create project: {}", e)))?;
+            .map_err(|e| {
+                ProjectError::repository_error(format!("Failed to create project: {}", e))
+            })?;
 
         Ok(())
     }
@@ -93,7 +94,9 @@ impl ProjectRepository for SqliteProjectRepository {
             .bind(project.id().value())
             .execute(&*self.pool)
             .await
-            .map_err(|e| ProjectError::repository_error(format!("Failed to update project: {}", e)))?;
+            .map_err(|e| {
+                ProjectError::repository_error(format!("Failed to update project: {}", e))
+            })?;
 
         if result.rows_affected() == 0 {
             return Err(ProjectError::not_found(project.id().value()));
@@ -109,7 +112,9 @@ impl ProjectRepository for SqliteProjectRepository {
             .bind(id.value())
             .execute(&*self.pool)
             .await
-            .map_err(|e| ProjectError::repository_error(format!("Failed to delete project: {}", e)))?;
+            .map_err(|e| {
+                ProjectError::repository_error(format!("Failed to delete project: {}", e))
+            })?;
 
         if result.rows_affected() == 0 {
             return Err(ProjectError::not_found(id.value()));
@@ -129,7 +134,9 @@ impl ProjectRepository for SqliteProjectRepository {
             .bind(id.value())
             .fetch_optional(&*self.pool)
             .await
-            .map_err(|e| ProjectError::repository_error(format!("Failed to find project by id: {}", e)))?;
+            .map_err(|e| {
+                ProjectError::repository_error(format!("Failed to find project by id: {}", e))
+            })?;
 
         match row {
             Some(r) => Ok(Some(self.row_to_project(&r)?)),
@@ -148,7 +155,9 @@ impl ProjectRepository for SqliteProjectRepository {
             .bind(name)
             .fetch_optional(&*self.pool)
             .await
-            .map_err(|e| ProjectError::repository_error(format!("Failed to find project by name: {}", e)))?;
+            .map_err(|e| {
+                ProjectError::repository_error(format!("Failed to find project by name: {}", e))
+            })?;
 
         match row {
             Some(r) => Ok(Some(self.row_to_project(&r)?)),
@@ -166,7 +175,9 @@ impl ProjectRepository for SqliteProjectRepository {
         let rows = sqlx::query(query)
             .fetch_all(&*self.pool)
             .await
-            .map_err(|e| ProjectError::repository_error(format!("Failed to list projects: {}", e)))?;
+            .map_err(|e| {
+                ProjectError::repository_error(format!("Failed to list projects: {}", e))
+            })?;
 
         let mut projects = Vec::new();
         for row in rows {
@@ -183,7 +194,9 @@ impl ProjectRepository for SqliteProjectRepository {
             .bind(id.value())
             .fetch_optional(&*self.pool)
             .await
-            .map_err(|e| ProjectError::repository_error(format!("Failed to check project existence: {}", e)))?
+            .map_err(|e| {
+                ProjectError::repository_error(format!("Failed to check project existence: {}", e))
+            })?
             .is_some();
 
         Ok(exists)
@@ -196,7 +209,9 @@ impl ProjectRepository for SqliteProjectRepository {
             .bind(name)
             .fetch_optional(&*self.pool)
             .await
-            .map_err(|e| ProjectError::repository_error(format!("Failed to check name existence: {}", e)))?
+            .map_err(|e| {
+                ProjectError::repository_error(format!("Failed to check name existence: {}", e))
+            })?
             .is_some();
 
         Ok(exists)
@@ -208,9 +223,12 @@ impl ProjectRepository for SqliteProjectRepository {
         let row = sqlx::query(query)
             .fetch_one(&*self.pool)
             .await
-            .map_err(|e| ProjectError::repository_error(format!("Failed to count projects: {}", e)))?;
+            .map_err(|e| {
+                ProjectError::repository_error(format!("Failed to count projects: {}", e))
+            })?;
 
-        let count: i64 = row.try_get("count")
+        let count: i64 = row
+            .try_get("count")
             .map_err(|e| ProjectError::repository_error(format!("Failed to get count: {}", e)))?;
 
         Ok(count as usize)
@@ -229,7 +247,9 @@ impl ProjectRepository for SqliteProjectRepository {
             .bind(offset as i64)
             .fetch_all(&*self.pool)
             .await
-            .map_err(|e| ProjectError::repository_error(format!("Failed to list paged projects: {}", e)))?;
+            .map_err(|e| {
+                ProjectError::repository_error(format!("Failed to list paged projects: {}", e))
+            })?;
 
         let mut projects = Vec::new();
         for row in rows {
@@ -257,7 +277,9 @@ impl ProjectRepository for SqliteProjectRepository {
             .bind(&exact_pattern)
             .fetch_all(&*self.pool)
             .await
-            .map_err(|e| ProjectError::repository_error(format!("Failed to search projects: {}", e)))?;
+            .map_err(|e| {
+                ProjectError::repository_error(format!("Failed to search projects: {}", e))
+            })?;
 
         let mut projects = Vec::new();
         for row in rows {
@@ -284,7 +306,12 @@ impl ProjectRepository for SqliteProjectRepository {
             .bind(end_date.to_rfc3339())
             .fetch_all(&*self.pool)
             .await
-            .map_err(|e| ProjectError::repository_error(format!("Failed to find projects by date range: {}", e)))?;
+            .map_err(|e| {
+                ProjectError::repository_error(format!(
+                    "Failed to find projects by date range: {}",
+                    e
+                ))
+            })?;
 
         let mut projects = Vec::new();
         for row in rows {
@@ -328,32 +355,31 @@ impl ProjectRepository for SqliteProjectRepository {
             .await
             .map_err(|e| ProjectError::repository_error(format!("Failed to get stats: {}", e)))?;
 
-        let total: i64 = stats_row.try_get("total")
+        let total: i64 = stats_row
+            .try_get("total")
             .map_err(|e| ProjectError::repository_error(format!("Failed to get total: {}", e)))?;
 
-        let with_notes: i64 = stats_row.try_get("with_notes")
-            .map_err(|e| ProjectError::repository_error(format!("Failed to get with_notes: {}", e)))?;
+        let with_notes: i64 = stats_row.try_get("with_notes").map_err(|e| {
+            ProjectError::repository_error(format!("Failed to get with_notes: {}", e))
+        })?;
 
-        let avg_name_length: f64 = stats_row.try_get("avg_name_length")
-            .unwrap_or(0.0);
+        let avg_name_length: f64 = stats_row.try_get("avg_name_length").unwrap_or(0.0);
 
-        let oldest_date_str: Option<String> = stats_row.try_get("oldest_date")
-            .map_err(|e| ProjectError::repository_error(format!("Failed to get oldest_date: {}", e)))?;
+        let oldest_date_str: Option<String> = stats_row.try_get("oldest_date").map_err(|e| {
+            ProjectError::repository_error(format!("Failed to get oldest_date: {}", e))
+        })?;
 
-        let newest_date_str: Option<String> = stats_row.try_get("newest_date")
-            .map_err(|e| ProjectError::repository_error(format!("Failed to get newest_date: {}", e)))?;
+        let newest_date_str: Option<String> = stats_row.try_get("newest_date").map_err(|e| {
+            ProjectError::repository_error(format!("Failed to get newest_date: {}", e))
+        })?;
 
-        let oldest_date = oldest_date_str
-            .and_then(|s| s.parse::<DateTime<Utc>>().ok());
+        let oldest_date = oldest_date_str.and_then(|s| s.parse::<DateTime<Utc>>().ok());
 
-        let newest_date = newest_date_str
-            .and_then(|s| s.parse::<DateTime<Utc>>().ok());
+        let newest_date = newest_date_str.and_then(|s| s.parse::<DateTime<Utc>>().ok());
 
         // Count accessible projects (this is expensive but important for stats)
         let projects = self.list_all().await?;
-        let accessible_count = projects.iter()
-            .filter(|p| p.is_source_accessible())
-            .count();
+        let accessible_count = projects.iter().filter(|p| p.is_source_accessible()).count();
 
         // Get database file size (if possible)
         let database_size = self.get_database_size().await.ok();
@@ -374,11 +400,10 @@ impl ProjectRepository for SqliteProjectRepository {
 impl SqliteProjectRepository {
     /// Get the database file size in bytes (SQLite-specific functionality)
     async fn get_database_size(&self) -> Result<u64, sqlx::Error> {
-        let query = "SELECT page_count * page_size as size FROM pragma_page_count(), pragma_page_size()";
+        let query =
+            "SELECT page_count * page_size as size FROM pragma_page_count(), pragma_page_size()";
 
-        let row = sqlx::query(query)
-            .fetch_one(&*self.pool)
-            .await?;
+        let row = sqlx::query(query).fetch_one(&*self.pool).await?;
 
         let size: i64 = row.try_get("size")?;
         Ok(size as u64)
@@ -408,12 +433,15 @@ impl SqliteProjectRepository {
         let rows = sqlx::query(query)
             .fetch_all(&*self.pool)
             .await
-            .map_err(|e| ProjectError::repository_error(format!("Integrity check failed: {}", e)))?;
+            .map_err(|e| {
+                ProjectError::repository_error(format!("Integrity check failed: {}", e))
+            })?;
 
         let mut results = Vec::new();
         for row in rows {
-            let message: String = row.try_get(0)
-                .map_err(|e| ProjectError::repository_error(format!("Failed to get integrity result: {}", e)))?;
+            let message: String = row.try_get(0).map_err(|e| {
+                ProjectError::repository_error(format!("Failed to get integrity result: {}", e))
+            })?;
             results.push(message);
         }
 
@@ -480,8 +508,9 @@ mod tests {
         let project = Project::new(
             "SQLite Test Project".to_string(),
             test_folder.clone(),
-            Some("Test note".to_string())
-        ).unwrap();
+            Some("Test note".to_string()),
+        )
+        .unwrap();
 
         // Test create
         let result = repo.create(&project).await;
@@ -511,14 +540,16 @@ mod tests {
         let project1 = Project::new(
             "Duplicate SQLite Project".to_string(),
             test_folder.clone(),
-            None
-        ).unwrap();
+            None,
+        )
+        .unwrap();
 
         let project2 = Project::new(
             "Duplicate SQLite Project".to_string(),
             test_folder.clone(),
-            None
-        ).unwrap();
+            None,
+        )
+        .unwrap();
 
         // First create should succeed
         assert!(repo.create(&project1).await.is_ok());
@@ -526,7 +557,10 @@ mod tests {
         // Second create should fail with duplicate name error
         let result = repo.create(&project2).await;
         assert!(result.is_err());
-        assert!(matches!(result.unwrap_err(), ProjectError::DuplicateName { .. }));
+        assert!(matches!(
+            result.unwrap_err(),
+            ProjectError::DuplicateName { .. }
+        ));
 
         cleanup_test_folder(&test_folder);
     }
@@ -537,17 +571,16 @@ mod tests {
         let repo = SqliteProjectRepository::new(Arc::new(pool));
         let test_folder = setup_test_folder("sqlite_update_delete");
 
-        let mut project = Project::new(
-            "SQLite Update Test".to_string(),
-            test_folder.clone(),
-            None
-        ).unwrap();
+        let mut project =
+            Project::new("SQLite Update Test".to_string(), test_folder.clone(), None).unwrap();
 
         // Create project
         repo.create(&project).await.unwrap();
 
         // Update project
-        project.update_name("SQLite Updated Name".to_string()).unwrap();
+        project
+            .update_name("SQLite Updated Name".to_string())
+            .unwrap();
         project.update_note(Some("Added note".to_string())).unwrap();
         assert!(repo.update(&project).await.is_ok());
 
@@ -576,9 +609,19 @@ mod tests {
 
         // Create multiple projects
         let projects = vec![
-            Project::new("SQLite Alpha Project".to_string(), test_folder.clone(), None).unwrap(),
+            Project::new(
+                "SQLite Alpha Project".to_string(),
+                test_folder.clone(),
+                None,
+            )
+            .unwrap(),
             Project::new("SQLite Beta Project".to_string(), test_folder.clone(), None).unwrap(),
-            Project::new("SQLite Gamma Analysis".to_string(), test_folder.clone(), None).unwrap(),
+            Project::new(
+                "SQLite Gamma Analysis".to_string(),
+                test_folder.clone(),
+                None,
+            )
+            .unwrap(),
         ];
 
         for project in &projects {
@@ -615,8 +658,18 @@ mod tests {
         // Create projects with varying characteristics
         let projects = vec![
             Project::new("Short".to_string(), test_folder.clone(), None).unwrap(),
-            Project::new("Medium Length Name".to_string(), test_folder.clone(), Some("With note".to_string())).unwrap(),
-            Project::new("Very Long Project Name Indeed".to_string(), test_folder.clone(), Some("Another note here".to_string())).unwrap(),
+            Project::new(
+                "Medium Length Name".to_string(),
+                test_folder.clone(),
+                Some("With note".to_string()),
+            )
+            .unwrap(),
+            Project::new(
+                "Very Long Project Name Indeed".to_string(),
+                test_folder.clone(),
+                Some("Another note here".to_string()),
+            )
+            .unwrap(),
         ];
 
         for project in &projects {

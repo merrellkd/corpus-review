@@ -1,5 +1,5 @@
-use serde::{Deserialize, Serialize};
 use crate::domain::workspace::value_objects::{DocumentCaddyId, FilePath};
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct DocumentCaddy {
@@ -168,7 +168,8 @@ mod tests {
 
     #[test]
     fn test_new_document_caddy() {
-        let file_path = FilePath::new("/Users/test/Documents/Source/My Document.txt".to_string()).unwrap();
+        let file_path =
+            FilePath::new("/Users/test/Documents/Source/My Document.txt".to_string()).unwrap();
         let caddy = DocumentCaddy::new(file_path.clone()).unwrap();
 
         assert_eq!(caddy.file_path, file_path);
@@ -179,7 +180,9 @@ mod tests {
 
     #[test]
     fn test_title_extraction() {
-        let file_path = FilePath::new("/Users/test/Documents/Source/Complex File Name.pdf".to_string()).unwrap();
+        let file_path =
+            FilePath::new("/Users/test/Documents/Source/Complex File Name.pdf".to_string())
+                .unwrap();
         let caddy = DocumentCaddy::new(file_path).unwrap();
 
         assert_eq!(caddy.title, "Complex File Name");
@@ -187,7 +190,8 @@ mod tests {
 
     #[test]
     fn test_position_update() {
-        let file_path = FilePath::new("/Users/test/Documents/Source/document.txt".to_string()).unwrap();
+        let file_path =
+            FilePath::new("/Users/test/Documents/Source/document.txt".to_string()).unwrap();
         let mut caddy = DocumentCaddy::new(file_path).unwrap();
 
         let result = caddy.update_position(200.0, 150.0);
@@ -202,7 +206,8 @@ mod tests {
 
     #[test]
     fn test_dimension_constraints() {
-        let file_path = FilePath::new("/Users/test/Documents/Source/document.txt".to_string()).unwrap();
+        let file_path =
+            FilePath::new("/Users/test/Documents/Source/document.txt".to_string()).unwrap();
         let mut caddy = DocumentCaddy::new(file_path).unwrap();
 
         // Test minimum width constraint
@@ -222,7 +227,8 @@ mod tests {
 
     #[test]
     fn test_z_index_management() {
-        let file_path = FilePath::new("/Users/test/Documents/Source/document.txt".to_string()).unwrap();
+        let file_path =
+            FilePath::new("/Users/test/Documents/Source/document.txt".to_string()).unwrap();
         let mut caddy = DocumentCaddy::new(file_path).unwrap();
 
         caddy.bring_to_front(5);
@@ -234,13 +240,15 @@ mod tests {
 
     #[test]
     fn test_file_type_detection() {
-        let file_path = FilePath::new("/Users/test/Documents/Source/document.txt".to_string()).unwrap();
+        let file_path =
+            FilePath::new("/Users/test/Documents/Source/document.txt".to_string()).unwrap();
         let caddy = DocumentCaddy::new(file_path).unwrap();
 
         assert!(caddy.is_text_file());
         assert!(!caddy.is_document_file());
 
-        let pdf_path = FilePath::new("/Users/test/Documents/Source/report.pdf".to_string()).unwrap();
+        let pdf_path =
+            FilePath::new("/Users/test/Documents/Source/report.pdf".to_string()).unwrap();
         let pdf_caddy = DocumentCaddy::new(pdf_path).unwrap();
 
         assert!(!pdf_caddy.is_text_file());
@@ -249,7 +257,8 @@ mod tests {
 
     #[test]
     fn test_activation_state() {
-        let file_path = FilePath::new("/Users/test/Documents/Source/document.txt".to_string()).unwrap();
+        let file_path =
+            FilePath::new("/Users/test/Documents/Source/document.txt".to_string()).unwrap();
         let mut caddy = DocumentCaddy::new(file_path).unwrap();
 
         assert!(caddy.is_active);
@@ -263,7 +272,8 @@ mod tests {
 
     #[test]
     fn test_scroll_position_validation() {
-        let file_path = FilePath::new("/Users/test/Documents/Source/document.txt".to_string()).unwrap();
+        let file_path =
+            FilePath::new("/Users/test/Documents/Source/document.txt".to_string()).unwrap();
         let mut caddy = DocumentCaddy::new(file_path).unwrap();
 
         let result = caddy.update_scroll_position(150.5);

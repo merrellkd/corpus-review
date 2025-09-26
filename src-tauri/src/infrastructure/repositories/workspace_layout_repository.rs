@@ -1,11 +1,10 @@
-use async_trait::async_trait;
-use sqlx::{Row, SqlitePool};
 use crate::domain::workspace::{
     entities::WorkspaceLayout,
-    value_objects::{WorkspaceLayoutId, ProjectId},
-    repositories::{WorkspaceLayoutRepository, RepositoryError},
-    PanelType,
+    repositories::{RepositoryError, WorkspaceLayoutRepository},
+    value_objects::{ProjectId, WorkspaceLayoutId},
 };
+use async_trait::async_trait;
+use sqlx::{Row, SqlitePool};
 
 pub struct SqlxWorkspaceLayoutRepository {
     pool: SqlitePool,
@@ -45,7 +44,10 @@ impl WorkspaceLayoutRepository for SqlxWorkspaceLayoutRepository {
         Ok(())
     }
 
-    async fn find_by_id(&self, id: &WorkspaceLayoutId) -> Result<Option<WorkspaceLayout>, RepositoryError> {
+    async fn find_by_id(
+        &self,
+        id: &WorkspaceLayoutId,
+    ) -> Result<Option<WorkspaceLayout>, RepositoryError> {
         let query = r#"
             SELECT id, project_id, file_explorer_visible, category_explorer_visible,
                    search_panel_visible, document_workspace_visible,
@@ -68,7 +70,10 @@ impl WorkspaceLayoutRepository for SqlxWorkspaceLayoutRepository {
         }
     }
 
-    async fn find_by_project_id(&self, project_id: &ProjectId) -> Result<Option<WorkspaceLayout>, RepositoryError> {
+    async fn find_by_project_id(
+        &self,
+        project_id: &ProjectId,
+    ) -> Result<Option<WorkspaceLayout>, RepositoryError> {
         let query = r#"
             SELECT id, project_id, file_explorer_visible, category_explorer_visible,
                    search_panel_visible, document_workspace_visible,
@@ -102,20 +107,26 @@ impl WorkspaceLayoutRepository for SqlxWorkspaceLayoutRepository {
     }
 
     async fn exists_for_project(&self, project_id: &ProjectId) -> Result<bool, RepositoryError> {
-        let count: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM workspace_layouts WHERE project_id = ?1")
-            .bind(project_id.to_string())
-            .fetch_one(&self.pool)
-            .await
-            .map_err(|e| RepositoryError::DatabaseError(e.to_string()))?;
+        let count: i64 =
+            sqlx::query_scalar("SELECT COUNT(*) FROM workspace_layouts WHERE project_id = ?1")
+                .bind(project_id.to_string())
+                .fetch_one(&self.pool)
+                .await
+                .map_err(|e| RepositoryError::DatabaseError(e.to_string()))?;
 
         Ok(count > 0)
     }
 }
 
 impl SqlxWorkspaceLayoutRepository {
-    fn row_to_workspace_layout(&self, row: sqlx::sqlite::SqliteRow) -> Result<WorkspaceLayout, RepositoryError> {
+    fn row_to_workspace_layout(
+        &self,
+        row: sqlx::sqlite::SqliteRow,
+    ) -> Result<WorkspaceLayout, RepositoryError> {
+        use crate::domain::workspace::entities::workspace_layout::{
+            PanelDimensionState, PanelVisibilityState,
+        };
         use std::collections::HashMap;
-        use crate::domain::workspace::entities::workspace_layout::{PanelVisibilityState, PanelDimensionState};
 
         let id = WorkspaceLayoutId::from_string(row.get::<String, _>("id"))
             .map_err(|e| RepositoryError::ValidationError(e))?;

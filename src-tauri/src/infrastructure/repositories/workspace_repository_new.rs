@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use sqlx::{Pool, Sqlite, Row};
 use std::collections::HashMap;
 
-use crate::domains::workspace::domain::workspace::{Workspace, WorkspaceId};
+use crate::domain::workspace::entities::{Workspace, WorkspaceId};
 
 /// Error types for workspace repository operations
 #[derive(Debug, thiserror::Error)]
@@ -389,7 +389,7 @@ impl WorkspaceRepository for SqliteWorkspaceRepository {
 
 impl SqliteWorkspaceRepository {
     fn row_to_workspace(&self, row: sqlx::sqlite::SqliteRow) -> Result<Workspace, WorkspaceRepositoryError> {
-        use crate::domains::workspace::domain::workspace::{LayoutMode, Dimensions};
+        use crate::domain::workspace::entities::{LayoutMode, Dimensions};
 
         let id_str: String = row.get("id");
         let workspace_id = WorkspaceId::from_string(id_str)
@@ -503,7 +503,7 @@ pub struct WorkspaceStatistics {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::domains::workspace::domain::workspace::{Workspace, LayoutMode, Dimensions};
+    use crate::domain::workspace::entities::{Workspace, LayoutMode, Dimensions};
 
     #[tokio::test]
     async fn test_in_memory_repository() {

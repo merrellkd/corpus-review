@@ -1,8 +1,5 @@
+use crate::application::file_system_service::FileSystemService;
 use tauri::State;
-use crate::application::{
-    file_system_service::{FileSystemService, FileSystemServiceError},
-    // dtos::FileSystemItemDto,  // DTO not implemented yet
-};
 
 // Temporarily commented out due to missing FileSystemItemDto
 /*

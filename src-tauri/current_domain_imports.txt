@@ -1,0 +1,13 @@
+=== Import Path Analysis for DDD Refactoring ===
+Date: Fri Sep 26 11:06:39 BST 2025
+
+Files importing from duplicate domain (crate::domains::workspace::):
+src/domains/workspace/infrastructure/workspace_repository.rs
+src/domains/workspace/infrastructure/commands.rs
+
+Specific import statements:
+src/domains/workspace/infrastructure/workspace_repository.rs:use crate::domains::workspace::domain::workspace::{Workspace, WorkspaceId};
+src/domains/workspace/infrastructure/workspace_repository.rs:        use crate::domains::workspace::domain::workspace::{LayoutMode, Dimensions};
+src/domains/workspace/infrastructure/workspace_repository.rs:    use crate::domains::workspace::domain::workspace::{Workspace, LayoutMode, Dimensions};
+src/domains/workspace/infrastructure/commands.rs:use crate::domains::workspace::domain::{
+src/domains/workspace/infrastructure/commands.rs:    use crate::domains::workspace::infrastructure::workspace_repository::InMemoryWorkspaceRepository;

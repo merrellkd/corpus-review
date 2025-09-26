@@ -1,5 +1,5 @@
-use serde::{Deserialize, Serialize};
 use crate::application::dtos::DirectoryListingDto;
+use serde::{Deserialize, Serialize};
 
 /// DTO for transferring workspace data between layers
 ///
@@ -83,7 +83,10 @@ mod tests {
             directory_listing,
         );
 
-        assert_eq!(workspace.project_id, "proj_12345678-1234-1234-1234-123456789012");
+        assert_eq!(
+            workspace.project_id,
+            "proj_12345678-1234-1234-1234-123456789012"
+        );
         assert_eq!(workspace.project_name, "Test Project");
         assert_eq!(workspace.source_folder, "/Users/test/project");
         assert_eq!(workspace.current_path, "/Users/test/project");

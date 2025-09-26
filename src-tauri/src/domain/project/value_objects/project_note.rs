@@ -183,10 +183,14 @@ mod tests {
 
     #[test]
     fn test_note_preview() {
-        let note = ProjectNote::new("This is a longer note that should be truncated".to_string()).unwrap();
+        let note =
+            ProjectNote::new("This is a longer note that should be truncated".to_string()).unwrap();
 
         assert_eq!(note.preview(10), "This is a ...");
-        assert_eq!(note.preview(100), "This is a longer note that should be truncated");
+        assert_eq!(
+            note.preview(100),
+            "This is a longer note that should be truncated"
+        );
     }
 
     #[test]
