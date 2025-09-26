@@ -1,7 +1,7 @@
 use std::sync::Arc;
 use async_trait::async_trait;
 use chrono::{DateTime, Utc};
-use log::{debug, info, warn, error};
+use tracing::{debug, info, warn, error};
 use tokio::sync::RwLock;
 use std::collections::HashMap;
 

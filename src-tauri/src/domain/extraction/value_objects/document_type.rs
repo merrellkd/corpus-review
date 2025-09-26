@@ -85,6 +85,11 @@ impl DocumentType {
         // All current types support extraction
         true
     }
+
+    /// Parse DocumentType from string (compatibility method)
+    pub fn from_string(s: &str) -> Result<Self, DocumentTypeError> {
+        Self::from_str(s)
+    }
 }
 
 impl Display for DocumentType {

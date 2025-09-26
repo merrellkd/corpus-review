@@ -142,6 +142,18 @@ impl OriginalDocument {
         &self.checksum
     }
 
+    /// Alias for document_id() for compatibility
+    pub fn id(&self) -> &DocumentId {
+        &self.document_id
+    }
+
+    /// Update metadata (placeholder implementation)
+    pub fn update_metadata(&mut self, _metadata: OriginalDocumentMetadata) -> Result<(), OriginalDocumentError> {
+        // TODO: Implement proper metadata update
+        // For now, this is a placeholder
+        Ok(())
+    }
+
     /// Returns human-readable file size
     pub fn file_size_display(&self) -> String {
         format_file_size(self.file_size_bytes)

@@ -55,6 +55,17 @@ impl ExtractionStatus {
         matches!(self, ExtractionStatus::Pending | ExtractionStatus::Processing)
     }
 
+    /// Parse ExtractionStatus from string
+    pub fn from_string(s: &str) -> Result<Self, ExtractionStatusError> {
+        match s.to_lowercase().as_str() {
+            "pending" => Ok(ExtractionStatus::Pending),
+            "processing" => Ok(ExtractionStatus::Processing),
+            "completed" => Ok(ExtractionStatus::Completed),
+            "error" => Ok(ExtractionStatus::Error),
+            _ => Err(ExtractionStatusError::InvalidStatus(s.to_string())),
+        }
+    }
+
     /// Validates if transition to new status is allowed
     pub fn can_transition_to(&self, new_status: &ExtractionStatus) -> bool {
         match (self, new_status) {
@@ -127,6 +138,7 @@ impl Display for ExtractionStatus {
         }
     }
 }
+
 
 impl std::str::FromStr for ExtractionStatus {
     type Err = ExtractionStatusError;

@@ -225,7 +225,7 @@ impl ExtractionRepository for SqliteExtractionRepository {
 
         let rows = sqlx::query(query)
             .bind(status.to_string())
-            .bind(project_id.to_i64())
+            .bind(project_id.as_str())
             .fetch_all(&*self.pool)
             .await
             .map_err(|e| ExtractionRepositoryError::Database(format!("Failed to find extractions by status and project: {}", e)))?;
@@ -270,7 +270,7 @@ impl ExtractionRepository for SqliteExtractionRepository {
         "#;
 
         let rows = sqlx::query(query)
-            .bind(project_id.to_i64())
+            .bind(project_id.as_str())
             .fetch_all(&*self.pool)
             .await
             .map_err(|e| ExtractionRepositoryError::Database(format!("Failed to find active extractions by project: {}", e)))?;
@@ -369,7 +369,7 @@ impl ExtractionRepository for SqliteExtractionRepository {
         "#;
 
         let rows = sqlx::query(query)
-            .bind(project_id.to_i64())
+            .bind(project_id.as_str())
             .fetch_all(&*self.pool)
             .await
             .map_err(|e| ExtractionRepositoryError::Database(format!("Failed to find retryable failures: {}", e)))?;
@@ -432,7 +432,7 @@ impl ExtractionRepository for SqliteExtractionRepository {
 
         sqlx::query(query)
             .bind(extraction.extraction_id().to_string())
-            .bind(extraction.project_id().to_i64())
+            .bind(extraction.project_id().as_str())
             .bind(original_document_internal_id)
             .bind(extraction.status().to_string())
             .bind(extraction_method_str)
@@ -576,7 +576,7 @@ impl ExtractionRepository for SqliteExtractionRepository {
         let query = "DELETE FROM file_extractions WHERE project_id = ?";
 
         let result = sqlx::query(query)
-            .bind(project_id.to_i64())
+            .bind(project_id.as_str())
             .execute(&*self.pool)
             .await
             .map_err(|e| ExtractionRepositoryError::Database(format!("Failed to delete extractions by project: {}", e)))?;
@@ -634,7 +634,7 @@ impl ExtractionRepository for SqliteExtractionRepository {
         let query = "SELECT COUNT(*) as count FROM file_extractions WHERE project_id = ? AND status = ?";
 
         let row = sqlx::query(query)
-            .bind(project_id.to_i64())
+            .bind(project_id.as_str())
             .bind(status.to_string())
             .fetch_one(&*self.pool)
             .await
@@ -681,7 +681,7 @@ impl ExtractionRepository for SqliteExtractionRepository {
         "#;
 
         let row = sqlx::query(query)
-            .bind(project_id.to_i64())
+            .bind(project_id.as_str())
             .fetch_one(&*self.pool)
             .await
             .map_err(|e| ExtractionRepositoryError::Database(format!("Failed to get project statistics: {}", e)))?;
@@ -777,7 +777,7 @@ impl ExtractionRepository for SqliteExtractionRepository {
         sort_order: SortOrder,
     ) -> Result<ExtractionPage, Self::Error> {
         let (where_clause, project_bind) = if let Some(pid) = project_id {
-            ("WHERE project_id = ?", Some(pid.to_i64()))
+            ("WHERE project_id = ?", Some(pid.as_str()))
         } else {
             ("", None)
         };
@@ -852,7 +852,7 @@ impl ExtractionRepository for SqliteExtractionRepository {
 
         if let Some(ref project_id) = criteria.project_id {
             conditions.push("project_id = ?".to_string());
-            query_params.push(project_id.to_i64().to_string());
+            query_params.push(project_id.as_str().to_string());
         }
 
         if let Some(ref statuses) = criteria.statuses {
@@ -905,7 +905,7 @@ impl ExtractionRepository for SqliteExtractionRepository {
         time_range: &TimeRange,
     ) -> Result<ExtractionPerformanceMetrics, Self::Error> {
         let (where_clause, project_bind) = if let Some(pid) = project_id {
-            ("WHERE project_id = ? AND started_at BETWEEN ? AND ?", Some(pid.to_i64()))
+            ("WHERE project_id = ? AND started_at BETWEEN ? AND ?", Some(pid.as_str()))
         } else {
             ("WHERE started_at BETWEEN ? AND ?", None)
         };

@@ -180,6 +180,12 @@ impl AppState {
         panic!("DocumentService not yet implemented - this is expected during development")
     }
 
+    /// Get the extraction service (placeholder - not yet implemented)
+    /// This method panics intentionally to indicate the service is not ready
+    pub fn extraction_service(&self) -> ! {
+        panic!("ExtractionService not yet implemented - this is expected during development")
+    }
+
     /// Get application metadata (read-only)
     pub async fn metadata(&self) -> AppMetadata {
         self.metadata.read().await.clone()

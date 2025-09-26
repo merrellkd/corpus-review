@@ -18,7 +18,8 @@ impl DocumentId {
 
     /// Creates DocumentId from existing prefixed string
     /// Returns error if format is invalid
-    pub fn from_string(value: String) -> Result<Self, DocumentIdError> {
+    pub fn from_string<S: Into<String>>(value: S) -> Result<Self, DocumentIdError> {
+        let value = value.into();
         if !value.starts_with(Self::PREFIX) {
             return Err(DocumentIdError::InvalidPrefix);
         }
@@ -38,6 +39,14 @@ impl DocumentId {
     /// Returns the UUID part without prefix
     pub fn uuid_part(&self) -> &str {
         &self.0[Self::PREFIX.len()..]
+    }
+
+    /// Create DocumentId from internal database ID (placeholder)
+    pub fn from_internal_id(id: i64) -> Self {
+        // TODO: Implement proper mapping from internal DB ID to DocumentId
+        // For now, generate a new ID as placeholder
+        let _ = id; // silence unused warning
+        Self::new()
     }
 }
 

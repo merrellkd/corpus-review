@@ -24,7 +24,7 @@ pub struct ProjectDto {
 impl ProjectDto {
     /// Convert from domain Project to DTO
     pub fn from_project(project: &Project) -> Self {
-        let metadata = project.metadata();
+        let _metadata = project.metadata();
 
         ProjectDto {
             id: project.id().value().to_string(),

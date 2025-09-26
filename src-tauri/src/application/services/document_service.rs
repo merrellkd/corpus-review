@@ -5,12 +5,12 @@ use tracing::{debug, info, warn, error};
 
 use crate::domain::extraction::{
     entities::{OriginalDocument, OriginalDocumentError},
-    value_objects::{DocumentId, DocumentType, FilePath, ProjectId, FileChecksum},
+    value_objects::{DocumentId, DocumentType, FilePath, ProjectId},
     repositories::{DocumentRepository, DocumentSearchCriteria, DocumentSortBy, SortOrder}
 };
 use crate::application::dtos::{
     OriginalDocumentDto, DocumentDetailsDto, DocumentPreviewDto,
-    ExtractionHistoryDto, OriginalDocumentMetadata
+    ExtractionHistoryDto
 };
 use crate::infrastructure::AppError;
 
@@ -405,7 +405,7 @@ impl DocumentService {
         }
     }
 
-    async fn calculate_file_checksum(&self, file_path: &str) -> Result<FileChecksum, AppError> {
+    async fn calculate_file_checksum(&self, file_path: &str) -> Result<String, AppError> {
         use sha2::{Sha256, Digest};
 
         let mut file = tokio::fs::File::open(file_path).await
@@ -531,7 +531,7 @@ struct FileInfo {
     file_type: DocumentType,
     size_bytes: u64,
     modified_at: DateTime<Utc>,
-    checksum: FileChecksum,
+    checksum: String,
 }
 
 /// Statistics about documents in a project

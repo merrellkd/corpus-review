@@ -188,6 +188,23 @@ impl ProseMirrorJson {
         }
     }
 
+    /// Convert to markdown format (placeholder implementation)
+    pub fn to_markdown(&self) -> String {
+        // TODO: Implement proper ProseMirror JSON to Markdown conversion
+        self.extract_text()
+    }
+
+    /// Convert to HTML format (placeholder implementation)
+    pub fn to_html(&self) -> String {
+        // TODO: Implement proper ProseMirror JSON to HTML conversion
+        format!("<p>{}</p>", self.extract_text().replace('\n', "</p><p>"))
+    }
+
+    /// Convert to plain text (alias for extract_text)
+    pub fn to_plain_text(&self) -> String {
+        self.extract_text()
+    }
+
     /// Validates the ProseMirror JSON structure
     pub fn validate(&self) -> Result<(), ProseMirrorJsonError> {
         // Document root must be "doc"
@@ -279,7 +296,7 @@ impl Display for ProseMirrorJson {
     }
 }
 
-#[derive(Debug, thiserror::Error)]
+#[derive(Debug, thiserror::Error, serde::Serialize, serde::Deserialize)]
 pub enum ProseMirrorJsonError {
     #[error("Invalid ProseMirror JSON format: {0}")]
     InvalidFormat(String),

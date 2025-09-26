@@ -92,7 +92,7 @@ impl SqliteExtractedDocumentRepository {
         (
             document.extracted_document_id().to_string(),
             document.extracted_file_path().as_str().to_string(),
-            document.tiptap_content().to_json_string(),
+            document.tiptap_content().to_json_string().unwrap_or_else(|_| "{}".to_string()),
             document.extraction_method().to_string(),
             document.content_preview().to_string(),
             document.word_count(),
@@ -177,7 +177,7 @@ impl ExtractedDocumentRepository for SqliteExtractedDocumentRepository {
         "#;
 
         let rows = sqlx::query(query)
-            .bind(project_id.to_i64())
+            .bind(project_id.as_str())
             .fetch_all(&*self.pool)
             .await
             .map_err(|e| ExtractedDocumentRepositoryError::Database(format!("Failed to find extracted documents by project: {}", e)))?;
@@ -260,7 +260,7 @@ impl ExtractedDocumentRepository for SqliteExtractedDocumentRepository {
         "#;
 
         let rows = sqlx::query(query)
-            .bind(project_id.to_i64())
+            .bind(project_id.as_str())
             .bind(min_words as i32)
             .bind(max_words as i32)
             .fetch_all(&*self.pool)
@@ -289,7 +289,7 @@ impl ExtractedDocumentRepository for SqliteExtractedDocumentRepository {
         "#;
 
         let rows = sqlx::query(query)
-            .bind(project_id.to_i64())
+            .bind(project_id.as_str())
             .bind(cutoff)
             .fetch_all(&*self.pool)
             .await
@@ -324,7 +324,7 @@ impl ExtractedDocumentRepository for SqliteExtractedDocumentRepository {
         let like_pattern = format!("%{}%", query);
 
         let rows = sqlx::query(search_query)
-            .bind(project_id.to_i64())
+            .bind(project_id.as_str())
             .bind(&like_pattern)
             .bind(&like_pattern)
             .fetch_all(&*self.pool)
@@ -396,7 +396,7 @@ impl ExtractedDocumentRepository for SqliteExtractedDocumentRepository {
             .bind(document.extracted_document_id().to_string())
             .bind(original_document_internal_id)
             .bind(document.extracted_file_path().as_str())
-            .bind(document.tiptap_content().to_json_string())
+            .bind(document.tiptap_content().to_json_string().unwrap_or_else(|_| "{}".to_string()))
             .bind(document.extraction_method().to_string())
             .bind(document.extracted_at())
             .bind(document.content_preview())
@@ -417,7 +417,7 @@ impl ExtractedDocumentRepository for SqliteExtractedDocumentRepository {
         let query = "UPDATE extracted_documents SET tiptap_content = ? WHERE extracted_document_uuid = ?";
 
         let result = sqlx::query(query)
-            .bind(content.to_json_string())
+            .bind(content.to_json_string().unwrap_or_else(|_| "{}".to_string()))
             .bind(id.to_string())
             .execute(&*self.pool)
             .await
@@ -445,7 +445,7 @@ impl ExtractedDocumentRepository for SqliteExtractedDocumentRepository {
         "#;
 
         let result = sqlx::query(query)
-            .bind(content.to_json_string())
+            .bind(content.to_json_string().unwrap_or_else(|_| "{}".to_string()))
             .bind(preview)
             .bind(word_count as i32)
             .bind(character_count as i32)
@@ -499,7 +499,7 @@ impl ExtractedDocumentRepository for SqliteExtractedDocumentRepository {
         "#;
 
         let result = sqlx::query(query)
-            .bind(project_id.to_i64())
+            .bind(project_id.as_str())
             .execute(&*self.pool)
             .await
             .map_err(|e| ExtractedDocumentRepositoryError::Database(format!("Failed to delete extracted documents by project: {}", e)))?;
@@ -558,7 +558,7 @@ impl ExtractedDocumentRepository for SqliteExtractedDocumentRepository {
         "#;
 
         let row = sqlx::query(query)
-            .bind(project_id.to_i64())
+            .bind(project_id.as_str())
             .fetch_one(&*self.pool)
             .await
             .map_err(|e| ExtractedDocumentRepositoryError::Database(format!("Failed to count extracted documents by project: {}", e)))?;
@@ -593,7 +593,7 @@ impl ExtractedDocumentRepository for SqliteExtractedDocumentRepository {
         "#;
 
         let row = sqlx::query(query)
-            .bind(project_id.to_i64())
+            .bind(project_id.as_str())
             .fetch_one(&*self.pool)
             .await
             .map_err(|e| ExtractedDocumentRepositoryError::Database(format!("Failed to get total word count: {}", e)))?;
@@ -623,7 +623,7 @@ impl ExtractedDocumentRepository for SqliteExtractedDocumentRepository {
         "#;
 
         let rows = sqlx::query(query)
-            .bind(project_id.to_i64())
+            .bind(project_id.as_str())
             .fetch_all(&*self.pool)
             .await
             .map_err(|e| ExtractedDocumentRepositoryError::Database(format!("Failed to get statistics: {}", e)))?;
@@ -663,14 +663,14 @@ impl ExtractedDocumentRepository for SqliteExtractedDocumentRepository {
         let cutoff_7d = now - chrono::Duration::days(7);
 
         let recent_24h = sqlx::query(recent_24h_query)
-            .bind(project_id.to_i64())
+            .bind(project_id.as_str())
             .bind(cutoff_24h)
             .fetch_one(&*self.pool)
             .await
             .map_err(|e| ExtractedDocumentRepositoryError::Database(format!("Failed to get recent 24h count: {}", e)))?;
 
         let recent_7d = sqlx::query(recent_24h_query)
-            .bind(project_id.to_i64())
+            .bind(project_id.as_str())
             .bind(cutoff_7d)
             .fetch_one(&*self.pool)
             .await
@@ -722,7 +722,7 @@ impl ExtractedDocumentRepository for SqliteExtractedDocumentRepository {
         "#;
 
         let count_row = sqlx::query(count_query)
-            .bind(project_id.to_i64())
+            .bind(project_id.as_str())
             .fetch_one(&*self.pool)
             .await
             .map_err(|e| ExtractedDocumentRepositoryError::Database(format!("Failed to get count for pagination: {}", e)))?;
@@ -747,7 +747,7 @@ impl ExtractedDocumentRepository for SqliteExtractedDocumentRepository {
         );
 
         let rows = sqlx::query(&query)
-            .bind(project_id.to_i64())
+            .bind(project_id.as_str())
             .bind(limit as i64)
             .bind(offset as i64)
             .fetch_all(&*self.pool)
@@ -773,11 +773,11 @@ impl ExtractedDocumentRepository for SqliteExtractedDocumentRepository {
     async fn search(&self, criteria: &ExtractedDocumentSearchCriteria) -> Result<Vec<ExtractedDocument>, Self::Error> {
         let mut conditions = Vec::new();
 
-        if let Some(ref project_id) = criteria.project_id {
+        if let Some(ref _project_id) = criteria.project_id {
             conditions.push("od.project_id = ?".to_string());
         }
 
-        if let Some(ref original_document_id) = criteria.original_document_id {
+        if let Some(ref _original_document_id) = criteria.original_document_id {
             conditions.push("od.document_uuid = ?".to_string());
         }
 
@@ -790,23 +790,23 @@ impl ExtractedDocumentRepository for SqliteExtractedDocumentRepository {
             }
         }
 
-        if let Some(ref content_query) = criteria.content_query {
+        if let Some(ref _content_query) = criteria.content_query {
             conditions.push("(ed.content_preview LIKE ? OR ed.tiptap_content LIKE ?)".to_string());
         }
 
-        if let Some(min_word_count) = criteria.min_word_count {
+        if let Some(_min_word_count) = criteria.min_word_count {
             conditions.push("ed.word_count >= ?".to_string());
         }
 
-        if let Some(max_word_count) = criteria.max_word_count {
+        if let Some(_max_word_count) = criteria.max_word_count {
             conditions.push("ed.word_count <= ?".to_string());
         }
 
-        if let Some(extracted_after) = criteria.extracted_after {
+        if let Some(_extracted_after) = criteria.extracted_after {
             conditions.push("ed.extracted_at > ?".to_string());
         }
 
-        if let Some(extracted_before) = criteria.extracted_before {
+        if let Some(_extracted_before) = criteria.extracted_before {
             conditions.push("ed.extracted_at < ?".to_string());
         }
 
@@ -868,7 +868,7 @@ impl ExtractedDocumentRepository for SqliteExtractedDocumentRepository {
             }
             ExportFormat::ProseMirrorJson => {
                 // Return raw ProseMirror JSON
-                Ok(document.tiptap_content().to_json_string())
+                document.tiptap_content().to_json_string().map_err(|e| ExtractedDocumentRepositoryError::Serialization(e.to_string()))
             }
             ExportFormat::Docx => {
                 // This would require additional libraries for DOCX generation
@@ -908,7 +908,7 @@ impl ExtractedDocumentRepository for SqliteExtractedDocumentRepository {
                 .bind(document.extracted_document_id().to_string())
                 .bind(original_document_internal_id)
                 .bind(document.extracted_file_path().as_str())
-                .bind(document.tiptap_content().to_json_string())
+                .bind(document.tiptap_content().to_json_string().unwrap_or_else(|_| "{}".to_string()))
                 .bind(document.extraction_method().to_string())
                 .bind(document.extracted_at())
                 .bind(document.content_preview())
@@ -926,7 +926,7 @@ impl ExtractedDocumentRepository for SqliteExtractedDocumentRepository {
         Ok(())
     }
 
-    async fn get_content_history(&self, id: &ExtractedDocumentId) -> Result<Vec<ContentVersion>, Self::Error> {
+    async fn get_content_history(&self, _id: &ExtractedDocumentId) -> Result<Vec<ContentVersion>, Self::Error> {
         // This is a placeholder implementation - content versioning would require additional tables
         // For now, return empty history
         Ok(vec![])
@@ -940,7 +940,7 @@ impl ExtractedDocumentRepository for SqliteExtractedDocumentRepository {
         let backup_data = serde_json::json!({
             "extracted_document_id": document.extracted_document_id().to_string(),
             "original_document_id": document.original_document_id().to_string(),
-            "tiptap_content": document.tiptap_content().to_json_string(),
+            "tiptap_content": document.tiptap_content().to_json_string().unwrap_or_else(|_| "{}".to_string()),
             "extraction_method": document.extraction_method().to_string(),
             "extracted_at": document.extracted_at().to_rfc3339(),
             "word_count": document.word_count(),
@@ -971,7 +971,7 @@ impl ExtractedDocumentRepository for SqliteExtractedDocumentRepository {
             .ok_or_else(|| ExtractedDocumentRepositoryError::Validation("Missing character_count in backup".to_string()))?;
 
         // Generate new preview from restored content
-        let preview = tiptap_content.generate_preview(200);
+        let preview = tiptap_content.preview(200);
 
         self.update_content_with_metadata(
             id,
@@ -1018,6 +1018,8 @@ pub enum ExtractedDocumentRepositoryError {
     NotFound(String),
     #[error("Validation error: {0}")]
     Validation(String),
+    #[error("Serialization error: {0}")]
+    Serialization(String),
 }
 
 impl std::error::Error for ExtractedDocumentRepositoryError {}

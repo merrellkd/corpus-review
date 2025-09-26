@@ -53,7 +53,7 @@ impl DocumentExtractionAggregate {
             .filter(|e| e.status().is_finished())
             .collect();
 
-        let mut aggregate = Self {
+        let aggregate = Self {
             original_document,
             current_extraction,
             extracted_document,

@@ -1,10 +1,10 @@
 use tauri::State;
 use crate::application::{
     // workspace_service::{WorkspaceService as LegacyWorkspaceService, WorkspaceServiceError},
-    dtos::{WorkspaceDto, DirectoryListingDto, FileEntryDto},
+    dtos::{WorkspaceDto, DirectoryListingDto},
     AppState,
 };
-use crate::infrastructure::{ProjectDto, AppError};
+use crate::infrastructure::AppError;
 
 // Legacy workspace commands - temporarily commented out due to missing DTOs
 /*

@@ -92,6 +92,11 @@ impl FileExtraction {
         &self.extraction_id
     }
 
+    /// Alias for extraction_id() for compatibility
+    pub fn id(&self) -> &ExtractionId {
+        &self.extraction_id
+    }
+
     pub fn project_id(&self) -> &ProjectId {
         &self.project_id
     }

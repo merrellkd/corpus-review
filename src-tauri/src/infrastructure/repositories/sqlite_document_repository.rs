@@ -81,13 +81,13 @@ impl SqliteDocumentRepository {
     }
 
     /// Build WHERE clause from search criteria
-    fn build_search_where_clause(&self, criteria: &DocumentSearchCriteria) -> (String, Vec<sqlx::types::Value<'_>>) {
+    fn build_search_where_clause(&self, criteria: &DocumentSearchCriteria) -> (String, Vec<sqlx::Value<'_>>) {
         let mut conditions = Vec::new();
-        let mut params: Vec<sqlx::types::Value<'_>> = Vec::new();
+        let mut params: Vec<sqlx::Value<'_>> = Vec::new();
 
         // Project ID is required
         conditions.push("project_id = ?".to_string());
-        params.push(sqlx::types::Value::from(criteria.project_id.to_i64()));
+        params.push(sqlx::Value::from(criteria.project_id.as_str()));
 
         // File types filter
         if let Some(ref file_types) = criteria.file_types {
@@ -97,7 +97,7 @@ impl SqliteDocumentRepository {
                     .collect();
                 conditions.push(format!("file_type IN ({})", placeholders.join(", ")));
                 for file_type in file_types {
-                    params.push(sqlx::types::Value::from(file_type.to_string()));
+                    params.push(sqlx::Value::from(file_type.to_string()));
                 }
             }
         }
@@ -105,46 +105,46 @@ impl SqliteDocumentRepository {
         // Name pattern filter
         if let Some(ref pattern) = criteria.name_pattern {
             conditions.push("file_name LIKE ?".to_string());
-            params.push(sqlx::types::Value::from(format!("%{}%", pattern)));
+            params.push(sqlx::Value::from(format!("%{}%", pattern)));
         }
 
         // Size filters
         if let Some(min_size) = criteria.min_size {
             conditions.push("file_size_bytes >= ?".to_string());
-            params.push(sqlx::types::Value::from(min_size as i64));
+            params.push(sqlx::Value::from(min_size as i64));
         }
 
         if let Some(max_size) = criteria.max_size {
             conditions.push("file_size_bytes <= ?".to_string());
-            params.push(sqlx::types::Value::from(max_size as i64));
+            params.push(sqlx::Value::from(max_size as i64));
         }
 
         // Created date filters
         if let Some(created_after) = criteria.created_after {
             conditions.push("created_at > ?".to_string());
-            params.push(sqlx::types::Value::from(created_after));
+            params.push(sqlx::Value::from(created_after));
         }
 
         if let Some(created_before) = criteria.created_before {
             conditions.push("created_at < ?".to_string());
-            params.push(sqlx::types::Value::from(created_before));
+            params.push(sqlx::Value::from(created_before));
         }
 
         // Modified date filters
         if let Some(modified_after) = criteria.modified_after {
             conditions.push("modified_at > ?".to_string());
-            params.push(sqlx::types::Value::from(modified_after));
+            params.push(sqlx::Value::from(modified_after));
         }
 
         if let Some(modified_before) = criteria.modified_before {
             conditions.push("modified_at < ?".to_string());
-            params.push(sqlx::types::Value::from(modified_before));
+            params.push(sqlx::Value::from(modified_before));
         }
 
         // Extractable only filter
         if criteria.extractable_only {
             conditions.push("file_size_bytes <= ?".to_string());
-            params.push(sqlx::types::Value::from(DocumentType::max_size_bytes() as i64));
+            params.push(sqlx::Value::from(DocumentType::max_size_bytes() as i64));
         }
 
         let where_clause = if conditions.is_empty() {
@@ -209,7 +209,7 @@ impl DocumentRepository for SqliteDocumentRepository {
         "#;
 
         let rows = sqlx::query(query)
-            .bind(project_id.to_i64())
+            .bind(project_id.as_str())
             .fetch_all(&*self.pool)
             .await
             .map_err(|e| DocumentRepositoryError::Database(format!("Failed to find documents by project: {}", e)))?;
@@ -256,7 +256,7 @@ impl DocumentRepository for SqliteDocumentRepository {
         "#;
 
         let rows = sqlx::query(query)
-            .bind(project_id.to_i64())
+            .bind(project_id.as_str())
             .bind(file_type.to_string())
             .fetch_all(&*self.pool)
             .await
@@ -284,7 +284,7 @@ impl DocumentRepository for SqliteDocumentRepository {
         "#;
 
         let rows = sqlx::query(query)
-            .bind(project_id.to_i64())
+            .bind(project_id.as_str())
             .bind(format!("%{}%", pattern))
             .fetch_all(&*self.pool)
             .await
@@ -312,7 +312,7 @@ impl DocumentRepository for SqliteDocumentRepository {
         "#;
 
         let rows = sqlx::query(query)
-            .bind(project_id.to_i64())
+            .bind(project_id.as_str())
             .bind(max_size)
             .fetch_all(&*self.pool)
             .await
@@ -340,7 +340,7 @@ impl DocumentRepository for SqliteDocumentRepository {
         "#;
 
         let rows = sqlx::query(query)
-            .bind(project_id.to_i64())
+            .bind(project_id.as_str())
             .bind(since)
             .fetch_all(&*self.pool)
             .await
@@ -371,7 +371,7 @@ impl DocumentRepository for SqliteDocumentRepository {
 
         sqlx::query(query)
             .bind(document.document_id().to_string())
-            .bind(document.project_id().to_i64())
+            .bind(document.project_id().as_str())
             .bind(document.file_path().as_str())
             .bind(document.file_name())
             .bind(document.file_size_bytes() as i64)
@@ -412,7 +412,7 @@ impl DocumentRepository for SqliteDocumentRepository {
         for document in documents {
             sqlx::query(query)
                 .bind(document.document_id().to_string())
-                .bind(document.project_id().to_i64())
+                .bind(document.project_id().as_str())
                 .bind(document.file_path().as_str())
                 .bind(document.file_name())
                 .bind(document.file_size_bytes() as i64)
@@ -448,7 +448,7 @@ impl DocumentRepository for SqliteDocumentRepository {
         let query = "DELETE FROM original_documents WHERE project_id = ?";
 
         let result = sqlx::query(query)
-            .bind(project_id.to_i64())
+            .bind(project_id.as_str())
             .execute(&*self.pool)
             .await
             .map_err(|e| DocumentRepositoryError::Database(format!("Failed to delete documents by project: {}", e)))?;
@@ -484,7 +484,7 @@ impl DocumentRepository for SqliteDocumentRepository {
         let query = "SELECT COUNT(*) as count FROM original_documents WHERE project_id = ?";
 
         let row = sqlx::query(query)
-            .bind(project_id.to_i64())
+            .bind(project_id.as_str())
             .fetch_one(&*self.pool)
             .await
             .map_err(|e| DocumentRepositoryError::Database(format!("Failed to count documents by project: {}", e)))?;
@@ -503,7 +503,7 @@ impl DocumentRepository for SqliteDocumentRepository {
         let query = "SELECT COUNT(*) as count FROM original_documents WHERE project_id = ? AND file_type = ?";
 
         let row = sqlx::query(query)
-            .bind(project_id.to_i64())
+            .bind(project_id.as_str())
             .bind(file_type.to_string())
             .fetch_one(&*self.pool)
             .await
@@ -519,7 +519,7 @@ impl DocumentRepository for SqliteDocumentRepository {
         let query = "SELECT COALESCE(SUM(file_size_bytes), 0) as total_size FROM original_documents WHERE project_id = ?";
 
         let row = sqlx::query(query)
-            .bind(project_id.to_i64())
+            .bind(project_id.as_str())
             .fetch_one(&*self.pool)
             .await
             .map_err(|e| DocumentRepositoryError::Database(format!("Failed to get total size by project: {}", e)))?;
@@ -546,8 +546,8 @@ impl DocumentRepository for SqliteDocumentRepository {
         "#;
 
         let rows = sqlx::query(query)
-            .bind(project_id.to_i64())
-            .bind(project_id.to_i64())
+            .bind(project_id.as_str())
+            .bind(project_id.as_str())
             .fetch_all(&*self.pool)
             .await
             .map_err(|e| DocumentRepositoryError::Database(format!("Failed to find duplicate documents: {}", e)))?;
@@ -600,7 +600,7 @@ impl DocumentRepository for SqliteDocumentRepository {
         // Get total count
         let count_query = "SELECT COUNT(*) as count FROM original_documents WHERE project_id = ?";
         let count_row = sqlx::query(count_query)
-            .bind(project_id.to_i64())
+            .bind(project_id.as_str())
             .fetch_one(&*self.pool)
             .await
             .map_err(|e| DocumentRepositoryError::Database(format!("Failed to get count for pagination: {}", e)))?;
@@ -619,7 +619,7 @@ impl DocumentRepository for SqliteDocumentRepository {
         "#;
 
         let rows = sqlx::query(query)
-            .bind(project_id.to_i64())
+            .bind(project_id.as_str())
             .bind(limit as i64)
             .bind(offset as i64)
             .fetch_all(&*self.pool)
@@ -660,7 +660,7 @@ impl DocumentRepository for SqliteDocumentRepository {
         // Note: This is a simplified implementation. A full implementation would need to properly
         // bind the dynamic parameters. For now, we'll use the basic project filter.
         let rows = sqlx::query(&query)
-            .bind(criteria.project_id.to_i64())
+            .bind(criteria.project_id.as_str())
             .fetch_all(&*self.pool)
             .await
             .map_err(|e| DocumentRepositoryError::Database(format!("Failed to search documents: {}", e)))?;

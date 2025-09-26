@@ -18,7 +18,8 @@ impl ExtractedDocumentId {
 
     /// Creates ExtractedDocumentId from existing prefixed string
     /// Returns error if format is invalid
-    pub fn from_string(value: String) -> Result<Self, ExtractedDocumentIdError> {
+    pub fn from_string<S: Into<String>>(value: S) -> Result<Self, ExtractedDocumentIdError> {
+        let value = value.into();
         if !value.starts_with(Self::PREFIX) {
             return Err(ExtractedDocumentIdError::InvalidPrefix);
         }

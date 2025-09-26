@@ -75,6 +75,17 @@ impl ExtractionMethod {
             ExtractionMethod::PdfOcrExtraction => ProcessingTimeCategory::Slow,
         }
     }
+
+    /// Parse ExtractionMethod from string
+    pub fn from_string(s: &str) -> Result<Self, String> {
+        match s {
+            "PDF Text Extraction" | "PdfTextExtraction" => Ok(ExtractionMethod::PdfTextExtraction),
+            "PDF OCR Extraction" | "PdfOcrExtraction" => Ok(ExtractionMethod::PdfOcrExtraction),
+            "Word Document Parsing" | "DocxStructureExtraction" => Ok(ExtractionMethod::DocxStructureExtraction),
+            "Markdown Conversion" | "MarkdownConversion" => Ok(ExtractionMethod::MarkdownConversion),
+            _ => Err(format!("Unknown extraction method: {}", s)),
+        }
+    }
 }
 
 impl std::fmt::Display for ExtractionMethod {

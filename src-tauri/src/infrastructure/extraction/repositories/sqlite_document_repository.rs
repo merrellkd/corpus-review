@@ -1,6 +1,6 @@
 use async_trait::async_trait;
 use chrono::{DateTime, Utc};
-use sqlx::{Row, SqlitePool, SqliteRow};
+use sqlx::{Row, SqlitePool};
 use std::result::Result;
 
 use crate::domain::extraction::{
@@ -24,7 +24,7 @@ impl SqliteDocumentRepository {
     }
 
     /// Maps a SQLite row to an OriginalDocument entity
-    fn map_row_to_document(row: &SqliteRow) -> Result<OriginalDocument, DocumentRepositoryError> {
+    fn map_row_to_document(row: &sqlx::sqlite::SqliteRow) -> Result<OriginalDocument, DocumentRepositoryError> {
         let document_uuid: String = row.get("document_uuid");
         let document_id = DocumentId::from_string(document_uuid)
             .map_err(|e| DocumentRepositoryError::InvalidData(format!("Invalid document ID: {}", e)))?;

@@ -17,7 +17,8 @@ impl ProjectId {
     }
 
     /// Create a ProjectId from an existing string, validating the prefix format
-    pub fn from_string(value: String) -> Result<Self, ProjectIdError> {
+    pub fn from_string<S: Into<String>>(value: S) -> Result<Self, ProjectIdError> {
+        let value = value.into();
         if !value.starts_with("proj_") {
             return Err(ProjectIdError::InvalidFormat);
         }
