@@ -1,9 +1,9 @@
 import React, { useEffect, useCallback, useRef, useMemo } from 'react'
-import { useWorkspaceStore, workspaceSelectors } from '../domains/workspace/ui/stores/workspace-store'
-import { LayoutModeType } from '../domains/workspace/domain/value-objects/layout-mode'
-import { Position, Dimensions } from '../domains/workspace/domain/value-objects/geometry'
-import { WorkspaceCommandBar } from '../domains/workspace/ui/components/WorkspaceCommandBar'
-import { DocumentCaddy } from '../domains/workspace/ui/components/DocumentCaddy'
+import { useWorkspaceStore, workspaceSelectors } from '../../../domains/workspace/ui/stores/workspace-store'
+import { LayoutModeType } from '../../../domains/workspace/domain/value-objects/layout-mode'
+import { Position, Dimensions } from '../../../domains/workspace/domain/value-objects/geometry'
+import { WorkspaceCommandBar } from '../../../domains/workspace/ui/components/WorkspaceCommandBar'
+import { DocumentCaddy } from '../../../domains/workspace/ui/components/DocumentCaddy'
 
 export const DocumentWorkspace: React.FC = () => {
   // Get state and actions from store

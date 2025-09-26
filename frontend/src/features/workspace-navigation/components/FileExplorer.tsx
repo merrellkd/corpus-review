@@ -1,8 +1,8 @@
 import React, { useState } from 'react'
-import { useWorkspaceNavigationStore } from '../features/workspace-navigation/store'
-import { useWorkspaceStore as useDocumentWorkspaceStore } from '../domains/workspace/ui/stores/workspace-store'
-import { useFileCategorization } from '../stores/fileCategorization'
-import { useUiStore, uiSelectors } from '../stores/ui-store'
+import { useWorkspaceNavigationStore } from '../store'
+import { useWorkspaceStore as useDocumentWorkspaceStore } from '../../../domains/workspace/ui/stores/workspace-store'
+import { useFileCategorization } from '../../../stores/fileCategorization'
+import { useUiStore, uiSelectors } from '../../../stores/ui-store'
 
 export const FileExplorer: React.FC = () => {
   const {

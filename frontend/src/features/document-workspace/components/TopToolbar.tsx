@@ -1,5 +1,5 @@
 import React from 'react'
-import { useUiStore, uiSelectors } from '../stores/ui-store'
+import { useUiStore, uiSelectors } from '../../../stores/ui-store'
 
 export const TopToolbar: React.FC = () => {
   const isFilesCategoriesPanelActive = useUiStore(uiSelectors.isFilesCategoriesPanelActive)

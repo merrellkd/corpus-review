@@ -14,9 +14,9 @@ import {
   useProjectSelection,
 } from '../../features/project-management/store';
 import type { ProjectListItem } from '../../features/project-management/store';
-import ProjectRow from '../components/project-row';
-import CreateProjectForm, { CreateProjectModal } from '../components/create-project-form';
-import DeleteConfirmDialog from '../components/delete-confirm-dialog';
+import ProjectRow from '../../features/project-management/components/project-row';
+import CreateProjectForm, { CreateProjectModal } from '../../features/project-management/components/create-project-form';
+import DeleteConfirmDialog from '../../shared/components/delete-confirm-dialog';
 
 // ====================
 // Component

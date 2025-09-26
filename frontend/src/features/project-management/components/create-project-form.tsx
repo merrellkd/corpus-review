@@ -10,9 +10,9 @@ import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 
-import { useProjectStore } from '../../features/project-management/store';
-import type { ProjectListItem } from '../../features/project-management/store';
-import { ProjectFolderPicker } from './folder-picker';
+import { useProjectStore } from '../store';
+import type { ProjectListItem } from '../store';
+import { ProjectFolderPicker } from '../../../shared/components/folder-picker';
 
 // ====================
 // Validation Schema

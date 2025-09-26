@@ -6,7 +6,7 @@
  */
 
 import React from 'react';
-import type { ProjectListItem } from '../../features/project-management/store';
+import type { ProjectListItem } from '../store';
 
 // ====================
 // Types

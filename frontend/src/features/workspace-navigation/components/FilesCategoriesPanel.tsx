@@ -1,5 +1,5 @@
 import React from 'react'
-import { useUiStore, uiSelectors } from '../stores/ui-store'
+import { useUiStore, uiSelectors } from '../../../stores/ui-store'
 import { FileExplorer } from './FileExplorer'
 
 export const FilesCategoriesPanel: React.FC = () => {

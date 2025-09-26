@@ -2,7 +2,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest'
 import type { Mock } from 'vitest'
 import React from 'react'
-import { FilesCategoriesPanel } from '../../src/components/FilesCategoriesPanel'
+import { FilesCategoriesPanel } from '../../src/features/workspace-navigation/components/FilesCategoriesPanel'
 import { useWorkspaceNavigationStore } from '../../src/features/workspace-navigation/store'
 import { useWorkspaceStore as useDocumentWorkspaceStore } from '../../src/domains/workspace/ui/stores/workspace-store'
 

@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 
-import { FilesCategoriesPanel } from '../../src/components/FilesCategoriesPanel'
+import { FilesCategoriesPanel } from '../../src/features/workspace-navigation/components/FilesCategoriesPanel'
 import { useUiStore } from '../../src/stores/ui-store'
 import type { UiState } from '../../src/stores/ui-store'
 

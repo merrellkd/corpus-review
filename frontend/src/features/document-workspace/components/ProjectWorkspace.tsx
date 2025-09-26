@@ -1,12 +1,12 @@
 import React, { useEffect } from 'react'
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels'
-import { useWorkspaceNavigationStore } from '../features/workspace-navigation/store'
-import { useUiStore, uiSelectors } from '../stores/ui-store'
+import { useWorkspaceNavigationStore } from '../../workspace-navigation/store'
+import { useUiStore, uiSelectors } from '../../../stores/ui-store'
 
 // New architecture components
 import { TopToolbar } from './TopToolbar'
-import { FilesCategoriesPanel } from './FilesCategoriesPanel'
-import { SearchPanel } from './SearchPanel'
+import { FilesCategoriesPanel } from '../../workspace-navigation/components/FilesCategoriesPanel'
+import { SearchPanel } from '../../workspace-navigation/components/SearchPanel'
 import { DocumentWorkspace } from './DocumentWorkspace'
 
 export interface ProjectWorkspaceProps {

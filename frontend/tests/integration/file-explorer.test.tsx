@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { ProjectWorkspace } from '../../src/components/ProjectWorkspace';
+import { ProjectWorkspace } from '../../src/features/document-workspace/components/ProjectWorkspace';
 
 // Mock Tauri API
 const mockTauriApi = {

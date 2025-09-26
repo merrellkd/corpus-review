@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
-import { TopToolbar } from '../../src/components/TopToolbar'
+import { TopToolbar } from '../../src/features/document-workspace/components/TopToolbar'
 import { useUiStore } from '../../src/stores/ui-store'
 
 const mockToggleFilesCategories = vi.fn()

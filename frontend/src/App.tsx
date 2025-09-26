@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ProjectListPage } from './ui/pages/project-list-page';
-import { ProjectWorkspace } from './components/ProjectWorkspace';
+import { ProjectWorkspace } from './features/document-workspace/components/ProjectWorkspace';
 
 /**
  * Main App Component

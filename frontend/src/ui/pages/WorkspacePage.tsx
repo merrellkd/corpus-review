@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { ProjectHeader } from '../components/workspace/ProjectHeader';
-import { NavigationBreadcrumb } from '../components/workspace/NavigationBreadcrumb';
-import { FileList } from '../components/workspace/FileList';
+import { ProjectHeader } from '../../features/workspace-navigation/components/ProjectHeader';
+import { NavigationBreadcrumb } from '../../features/workspace-navigation/components/NavigationBreadcrumb';
+import { FileList } from '../../features/workspace-navigation/components/FileList';
 import { useWorkspaceNavigationStore } from '../../features/workspace-navigation/store';
 import type { ProjectListItem } from '../../features/project-management/store';
 

@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
-import { ProjectWorkspace } from '../../src/components/ProjectWorkspace'
+import { ProjectWorkspace } from '../../src/features/document-workspace/components/ProjectWorkspace'
 import { useUiStore } from '../../src/stores/ui-store'
 
 // Mock react-resizable-panels
@@ -11,19 +11,19 @@ vi.mock('react-resizable-panels', () => ({
 }))
 
 // Mock the components
-vi.mock('../../src/components/TopToolbar', () => ({
+vi.mock('../../src/features/document-workspace/components/TopToolbar', () => ({
   TopToolbar: () => <div data-testid="top-toolbar">Toolbar</div>
 }))
 
-vi.mock('../../src/components/FilesCategoriesPanel', () => ({
+vi.mock('../../src/features/workspace-navigation/components/FilesCategoriesPanel', () => ({
   FilesCategoriesPanel: () => <div data-testid="files-categories-panel">Files & Categories</div>
 }))
 
-vi.mock('../../src/components/SearchPanel', () => ({
+vi.mock('../../src/features/workspace-navigation/components/SearchPanel', () => ({
   SearchPanel: () => <div data-testid="search-panel">Search</div>
 }))
 
-vi.mock('../../src/components/DocumentWorkspace', () => ({
+vi.mock('../../src/features/document-workspace/components/DocumentWorkspace', () => ({
   DocumentWorkspace: () => <div data-testid="document-workspace">Documents</div>
 }))
 
