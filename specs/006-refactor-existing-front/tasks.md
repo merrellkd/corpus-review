@@ -34,19 +34,19 @@
 
 ## Phase 3.3: Project Management Feature Migration (Lowest Risk)
 
-- [ ] T012 [P] Move domains/project/domain/value-objects/\* to frontend/src/features/project-management/types/value-objects/
-- [ ] T013 [P] Move domains/project/domain/aggregates/\* to frontend/src/features/project-management/types/aggregates/
-- [ ] T014 [P] Move domains/project/domain/errors/\* to frontend/src/features/project-management/types/errors/
-- [ ] T015 [P] Move domains/project/infrastructure/\* to frontend/src/features/project-management/services/
-- [ ] T016 [P] Move domains/project/application/\* to frontend/src/features/project-management/services/
-- [ ] T017 [P] Move ui/components/create-project-form.tsx to frontend/src/features/project-management/components/
-- [ ] T018 [P] Move ui/components/project-row.tsx to frontend/src/features/project-management/components/
-- [ ] T019 [P] Move ui/pages/project-list-page.tsx to frontend/src/features/project-management/components/ProjectListPage.tsx
-- [ ] T020 Update imports in project management files to use new feature-based paths
-- [ ] T021 [P] Move stores/project-store.ts to frontend/src/features/project-management/store.ts
-- [ ] T022 [P] Update stores/types/project-store-types.ts imports to project-management feature
-- [ ] T023 Manual validation test for project management feature functionality
-- [ ] T024 Move relevant unit tests to frontend/src/features/project-management/tests/
+- [x] T012 [P] Move domains/project/domain/value-objects/\* to frontend/src/features/project-management/types/value-objects/
+- [x] T013 [P] Move domains/project/domain/aggregates/\* to frontend/src/features/project-management/types/aggregates/
+- [x] T014 [P] Move domains/project/domain/errors/\* to frontend/src/features/project-management/types/errors/
+- [x] T015 [P] Move domains/project/infrastructure/\* to frontend/src/features/project-management/services/
+- [x] T016 [P] Move domains/project/application/\* to frontend/src/features/project-management/services/
+- [x] T017 [P] Move ui/components/create-project-form.tsx to frontend/src/features/project-management/components/
+- [x] T018 [P] Move ui/components/project-row.tsx to frontend/src/features/project-management/components/
+- [x] T019 [P] Move ui/pages/project-list-page.tsx to frontend/src/features/project-management/components/ProjectListPage.tsx
+- [x] T020 Update imports in project management files to use new feature-based paths
+- [x] T021 [P] Move stores/project-store.ts to frontend/src/features/project-management/store.ts
+- [x] T022 [P] Update stores/types/project-store-types.ts imports to project-management feature
+- [x] T023 Manual validation test for project management feature functionality
+- [x] T024 Move relevant unit tests to frontend/src/features/project-management/tests/
 
 ## Phase 3.4: Document Workspace Feature Migration (Medium Risk)
 
