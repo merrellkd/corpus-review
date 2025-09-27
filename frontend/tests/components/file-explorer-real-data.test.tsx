@@ -1,7 +1,7 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest'
 import React from 'react'
-import { FilesCategoriesPanel } from '../../src/components/FilesCategoriesPanel'
+import { FilesCategoriesPanel } from '../../src/features/document-workspace/components/FilesCategoriesPanel'
 import { useWorkspaceStore } from '../../src/stores/workspaceStore'
 
 // Mock Tauri invoke function

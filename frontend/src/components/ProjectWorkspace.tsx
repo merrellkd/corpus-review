@@ -5,9 +5,9 @@ import { useUnifiedPanelState } from '../stores/unifiedPanelState'
 
 // New architecture components
 import { TopToolbar } from './TopToolbar'
-import { FilesCategoriesPanel } from './FilesCategoriesPanel'
-import { SearchPanel } from './SearchPanel'
-import { DocumentWorkspace } from './DocumentWorkspace'
+import { FilesCategoriesPanel } from '../features/document-workspace/components/FilesCategoriesPanel'
+import { SearchPanel } from '../features/document-workspace/components/SearchPanel'
+import { DocumentWorkspace } from '../features/document-workspace/components/DocumentWorkspace'
 
 export interface ProjectWorkspaceProps {
   projectId: string

@@ -1,8 +1,8 @@
 import React, { useState } from 'react'
-import { useWorkspaceStore as useOldWorkspaceStore } from '../stores/workspaceStore'
-import { useWorkspaceStore } from '../domains/workspace/ui/stores/workspace-store'
-import { useFileCategorization } from '../stores/fileCategorization'
-import { useUnifiedPanelState } from '../stores/unifiedPanelState'
+import { useWorkspaceStore as useOldWorkspaceStore } from '../../../stores/workspaceStore'
+import { useWorkspaceStore } from '../../../stores/workspaceStore'
+import { useFileCategorization } from '../../../stores/fileCategorization'
+import { useUnifiedPanelState } from '../../../stores/unifiedPanelState'
 
 export const FileExplorer: React.FC = () => {
   const {
@@ -15,8 +15,8 @@ export const FileExplorer: React.FC = () => {
     currentProject
   } = useOldWorkspaceStore()
 
-  // Use the new Multi-Document Workspace store for adding documents
-  const { addDocument } = useWorkspaceStore()
+  // Use the workspace store for creating document caddies
+  const { createDocumentCaddy } = useWorkspaceStore()
 
   const {
     startDrag,
@@ -51,7 +51,7 @@ export const FileExplorer: React.FC = () => {
       }
     } else {
       try {
-        await addDocument(item.path)
+        createDocumentCaddy(item.path)
         console.log(`Added document to workspace: ${item.path}`)
       } catch (error) {
         console.error(`Failed to add document to workspace: ${item.path}`, error)

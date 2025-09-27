@@ -6,7 +6,7 @@ vi.mock('../../src/stores/unifiedPanelState', () => ({
   useUnifiedPanelState: vi.fn()
 }))
 
-import { FilesCategoriesPanel } from '../../src/components/FilesCategoriesPanel'
+import { FilesCategoriesPanel } from '../../src/features/document-workspace/components/FilesCategoriesPanel'
 import { useUnifiedPanelState } from '../../src/stores/unifiedPanelState'
 
 const mockToggleFileExplorer = vi.fn()

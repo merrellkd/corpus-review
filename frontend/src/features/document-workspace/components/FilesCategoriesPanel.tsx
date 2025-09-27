@@ -1,5 +1,5 @@
 import React from 'react'
-import { useUnifiedPanelState } from '../stores/unifiedPanelState'
+import { useUnifiedPanelState } from '../../../stores/unifiedPanelState'
 import { FileExplorer } from './FileExplorer'
 
 export const FilesCategoriesPanel: React.FC = () => {

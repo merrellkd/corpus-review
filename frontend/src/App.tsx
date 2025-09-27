@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { ProjectListPage } from './ui/pages/project-list-page';
+import { ProjectListPage } from './features/project-management/components/ProjectListPage';
 import { ProjectWorkspace } from './components/ProjectWorkspace';
-import { useProjectStore } from './stores/project-store';
-import { Project } from './domains/project';
+import { useProjectStore } from './features/project-management/store';
+import { Project } from './features/project-management/types';
 
 /**
  * Main App Component
