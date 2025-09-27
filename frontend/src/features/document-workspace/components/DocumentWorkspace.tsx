@@ -13,6 +13,7 @@ export const DocumentWorkspace: React.FC = () => {
   const isLoading = useWorkspaceStore(state => state.isLoading)
   const hasError = useWorkspaceStore(state => state.error !== null)
 
+
   const {
     loadWorkspace,
     closeDocument,
@@ -171,12 +172,10 @@ export const DocumentWorkspace: React.FC = () => {
     </div>
   ), [])
 
-  // Initialize demo workspace on mount
+  // Workspace state tracking
   useEffect(() => {
-    if (!currentWorkspace) {
-      // Start with large default dimensions - the workspace will auto-resize to container
-      console.log('Workspace initialization not implemented')
-    }
+    // Workspace initialization handled by ProjectWorkspace component
+    // This effect is kept for potential future workspace state tracking
   }, [currentWorkspace])
 
   // Handle workspace resize observation with debouncing

@@ -82,6 +82,7 @@ export const ProjectWorkspace: React.FC<ProjectWorkspaceProps> = ({ projectId, o
   // Determine layout class for responsive behavior
   const layoutClass = hasSidePanel ? 'two-column-layout' : 'full-width-layout'
 
+
   return (
     <div className={`h-screen bg-gray-100 ${layoutClass}`} data-testid="workspace-container">
       {/* Top Header - Project title and settings */}

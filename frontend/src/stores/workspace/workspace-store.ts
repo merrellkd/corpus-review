@@ -112,40 +112,66 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
         // ====================
 
         loadWorkspace: async (projectId: string) => {
+          console.log('🔍 loadWorkspace called with projectId:', projectId);
+
           set((state) => {
             state.isLoading = true;
             state.error = null;
           });
 
           try {
+            // First, get project details to get name and source folder
+            console.log('🔍 Getting project details from backend...');
+            const projectDetails = await invoke('get_project', { id: projectId }) as any;
+            console.log('🔍 Project details received:', projectDetails);
+
             // Load workspace from backend
-            const workspaceDto: WorkspaceDto = await invoke('open_workspace', {
-              projectId: projectId
+            console.log('🔍 Opening workspace navigation...');
+            const workspaceDto: WorkspaceDto = await invoke('open_workspace_navigation', {
+              projectId: projectId,
+              projectName: projectDetails.name,
+              sourceFolder: projectDetails.source_folder
             });
+            console.log('🔍 Workspace DTO received:', workspaceDto);
+
+            // Validate the workspaceDto structure
+            console.log('🔍 WorkspaceDto keys:', Object.keys(workspaceDto));
+            console.log('🔍 WorkspaceDto.projectId:', workspaceDto.projectId);
+            console.log('🔍 WorkspaceDto.projectName:', workspaceDto.projectName);
 
             // Create project from workspace DTO
             const project: Project = {
-              id: workspaceDto.projectId,
-              name: workspaceDto.projectName,
-              source_folder: workspaceDto.sourceFolder,
-              source_folder_name: workspaceDto.sourceFolder.split('/').pop() || 'Source',
+              id: workspaceDto.projectId || projectId, // Fallback to original projectId
+              name: workspaceDto.projectName || projectDetails.name, // Fallback to project details
+              source_folder: workspaceDto.sourceFolder || projectDetails.source_folder,
+              source_folder_name: (workspaceDto.sourceFolder || projectDetails.source_folder).split('/').pop() || 'Source',
               note: '',
               note_preview: '',
               note_line_count: 0,
               created_at: new Date().toISOString(),
               is_accessible: true
             };
+            console.log('🔍 Project object created:', project);
+
+            // Validate directory listing structure
+            console.log('🔍 DirectoryListing keys:', Object.keys(workspaceDto.directoryListing || {}));
+            console.log('🔍 DirectoryListing entries count:', workspaceDto.directoryListing?.entries?.length || 0);
 
             set((state) => {
+              console.log('🔍 Setting state with project and workspace data...');
               state.currentProject = project;
-              state.currentPath = workspaceDto.currentPath;
+              state.currentPath = workspaceDto.currentPath || projectDetails.source_folder;
               state.workspaceLayout = mockLayout; // Use default layout for now
-              state.directoryListing = workspaceDto.directoryListing.entries;
+              state.directoryListing = workspaceDto.directoryListing?.entries || [];
               state.isLoading = false;
+              console.log('🔍 State updated. currentProject exists:', !!state.currentProject);
+              console.log('🔍 State updated. currentProject id:', state.currentProject?.id);
             });
 
+            console.log('✅ loadWorkspace completed successfully');
+
           } catch (error) {
-            console.error('Failed to load workspace:', error);
+            console.error('❌ Failed to load workspace:', error);
 
             // Fallback to mock data for development
             set((state) => {
@@ -210,8 +236,10 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
 
             // Load directory from backend
             const directoryListing: DirectoryListing = await invoke('list_directory', {
-              workspaceProjectId: currentProject.id,
-              directoryPath: targetPath
+              projectId: currentProject.id,
+              projectName: currentProject.name,
+              sourceFolder: currentProject.source_folder,
+              currentPath: targetPath
             });
 
             set((state) => {
@@ -548,7 +576,7 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
         },
 
         // Alias for FileExplorer.tsx compatibility
-        fileExplorerItems: get().directoryListing,
+        get fileExplorerItems() { return get().directoryListing; },
         refreshFiles: () => get().refreshDirectory(),
         createDocumentCaddy: (filePath: string) => get().openDocument(filePath),
 
@@ -561,10 +589,16 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
         // Compatibility properties for useWorkspaceEvents.ts
         get currentWorkspace() {
           const state = get();
+          console.log('currentWorkspace getter called. currentProject:', state.currentProject ? 'EXISTS' : 'NULL');
           return state.currentProject ? {
             id: state.currentProject.id,
             name: state.currentProject.name,
             documents: Object.fromEntries(state.openDocuments.map(doc => [doc.id, doc])),
+            workspaceDimensions: {
+              width: 1200,
+              height: 800
+            },
+            layoutMode: 'freeform'
           } : null;
         },
 
