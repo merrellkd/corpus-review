@@ -4,7 +4,7 @@
  * Type definitions for the unified workspace store
  */
 
-import { WorkspaceDto, DirectoryListingDto } from '../../domains/workspace/application/dtos/workspace-dtos';
+import { WorkspaceDto, DirectoryListing } from '../../domains/workspace/application/dtos/workspace-dtos';
 import { WorkspaceAdapter, FileSystemItem, WorkspaceLayout } from '../../adapters/workspace-dto-adapter';
 import { DocumentCaddyState } from '../../domains/workspace/domain/entities/document-caddy';
 

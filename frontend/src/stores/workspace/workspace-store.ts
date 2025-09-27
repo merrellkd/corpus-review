@@ -14,8 +14,7 @@ import { devtools, persist } from 'zustand/middleware';
 import { immer } from 'zustand/middleware/immer';
 import { invoke } from '@tauri-apps/api/core';
 
-import { WorkspaceDto, DirectoryListingDto } from '../../domains/workspace/application/dtos/workspace-dtos';
-import { WorkspaceAdapter } from '../../adapters/workspace-dto-adapter';
+import { WorkspaceDto, DirectoryListing } from '../../domains/workspace/application/dtos/workspace-dtos';
 
 import type {
   WorkspaceStore,
@@ -124,17 +123,26 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
               projectId: projectId
             });
 
-            const workspace = WorkspaceAdapter.fromDto(workspaceDto);
+            // Create project from workspace DTO
+            const project: Project = {
+              id: workspaceDto.projectId,
+              name: workspaceDto.projectName,
+              source_folder: workspaceDto.sourceFolder,
+              source_folder_name: workspaceDto.sourceFolder.split('/').pop() || 'Source',
+              note: '',
+              note_preview: '',
+              note_line_count: 0,
+              created_at: new Date().toISOString(),
+              is_accessible: true
+            };
 
             set((state) => {
-              state.currentProject = workspace.project;
-              state.currentPath = workspace.project.source_folder;
-              state.workspaceLayout = workspace.layout || mockLayout;
+              state.currentProject = project;
+              state.currentPath = workspaceDto.currentPath;
+              state.workspaceLayout = mockLayout; // Use default layout for now
+              state.directoryListing = workspaceDto.directoryListing.entries;
               state.isLoading = false;
             });
-
-            // Load initial directory
-            await get().loadDirectory(workspace.project.source_folder);
 
           } catch (error) {
             console.error('Failed to load workspace:', error);
@@ -201,16 +209,14 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
             }
 
             // Load directory from backend
-            const directoryDto: DirectoryListingDto = await invoke('list_directory', {
+            const directoryListing: DirectoryListing = await invoke('list_directory', {
               workspaceProjectId: currentProject.id,
               directoryPath: targetPath
             });
 
-            const directoryListing = WorkspaceAdapter.fromDirectoryDto(directoryDto);
-
             set((state) => {
               state.currentPath = targetPath;
-              state.directoryListing = directoryListing.files;
+              state.directoryListing = directoryListing.entries;
               state.breadcrumbs = targetPath.split('/').filter(Boolean);
               state.isLoadingDirectory = false;
             });
@@ -358,7 +364,7 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
             // Create new document caddy
             const fileName = filePath.split('/').pop() || 'Untitled';
             const newDocument: DocumentCaddy = {
-              id: `doc_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+              id: `doc_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`,
               title: fileName,
               filePath: filePath,
               isActive: true,
@@ -537,7 +543,7 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
         // ====================
 
         // Alias for WorkspacePage.tsx compatibility
-        openWorkspace: async (projectId: string, projectName: string, sourceFolder: string) => {
+        openWorkspace: async (projectId: string, _projectName?: string, _sourceFolder?: string) => {
           return get().loadWorkspace(projectId);
         },
 
