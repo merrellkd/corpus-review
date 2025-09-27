@@ -1,8 +1,8 @@
 import React, { useState } from 'react'
-import { useWorkspaceStore as useOldWorkspaceStore } from '../../../stores/workspaceStore'
-import { useWorkspaceStore } from '../../../stores/workspaceStore'
-import { useFileCategorization } from '../../../stores/fileCategorization'
-import { useUnifiedPanelState } from '../../../stores/unifiedPanelState'
+import { useWorkspaceStore as useOldWorkspaceStore } from '../../../stores/workspace'
+import { useWorkspaceStore } from '../../../stores/workspace'
+import { useFileCategorization } from '../../../stores/shared'
+import { useUnifiedPanelState } from '../../../stores/ui'
 
 export const FileExplorer: React.FC = () => {
   const {

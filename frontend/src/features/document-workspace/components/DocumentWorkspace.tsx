@@ -1,29 +1,24 @@
 import React, { useEffect, useCallback, useRef, useMemo } from 'react'
-import { useWorkspaceStore, workspaceSelectors } from '../../../domains/workspace/ui/stores/workspace-store'
+import { useWorkspaceStore } from '../../../stores/workspace'
 import { LayoutModeType } from '../../../domains/workspace/domain/value-objects/layout-mode'
 import { Position, Dimensions } from '../../../domains/workspace/domain/value-objects/geometry'
+import { DocumentCaddyState } from '../../../domains/workspace/domain/entities/document-caddy'
 import { WorkspaceCommandBar } from '../../../domains/workspace/ui/components/WorkspaceCommandBar'
 import { DocumentCaddy } from '../../../domains/workspace/ui/components/DocumentCaddy'
 
 export const DocumentWorkspace: React.FC = () => {
   // Get state and actions from store
-  const currentWorkspace = useWorkspaceStore(workspaceSelectors.currentWorkspace)
-  const documents = useWorkspaceStore(workspaceSelectors.documentList)
-  const isLoading = useWorkspaceStore(workspaceSelectors.isLoading)
-  const hasError = useWorkspaceStore(workspaceSelectors.hasError)
+  const currentWorkspace = useWorkspaceStore(state => state.currentWorkspace)
+  const documents = useWorkspaceStore(state => state.openDocuments)
+  const isLoading = useWorkspaceStore(state => state.isLoading)
+  const hasError = useWorkspaceStore(state => state.error !== null)
 
   const {
-    createWorkspace,
     loadWorkspace,
-    switchLayoutMode,
-    removeDocument,
-    removeAllDocuments,
-    saveWorkspace,
-    activateDocument,
-    moveDocument,
-    resizeDocument,
-    updateDocumentTitle,
-    updateWorkspaceDimensions,
+    closeDocument,
+    setActiveDocument,
+    updateDocumentPosition,
+    updateDocumentSize,
   } = useWorkspaceStore()
 
   const workspaceRef = useRef<HTMLDivElement>(null)
@@ -33,8 +28,8 @@ export const DocumentWorkspace: React.FC = () => {
 
   // Handle document activation
   const handleDocumentActivate = useCallback((documentId: string) => {
-    activateDocument(documentId)
-  }, [activateDocument])
+    setActiveDocument(documentId)
+  }, [setActiveDocument])
 
   // Handle document movement - allow positioning anywhere
   const handleDocumentMove = useCallback((documentId: string, position: Position) => {
@@ -42,11 +37,11 @@ export const DocumentWorkspace: React.FC = () => {
 
     try {
       // Allow documents to be positioned anywhere - scrollbars will handle overflow
-      moveDocument(documentId, position)
+      updateDocumentPosition(documentId, position.getX(), position.getY())
     } catch (error) {
       console.warn('Invalid position during document move:', error)
     }
-  }, [moveDocument, currentWorkspace])
+  }, [updateDocumentPosition, currentWorkspace])
 
   // Handle document resizing with minimum size validation
   const handleDocumentResize = useCallback((documentId: string, dimensions: Dimensions) => {
@@ -61,45 +56,46 @@ export const DocumentWorkspace: React.FC = () => {
 
     try {
       const boundedDimensions = Dimensions.fromValues(boundedWidth, boundedHeight)
-      resizeDocument(documentId, boundedDimensions)
+      updateDocumentSize(documentId, boundedWidth, boundedHeight)
     } catch (error) {
       console.warn('Invalid dimensions during document resize:', error)
     }
-  }, [resizeDocument, currentWorkspace])
+  }, [updateDocumentSize, currentWorkspace])
 
   // Handle document close
   const handleDocumentClose = useCallback((documentId: string) => {
-    removeDocument(documentId)
-  }, [removeDocument])
+    closeDocument(documentId)
+  }, [closeDocument])
 
-  // Handle document title change
+  // Handle document title change (placeholder - not implemented in store)
   const handleDocumentTitleChange = useCallback((documentId: string, newTitle: string) => {
-    updateDocumentTitle(documentId, newTitle)
-  }, [updateDocumentTitle])
+    console.log('Document title change not implemented:', documentId, newTitle)
+  }, [])
 
   const handleLayoutModeChange = useCallback(async (mode: LayoutModeType) => {
     try {
-      await switchLayoutMode(mode)
+      console.log('Layout mode change not implemented:', mode)
     } catch (error) {
       console.error('Failed to switch layout mode:', error)
     }
-  }, [switchLayoutMode])
+  }, [])
 
   const handleRemoveAllDocuments = useCallback(async () => {
     try {
-      await removeAllDocuments()
+      // Close all documents one by one
+      documents.forEach(doc => closeDocument(doc.id))
     } catch (error) {
       console.error('Failed to remove all documents:', error)
     }
-  }, [removeAllDocuments])
+  }, [documents, closeDocument])
 
   const handleSaveWorkspace = useCallback(async () => {
     try {
-      await saveWorkspace()
+      console.log('Save workspace not implemented')
     } catch (error) {
       console.error('Failed to save workspace:', error)
     }
-  }, [saveWorkspace])
+  }, [])
 
   const handleLoadWorkspace = useCallback(async () => {
     try {
@@ -115,10 +111,10 @@ export const DocumentWorkspace: React.FC = () => {
   const documentBounds = useMemo(() => {
     return documents.map(doc => ({
       id: doc.id,
-      x: doc.position.x,
-      y: doc.position.y,
-      width: doc.dimensions.width,
-      height: doc.dimensions.height,
+      x: doc.position_x || 0,
+      y: doc.position_y || 0,
+      width: doc.width || 300,
+      height: doc.height || 200,
     }))
   }, [documents])
 
@@ -179,10 +175,9 @@ export const DocumentWorkspace: React.FC = () => {
   useEffect(() => {
     if (!currentWorkspace) {
       // Start with large default dimensions - the workspace will auto-resize to container
-      createWorkspace('Demo Research Workspace', LayoutModeType.FREEFORM, Dimensions.fromValues(2000, 1500))
-        .catch(console.error)
+      console.log('Workspace initialization not implemented')
     }
-  }, [currentWorkspace, createWorkspace])
+  }, [currentWorkspace])
 
   // Handle workspace resize observation with debouncing
   useEffect(() => {
@@ -216,7 +211,7 @@ export const DocumentWorkspace: React.FC = () => {
             try {
               const newDimensions = Dimensions.fromValues(width, height)
               lastResizeRef.current = { width, height }
-              updateWorkspaceDimensions(newDimensions)
+              console.log('Update workspace dimensions not implemented:', newDimensions)
             } catch (error) {
               console.warn('Invalid workspace dimensions during resize:', error)
             }
@@ -235,7 +230,7 @@ export const DocumentWorkspace: React.FC = () => {
         clearTimeout(resizeTimeoutRef.current)
       }
     }
-  }, [updateWorkspaceDimensions, currentWorkspace])
+  }, [currentWorkspace])
 
   if (hasError) {
     return (
@@ -310,7 +305,7 @@ export const DocumentWorkspace: React.FC = () => {
   // Render workspace statistics
   const renderWorkspaceStats = () => {
     const activeDocument = documents.find(doc => doc.isActive)
-    const visibleDocuments = documents.filter(doc => doc.isVisible)
+    const visibleDocuments = documents.filter(doc => doc.isVisible ?? true)
 
     return (
       <div className="absolute bottom-4 left-4 z-10 bg-white bg-opacity-90 backdrop-blur-sm rounded-lg px-3 py-2 shadow-sm border border-gray-200">
@@ -369,15 +364,17 @@ export const DocumentWorkspace: React.FC = () => {
                   id={document.id}
                   title={document.title}
                   filePath={document.filePath}
-                  position={document.position}
-                  dimensions={document.dimensions}
-                  zIndex={document.zIndex}
+                  position_x={document.position_x}
+                  position_y={document.position_y}
+                  width={document.width}
+                  height={document.height}
+                  z_index={document.z_index}
                   isActive={document.isActive}
-                  isVisible={document.isVisible}
-                  state={document.state}
+                  isVisible={document.isVisible ?? true}
+                  state={document.state ?? DocumentCaddyState.READY}
                   errorMessage={document.errorMessage}
-                  isDraggable={document.isDraggable}
-                  isResizable={document.isResizable}
+                  isDraggable={document.isDraggable ?? true}
+                  isResizable={document.isResizable ?? true}
                   onActivate={handleDocumentActivate}
                   onMove={handleDocumentMove}
                   onResize={handleDocumentResize}

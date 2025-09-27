@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
-import { useWorkspaceStore } from '../../../stores/workspaceStore'
-import { usePanelStateMachine } from '../../../stores/panelStateMachine'
+import { useWorkspaceStore } from '../../../stores/workspace'
+import { usePanelStateMachine } from '../../../stores/ui'
 
 export const SearchPanel: React.FC = () => {
   const {

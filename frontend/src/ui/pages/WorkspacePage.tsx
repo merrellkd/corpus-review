@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { ProjectHeader } from '../components/workspace/ProjectHeader';
 import { NavigationBreadcrumb } from '../components/workspace/NavigationBreadcrumb';
 import { FileList } from '../components/workspace/FileList';
-import { useWorkspaceStore } from '../../stores/workspace-store';
+import { useWorkspaceStore } from '../../stores/workspace';
 import { ViewMode } from '../../domains/workspace/application/dtos/workspace-dtos';
 import { Project } from '../../domains/project';
 

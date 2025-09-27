@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react'
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels'
-import { useWorkspaceStore } from '../stores/workspaceStore'
-import { useUnifiedPanelState } from '../stores/unifiedPanelState'
+import { useWorkspaceStore } from '../stores/workspace'
+import { useUnifiedPanelState } from '../stores/ui'
 
 // New architecture components
 import { TopToolbar } from './TopToolbar'
@@ -20,8 +20,8 @@ export const ProjectWorkspace: React.FC<ProjectWorkspaceProps> = ({ projectId, o
     workspaceLayout,
     isLoading,
     error,
-    loadProject,
-    updatePanelSizes,
+    loadWorkspace,
+    updateLayout,
   } = useWorkspaceStore()
 
   const {
@@ -32,9 +32,9 @@ export const ProjectWorkspace: React.FC<ProjectWorkspaceProps> = ({ projectId, o
   // Load project on mount
   useEffect(() => {
     if (projectId) {
-      loadProject(projectId)
+      loadWorkspace(projectId)
     }
-  }, [projectId, loadProject])
+  }, [projectId, loadWorkspace])
 
   // Handle panel resize
   const handlePanelResize = (panelType: string, sizes: number[]) => {
@@ -42,7 +42,7 @@ export const ProjectWorkspace: React.FC<ProjectWorkspaceProps> = ({ projectId, o
 
     // Convert percentage to pixel approximation (assuming 1200px total width)
     const explorerWidth = Math.round((sizes[0] / 100) * 1200)
-    updatePanelSizes(panelType, explorerWidth)
+    updateLayout({ explorer_width: explorerWidth })
   }
 
   if (isLoading) {

@@ -11,7 +11,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 
 import { CreateProjectParams, ProjectName, FolderPath, ProjectNote } from '../types';
-import { useProjectStore } from '../store';
+import { useProjectStore } from '../../../stores/project';
 import { ProjectFolderPicker } from '../../../ui/components/folder-picker';
 
 // ====================

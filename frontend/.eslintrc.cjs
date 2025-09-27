@@ -10,5 +10,15 @@ module.exports = {
     'no-unused-vars': 'warn',
     'no-console': 'warn',
     'prefer-const': 'error',
+    // Store naming convention enforcement
+    'filenames/match-regex': ['error', '^[a-z]+(-[a-z]+)*\\.ts$', true],
   },
+  overrides: [
+    {
+      files: ['src/stores/**/*.ts'],
+      rules: {
+        'filenames/match-regex': ['error', '^[a-z]+(-[a-z]+)*(-store|-types|index)\\.ts$', true],
+      }
+    }
+  ],
 };

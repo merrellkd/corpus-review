@@ -1,5 +1,5 @@
 import React from 'react'
-import { useUnifiedPanelState } from '../stores/unifiedPanelState'
+import { useUnifiedPanelState } from '../stores/ui'
 
 export const TopToolbar: React.FC = () => {
   const {

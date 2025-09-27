@@ -27,7 +27,7 @@ vi.mock('../../document-workspace/components/DocumentWorkspace', () => ({
 }))
 
 // Mock workspace store
-vi.mock('../../src/stores/workspaceStore', () => ({
+vi.mock('../../src/stores/workspace', () => ({
   useWorkspaceStore: vi.fn(() => ({
     currentProject: {
       id: 'test-project',
@@ -43,7 +43,7 @@ vi.mock('../../src/stores/workspaceStore', () => ({
 }))
 
 // Mock unified panel state
-vi.mock('../../src/stores/unifiedPanelState', () => ({
+vi.mock('../../src/stores/ui', () => ({
   useUnifiedPanelState: vi.fn(() => ({
     currentState: 'none',
     isFilesCategoriesPanelActive: false,
@@ -82,7 +82,7 @@ describe('ProjectWorkspace V2 - Unified State Integration', () => {
 
   describe('Panel Visibility Integration', () => {
     it('should show files-categories panel when active', () => {
-      const { useUnifiedPanelState } = require('../../src/stores/unifiedPanelState')
+      const { useUnifiedPanelState } = require('../../src/stores/ui')
       useUnifiedPanelState.mockReturnValue({
         currentState: 'files-only',
         isFilesCategoriesPanelActive: true,
@@ -102,7 +102,7 @@ describe('ProjectWorkspace V2 - Unified State Integration', () => {
     })
 
     it('should show search panel when active', () => {
-      const { useUnifiedPanelState } = require('../../src/stores/unifiedPanelState')
+      const { useUnifiedPanelState } = require('../../src/stores/ui')
       useUnifiedPanelState.mockReturnValue({
         currentState: 'search',
         isFilesCategoriesPanelActive: false,

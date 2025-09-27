@@ -13,7 +13,7 @@ import {
   useProjectActions,
   useProjectDialogs,
   useProjectSelection,
-} from '../store';
+} from '../../../stores/project';
 import ProjectRow from './project-row';
 import CreateProjectForm, { CreateProjectModal } from './create-project-form';
 import DeleteConfirmDialog from '../../../ui/components/delete-confirm-dialog';

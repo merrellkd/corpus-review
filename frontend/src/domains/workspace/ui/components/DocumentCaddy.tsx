@@ -10,9 +10,11 @@ export interface DocumentCaddyProps {
   id: string;
   title: string;
   filePath: string;
-  position: { x: number; y: number };
-  dimensions: { width: number; height: number };
-  zIndex: number;
+  position_x?: number;
+  position_y?: number;
+  width?: number;
+  height?: number;
+  z_index?: number;
   isActive: boolean;
   isVisible: boolean;
   state: DocumentCaddyState;
@@ -35,9 +37,11 @@ export const DocumentCaddy: React.FC<DocumentCaddyProps> = ({
   id,
   title,
   filePath,
-  position,
-  dimensions,
-  zIndex,
+  position_x = 0,
+  position_y = 0,
+  width = 300,
+  height = 200,
+  z_index = 1,
   isActive,
   isVisible,
   state,
@@ -96,8 +100,8 @@ export const DocumentCaddy: React.FC<DocumentCaddyProps> = ({
     const dragData = {
       x: e.clientX,
       y: e.clientY,
-      startX: position.x,
-      startY: position.y,
+      startX: position_x,
+      startY: position_y,
     };
 
     dragStartRef.current = dragData;
@@ -154,7 +158,7 @@ export const DocumentCaddy: React.FC<DocumentCaddyProps> = ({
 
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', handleMouseUp);
-  }, [isDraggable, isEditingTitle, state, onActivate, id, position.x, position.y, onMove]);
+  }, [isDraggable, isEditingTitle, state, onActivate, id, position_x, position_y, onMove]);
 
   const handleResizeMouseDown = useCallback((e: React.MouseEvent) => {
     if (!isResizable || state !== DocumentCaddyState.READY) {
@@ -167,8 +171,8 @@ export const DocumentCaddy: React.FC<DocumentCaddyProps> = ({
     const resizeData = {
       x: e.clientX,
       y: e.clientY,
-      startWidth: dimensions.width,
-      startHeight: dimensions.height,
+      startWidth: width,
+      startHeight: height,
     };
 
     resizeStartRef.current = resizeData;
@@ -225,7 +229,7 @@ export const DocumentCaddy: React.FC<DocumentCaddyProps> = ({
 
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', handleMouseUp);
-  }, [isResizable, state, dimensions.width, dimensions.height, onResize, id]);
+  }, [isResizable, state, width, height, onResize, id]);
 
   // Old useEffect-based mouse handling removed - now handled directly in mouse down events
 
@@ -323,11 +327,11 @@ export const DocumentCaddy: React.FC<DocumentCaddyProps> = ({
   };
 
   const style: React.CSSProperties = {
-    left: localPosition?.x ?? position.x,
-    top: localPosition?.y ?? position.y,
-    width: localDimensions?.width ?? dimensions.width,
-    height: localDimensions?.height ?? dimensions.height,
-    zIndex,
+    left: localPosition?.x ?? position_x,
+    top: localPosition?.y ?? position_y,
+    width: localDimensions?.width ?? width,
+    height: localDimensions?.height ?? height,
+    zIndex: z_index,
     display: isVisible ? 'block' : 'none',
   };
 

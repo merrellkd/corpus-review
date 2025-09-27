@@ -1,24 +1,18 @@
 /**
- * Project Zustand Store
+ * Project Zustand Store - Unified Location
  *
  * Central state management for project-related data using Zustand.
  * Provides a clean API for managing projects, search, filtering,
  * pagination, and UI state.
+ *
+ * Migrated from: features/project-management/store.ts
  */
 
 import { create } from 'zustand';
 import { devtools, persist, subscribeWithSelector } from 'zustand/middleware';
 import { immer } from 'zustand/middleware/immer';
 
-import type {
-  Project,
-  CreateProjectParams,
-  UpdateProjectParams,
-  ProjectList,
-  RepositoryStats,
-  ValidationResult,
-} from './types';
-import { projectRepository } from './services/project-repository';
+import { projectRepository } from '../../features/project-management/services/project-repository';
 
 import type {
   ProjectStore,
@@ -28,16 +22,17 @@ import type {
   ProjectFilter,
   ProjectStoreEvent,
   ProjectStoreEventPayload,
-  ProjectStoreEventListener,
-  OperationResult,
-} from './types/project-store-types';
+  CreateProjectParams,
+  UpdateProjectParams,
+  Project,
+} from './project-store-types';
 
 import {
   ProjectStoreError,
   DEFAULT_PROJECT_FILTER,
   DEFAULT_STORE_CONFIG,
   DEFAULT_PERSISTENCE_CONFIG,
-} from './types/project-store-types';
+} from './project-store-types';
 
 // ====================
 // Initial State

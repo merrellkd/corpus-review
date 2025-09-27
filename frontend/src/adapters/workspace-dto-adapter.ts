@@ -78,6 +78,20 @@ export class WorkspaceAdapter {
   }
 
   /**
+   * Alias for adaptWorkspace - for compatibility
+   */
+  static fromDto(workspace: WorkspaceDto) {
+    return this.adaptWorkspace(workspace)
+  }
+
+  /**
+   * Alias for adaptDirectoryListing - for compatibility
+   */
+  static fromDirectoryDto(listing: DirectoryListingDto, currentPath: string): FileSystemItem[] {
+    return this.adaptDirectoryListing(listing, currentPath)
+  }
+
+  /**
    * Creates default workspace layout for new projects
    */
   static createDefaultLayout(projectId: string): WorkspaceLayout {

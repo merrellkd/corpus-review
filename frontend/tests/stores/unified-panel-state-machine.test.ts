@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
-import { useUnifiedPanelState, createUnifiedPanelState, useUnifiedPanelStateWithOptions } from '../../src/stores/unifiedPanelState'
+import { useUnifiedPanelState, usePanelStateMachine, usePanelStateMachineWithOptions } from '../../src/stores/ui'
 
 describe('Unified Panel State Machine (T034a)', () => {
   beforeEach(() => {
