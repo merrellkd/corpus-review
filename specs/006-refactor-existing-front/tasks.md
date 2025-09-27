@@ -15,22 +15,22 @@
 
 ## Phase 3.1: Setup and Structure Creation
 
-- [ ] T001 Create constitutional feature directory structure in frontend/src/features/
-- [ ] T002 [P] Create frontend/src/features/project-management/ subdirectories (components/, hooks/, services/, types/)
-- [ ] T003 [P] Create frontend/src/features/workspace-navigation/ subdirectories (components/, hooks/, services/, types/)
-- [ ] T004 [P] Create frontend/src/features/document-workspace/ subdirectories (components/, hooks/, services/, types/)
-- [ ] T005 [P] Create frontend/src/shared/ subdirectories (components/, hooks/, services/, types/, utils/)
+- [x] T001 Create constitutional feature directory structure in frontend/src/features/
+- [x] T002 [P] Create frontend/src/features/project-management/ subdirectories (components/, hooks/, services/, types/)
+- [x] T003 [P] Create frontend/src/features/workspace-navigation/ subdirectories (components/, hooks/, services/, types/)
+- [x] T004 [P] Create frontend/src/features/document-workspace/ subdirectories (components/, hooks/, services/, types/)
+- [x] T005 [P] Create frontend/src/shared/ subdirectories (components/, hooks/, services/, types/, utils/)
 
 ## Phase 3.2: Validation Tests ⚠️ MUST COMPLETE BEFORE 3.3
 
 **CRITICAL: These tests MUST pass before moving any files**
 
-- [ ] T006 [P] Contract test for feature-structure.schema.json validation in frontend/tests/contract/test_feature_structure.test.ts
-- [ ] T007 [P] Contract test for migration-validation.schema.json in frontend/tests/contract/test_migration_validation.test.ts
-- [ ] T008 [P] Integration test for Project Management workflow in frontend/tests/integration/test_project_management_refactor.test.ts
-- [ ] T009 [P] Integration test for Workspace Navigation workflow in frontend/tests/integration/test_workspace_navigation_refactor.test.ts
-- [ ] T010 [P] Integration test for Document Workspace workflow in frontend/tests/integration/test_document_workspace_refactor.test.ts
-- [ ] T011A [P] Automated regression test suite baseline capture before any file movements in frontend/tests/regression/test_functionality_baseline.test.ts
+- [x] T006 [P] Contract test for feature-structure.schema.json validation in frontend/tests/contract/test_feature_structure.test.ts
+- [x] T007 [P] Contract test for migration-validation.schema.json in frontend/tests/contract/test_migration_validation.test.ts
+- [x] T008 [P] Integration test for Project Management workflow in frontend/tests/integration/test_project_management_refactor.test.ts
+- [x] T009 [P] Integration test for Workspace Navigation workflow in frontend/tests/integration/test_workspace_navigation_refactor.test.ts
+- [x] T010 [P] Integration test for Document Workspace workflow in frontend/tests/integration/test_document_workspace_refactor.test.ts
+- [x] T011A [P] Automated regression test suite baseline capture before any file movements in frontend/tests/regression/test_functionality_baseline.test.ts
 
 ## Phase 3.3: Project Management Feature Migration (Lowest Risk)
 
