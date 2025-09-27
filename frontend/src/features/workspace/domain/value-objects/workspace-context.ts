@@ -1,4 +1,4 @@
-import { ProjectId } from '../../../project/domain/value-objects/project-id';
+import { ProjectId } from "@/features/project-management/types/value-objects";
 
 /**
  * WorkspaceContext represents the context and state of an active project workspace
@@ -42,7 +42,12 @@ export class WorkspaceContext {
     currentPath?: string
   ): WorkspaceContext {
     const contextCurrentPath = currentPath || sourceFolder;
-    return new WorkspaceContext(projectId, projectName, sourceFolder, contextCurrentPath);
+    return new WorkspaceContext(
+      projectId,
+      projectName,
+      sourceFolder,
+      contextCurrentPath
+    );
   }
 
   /**
@@ -108,12 +113,12 @@ export class WorkspaceContext {
     }
 
     // Get parent directory
-    const pathParts = this._currentPath.replace(/\/+$/, '').split('/');
+    const pathParts = this._currentPath.replace(/\/+$/, "").split("/");
     if (pathParts.length <= 1) {
       return null;
     }
 
-    const parentPath = pathParts.slice(0, -1).join('/') || '/';
+    const parentPath = pathParts.slice(0, -1).join("/") || "/";
 
     // Ensure parent is still within workspace
     if (!this.isPathWithinWorkspace(parentPath)) {
@@ -163,8 +168,8 @@ export class WorkspaceContext {
     const parent = this.parentPath;
     if (parent === null) {
       throw new WorkspaceContextError(
-        'Already at workspace root, cannot navigate up',
-        'current_path'
+        "Already at workspace root, cannot navigate up",
+        "current_path"
       );
     }
 
@@ -176,7 +181,7 @@ export class WorkspaceContext {
    */
   get relativePath(): string {
     if (this.isAtRoot) {
-      return '';
+      return "";
     }
 
     const normalizedSource = this.normalizedSourceFolder;
@@ -184,10 +189,10 @@ export class WorkspaceContext {
 
     if (normalizedCurrent.startsWith(normalizedSource)) {
       const relative = normalizedCurrent.substring(normalizedSource.length);
-      return relative.startsWith('/') ? relative.substring(1) : relative;
+      return relative.startsWith("/") ? relative.substring(1) : relative;
     }
 
-    return '';
+    return "";
   }
 
   /**
@@ -224,8 +229,8 @@ export class WorkspaceContext {
   private validateProjectName(projectName: string): void {
     if (!projectName || projectName.trim().length === 0) {
       throw new WorkspaceContextError(
-        'Project name cannot be empty',
-        'project_name'
+        "Project name cannot be empty",
+        "project_name"
       );
     }
   }
@@ -233,16 +238,16 @@ export class WorkspaceContext {
   private validateSourceFolder(sourceFolder: string): void {
     if (!sourceFolder || sourceFolder.trim().length === 0) {
       throw new WorkspaceContextError(
-        'Source folder cannot be empty',
-        'source_folder'
+        "Source folder cannot be empty",
+        "source_folder"
       );
     }
 
     // Basic path validation - should be absolute
-    if (!sourceFolder.startsWith('/')) {
+    if (!sourceFolder.startsWith("/")) {
       throw new WorkspaceContextError(
-        'Source folder must be an absolute path',
-        'source_folder'
+        "Source folder must be an absolute path",
+        "source_folder"
       );
     }
   }
@@ -250,15 +255,15 @@ export class WorkspaceContext {
   private validateCurrentPath(currentPath: string, sourceFolder: string): void {
     if (!currentPath || currentPath.trim().length === 0) {
       throw new WorkspaceContextError(
-        'Current path cannot be empty',
-        'current_path'
+        "Current path cannot be empty",
+        "current_path"
       );
     }
 
     if (!this.isPathWithinWorkspace(currentPath)) {
       throw new WorkspaceContextError(
         `Navigation boundary violation: path '${currentPath}' is outside workspace root '${sourceFolder}'`,
-        'current_path'
+        "current_path"
       );
     }
   }
@@ -266,16 +271,20 @@ export class WorkspaceContext {
   private validateFolderName(folderName: string): void {
     if (!folderName || folderName.trim().length === 0) {
       throw new WorkspaceContextError(
-        'Folder name cannot be empty',
-        'folder_name'
+        "Folder name cannot be empty",
+        "folder_name"
       );
     }
 
     // Check for path traversal attempts
-    if (folderName.includes('..') || folderName.includes('/') || folderName.includes('\\')) {
+    if (
+      folderName.includes("..") ||
+      folderName.includes("/") ||
+      folderName.includes("\\")
+    ) {
       throw new WorkspaceContextError(
-        'Folder name contains invalid characters or path traversal',
-        'folder_name'
+        "Folder name contains invalid characters or path traversal",
+        "folder_name"
       );
     }
   }
@@ -284,11 +293,14 @@ export class WorkspaceContext {
     const normalizedPath = this.normalizePath(path);
     const normalizedSource = this.normalizedSourceFolder;
 
-    return normalizedPath === normalizedSource || normalizedPath.startsWith(normalizedSource + '/');
+    return (
+      normalizedPath === normalizedSource ||
+      normalizedPath.startsWith(normalizedSource + "/")
+    );
   }
 
   private normalizePath(path: string): string {
-    return path.replace(/\/+/g, '/').replace(/\/$/, '') || '/';
+    return path.replace(/\/+/g, "/").replace(/\/$/, "") || "/";
   }
 
   private get normalizedSourceFolder(): string {
@@ -303,7 +315,7 @@ export class WorkspaceContext {
     const normalizedBase = this.normalizePath(basePath);
     const normalizedChild = childPath.trim();
 
-    if (normalizedBase === '/') {
+    if (normalizedBase === "/") {
       return `/${normalizedChild}`;
     }
 
@@ -315,12 +327,9 @@ export class WorkspaceContext {
  * Error class for WorkspaceContext validation failures
  */
 export class WorkspaceContextError extends Error {
-  constructor(
-    message: string,
-    public readonly field: string
-  ) {
+  constructor(message: string, public readonly field: string) {
     super(message);
-    this.name = 'WorkspaceContextError';
+    this.name = "WorkspaceContextError";
   }
 }
 
@@ -340,22 +349,24 @@ export interface WorkspaceContextData {
 export function isWorkspaceContextData(obj: any): obj is WorkspaceContextData {
   return (
     obj &&
-    typeof obj === 'object' &&
-    typeof obj.projectId === 'string' &&
-    typeof obj.projectName === 'string' &&
-    typeof obj.sourceFolder === 'string' &&
-    typeof obj.currentPath === 'string'
+    typeof obj === "object" &&
+    typeof obj.projectId === "string" &&
+    typeof obj.projectName === "string" &&
+    typeof obj.sourceFolder === "string" &&
+    typeof obj.currentPath === "string"
   );
 }
 
 /**
  * Create WorkspaceContext from unknown data with validation
  */
-export function createWorkspaceContextFromData(data: unknown): WorkspaceContext {
+export function createWorkspaceContextFromData(
+  data: unknown
+): WorkspaceContext {
   if (!isWorkspaceContextData(data)) {
     throw new WorkspaceContextError(
-      'Invalid workspace context data format',
-      'data'
+      "Invalid workspace context data format",
+      "data"
     );
   }
 
