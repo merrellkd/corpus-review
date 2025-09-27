@@ -1,0 +1,56 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Migration Validation Contract",
+  "description": "Defines validation requirements for each migration step",
+  "type": "object",
+  "properties": {
+    "migrationStep": {
+      "type": "string",
+      "enum": ["feature-creation", "file-movement", "import-updates", "test-migration", "validation"],
+      "description": "Current migration step being validated"
+    },
+    "validationChecks": {
+      "type": "object",
+      "properties": {
+        "typescriptCompilation": {
+          "type": "boolean",
+          "description": "TypeScript compilation must pass without errors"
+        },
+        "importResolution": {
+          "type": "boolean",
+          "description": "All imports must resolve correctly"
+        },
+        "functionalityPreserved": {
+          "type": "boolean",
+          "description": "Manual testing confirms functionality works"
+        },
+        "noCircularDependencies": {
+          "type": "boolean",
+          "description": "No circular dependencies between features"
+        },
+        "storeConsolidation": {
+          "type": "boolean",
+          "description": "No duplicate state management exists"
+        }
+      },
+      "required": ["typescriptCompilation", "importResolution", "functionalityPreserved"]
+    },
+    "rollbackPlan": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Whether rollback is available for this step"
+        },
+        "steps": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Steps to rollback if validation fails"
+        }
+      }
+    }
+  },
+  "required": ["migrationStep", "validationChecks"]
+}
