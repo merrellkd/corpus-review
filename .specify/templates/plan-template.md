@@ -83,19 +83,25 @@ tests/
 └── unit/
 
 # [REMOVE IF UNUSED] Option 2: Web application (when "frontend" + "backend" detected)
-backend/
-├── src/
-│   ├── models/
-│   ├── services/
-│   └── api/
-└── tests/
+src-tauri/src/
+├── domain/{context}/
+│   ├── aggregates/
+│   ├── entities/
+│   ├── value_objects/
+│   └── repositories/
+├── application/
+├── infrastructure/
+└── commands/
 
-frontend/
-├── src/
+frontend/src/
+├── features/{feature-name}/
 │   ├── components/
-│   ├── pages/
-│   └── services/
-└── tests/
+│   ├── hooks/
+│   ├── services/
+│   ├── types/
+│   └── store.ts
+├── shared/
+└── stores/
 
 # [REMOVE IF UNUSED] Option 3: Mobile + API (when "iOS/Android" detected)
 api/
@@ -216,4 +222,4 @@ directories captured above]
 - [ ] Complexity deviations documented
 
 ---
-*Based on Constitution v2.1.1 - See `/memory/constitution.md`*
+*Based on Constitution v2.0.0 - See `/memory/constitution.md`*
