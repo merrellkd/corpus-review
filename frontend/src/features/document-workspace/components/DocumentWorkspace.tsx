@@ -8,10 +8,22 @@ import { DocumentCaddy } from '../../../domains/workspace/ui/components/Document
 
 export const DocumentWorkspace: React.FC = () => {
   // Get state and actions from store
-  const currentWorkspace = useWorkspaceStore(state => state.currentWorkspace)
+  const currentProject = useWorkspaceStore(state => state.currentProject)
   const documents = useWorkspaceStore(state => state.openDocuments)
   const isLoading = useWorkspaceStore(state => state.isLoading)
   const hasError = useWorkspaceStore(state => state.error !== null)
+
+  // Build currentWorkspace object from currentProject
+  const currentWorkspace = currentProject ? {
+    id: currentProject.id,
+    name: currentProject.name,
+    documents: Object.fromEntries(documents.map(doc => [doc.id, doc])),
+    workspaceDimensions: {
+      width: 1200,
+      height: 800
+    },
+    layoutMode: LayoutModeType.FREEFORM
+  } : null
 
 
   const {
@@ -56,7 +68,6 @@ export const DocumentWorkspace: React.FC = () => {
     const boundedHeight = Math.max(minHeight, dimensions.getHeight())
 
     try {
-      const boundedDimensions = Dimensions.fromValues(boundedWidth, boundedHeight)
       updateDocumentSize(documentId, boundedWidth, boundedHeight)
     } catch (error) {
       console.warn('Invalid dimensions during document resize:', error)
