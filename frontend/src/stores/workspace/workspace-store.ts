@@ -9,12 +9,15 @@
  *                domains/workspace/ui/stores/workspace.ts
  */
 
-import { create } from 'zustand';
-import { devtools, persist } from 'zustand/middleware';
-import { immer } from 'zustand/middleware/immer';
-import { invoke } from '@tauri-apps/api/core';
+import { create } from "zustand";
+import { devtools, persist } from "zustand/middleware";
+import { immer } from "zustand/middleware/immer";
+import { invoke } from "@tauri-apps/api/core";
 
-import { WorkspaceDto, DirectoryListing } from '../../domains/workspace/application/dtos/workspace-dtos';
+import {
+  WorkspaceDto,
+  DirectoryListing,
+} from "@/features/workspace/application/dtos/workspace-dtos";
 
 import type {
   WorkspaceStore,
@@ -24,39 +27,39 @@ import type {
   DocumentCaddy,
   FileSystemItem,
   WorkspaceLayout,
-} from './workspace-store-types';
+} from "./workspace-store-types";
 
 import {
   DEFAULT_WORKSPACE_CONFIG,
   WorkspaceStoreError,
-} from './workspace-store-types';
+} from "./workspace-store-types";
 
 // ====================
 // Mock Data (for development)
 // ====================
 
 const mockProject: Project = {
-  id: 'project_550e8400-e29b-41d4-a716-446655440000',
-  name: 'Sample Research Project',
-  source_folder: '/Users/demo/Documents/Research/Source',
-  source_folder_name: 'Source',
-  note: 'This is a sample research project for testing purposes.',
-  note_preview: 'This is a sample research project...',
+  id: "project_550e8400-e29b-41d4-a716-446655440000",
+  name: "Sample Research Project",
+  source_folder: "/Users/demo/Documents/Research/Source",
+  source_folder_name: "Source",
+  note: "This is a sample research project for testing purposes.",
+  note_preview: "This is a sample research project...",
   note_line_count: 1,
-  created_at: '2024-01-15T10:30:00Z',
-  is_accessible: true
+  created_at: "2024-01-15T10:30:00Z",
+  is_accessible: true,
 };
 
 const mockLayout: WorkspaceLayout = {
-  id: 'layout_550e8400-e29b-41d4-a716-446655440001',
-  project_id: 'project_550e8400-e29b-41d4-a716-446655440000',
+  id: "layout_550e8400-e29b-41d4-a716-446655440001",
+  project_id: "project_550e8400-e29b-41d4-a716-446655440000",
   file_explorer_visible: true,
   category_explorer_visible: false,
   search_panel_visible: true,
   document_workspace_visible: true,
   explorer_width: 25,
   workspace_width: 75,
-  last_modified: '2024-01-15T10:30:00Z'
+  last_modified: "2024-01-15T10:30:00Z",
 };
 
 // ====================
@@ -66,7 +69,7 @@ const mockLayout: WorkspaceLayout = {
 const initialState: WorkspaceState = {
   // Current workspace context
   currentProject: null,
-  currentPath: '',
+  currentPath: "",
   directoryListing: [],
   workspaceLayout: null,
 
@@ -112,7 +115,7 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
         // ====================
 
         loadWorkspace: async (projectId: string) => {
-          console.log('🔍 loadWorkspace called with projectId:', projectId);
+          console.log("🔍 loadWorkspace called with projectId:", projectId);
 
           set((state) => {
             state.isLoading = true;
@@ -121,57 +124,84 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
 
           try {
             // First, get project details to get name and source folder
-            console.log('🔍 Getting project details from backend...');
-            const projectDetails = await invoke('get_project', { id: projectId }) as any;
-            console.log('🔍 Project details received:', projectDetails);
+            console.log("🔍 Getting project details from backend...");
+            const projectDetails = (await invoke("get_project", {
+              id: projectId,
+            })) as any;
+            console.log("🔍 Project details received:", projectDetails);
 
             // Load workspace from backend
-            console.log('🔍 Opening workspace navigation...');
-            const workspaceDto: WorkspaceDto = await invoke('open_workspace_navigation', {
-              projectId: projectId,
-              projectName: projectDetails.name,
-              sourceFolder: projectDetails.source_folder
-            });
-            console.log('🔍 Workspace DTO received:', workspaceDto);
+            console.log("🔍 Opening workspace navigation...");
+            const workspaceDto: WorkspaceDto = await invoke(
+              "open_workspace_navigation",
+              {
+                projectId: projectId,
+                projectName: projectDetails.name,
+                sourceFolder: projectDetails.source_folder,
+              }
+            );
+            console.log("🔍 Workspace DTO received:", workspaceDto);
 
             // Validate the workspaceDto structure
-            console.log('🔍 WorkspaceDto keys:', Object.keys(workspaceDto));
-            console.log('🔍 WorkspaceDto.projectId:', workspaceDto.projectId);
-            console.log('🔍 WorkspaceDto.projectName:', workspaceDto.projectName);
+            console.log("🔍 WorkspaceDto keys:", Object.keys(workspaceDto));
+            console.log("🔍 WorkspaceDto.projectId:", workspaceDto.projectId);
+            console.log(
+              "🔍 WorkspaceDto.projectName:",
+              workspaceDto.projectName
+            );
 
             // Create project from workspace DTO
             const project: Project = {
               id: workspaceDto.projectId || projectId, // Fallback to original projectId
               name: workspaceDto.projectName || projectDetails.name, // Fallback to project details
-              source_folder: workspaceDto.sourceFolder || projectDetails.source_folder,
-              source_folder_name: (workspaceDto.sourceFolder || projectDetails.source_folder).split('/').pop() || 'Source',
-              note: '',
-              note_preview: '',
+              source_folder:
+                workspaceDto.sourceFolder || projectDetails.source_folder,
+              source_folder_name:
+                (workspaceDto.sourceFolder || projectDetails.source_folder)
+                  .split("/")
+                  .pop() || "Source",
+              note: "",
+              note_preview: "",
               note_line_count: 0,
               created_at: new Date().toISOString(),
-              is_accessible: true
+              is_accessible: true,
             };
-            console.log('🔍 Project object created:', project);
+            console.log("🔍 Project object created:", project);
 
             // Validate directory listing structure
-            console.log('🔍 DirectoryListing keys:', Object.keys(workspaceDto.directoryListing || {}));
-            console.log('🔍 DirectoryListing entries count:', workspaceDto.directoryListing?.entries?.length || 0);
+            console.log(
+              "🔍 DirectoryListing keys:",
+              Object.keys(workspaceDto.directoryListing || {})
+            );
+            console.log(
+              "🔍 DirectoryListing entries count:",
+              workspaceDto.directoryListing?.entries?.length || 0
+            );
 
             set((state) => {
-              console.log('🔍 Setting state with project and workspace data...');
+              console.log(
+                "🔍 Setting state with project and workspace data..."
+              );
               state.currentProject = project;
-              state.currentPath = workspaceDto.currentPath || projectDetails.source_folder;
+              state.currentPath =
+                workspaceDto.currentPath || projectDetails.source_folder;
               state.workspaceLayout = mockLayout; // Use default layout for now
-              state.directoryListing = workspaceDto.directoryListing?.entries || [];
+              state.directoryListing =
+                workspaceDto.directoryListing?.entries || [];
               state.isLoading = false;
-              console.log('🔍 State updated. currentProject exists:', !!state.currentProject);
-              console.log('🔍 State updated. currentProject id:', state.currentProject?.id);
+              console.log(
+                "🔍 State updated. currentProject exists:",
+                !!state.currentProject
+              );
+              console.log(
+                "🔍 State updated. currentProject id:",
+                state.currentProject?.id
+              );
             });
 
-            console.log('✅ loadWorkspace completed successfully');
-
+            console.log("✅ loadWorkspace completed successfully");
           } catch (error) {
-            console.error('❌ Failed to load workspace:', error);
+            console.error("❌ Failed to load workspace:", error);
 
             // Fallback to mock data for development
             set((state) => {
@@ -180,7 +210,10 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
               state.workspaceLayout = mockLayout;
               state.directoryListing = [];
               state.isLoading = false;
-              state.error = error instanceof Error ? error.message : 'Failed to load workspace';
+              state.error =
+                error instanceof Error
+                  ? error.message
+                  : "Failed to load workspace";
             });
           }
         },
@@ -191,7 +224,7 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
             if (project) {
               state.currentPath = project.source_folder;
             } else {
-              state.currentPath = '';
+              state.currentPath = "";
               state.directoryListing = [];
             }
           });
@@ -200,7 +233,7 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
         clearWorkspace: () => {
           set((state) => {
             state.currentProject = null;
-            state.currentPath = '';
+            state.currentPath = "";
             state.directoryListing = [];
             state.workspaceLayout = null;
             state.pathHistory = [];
@@ -231,21 +264,27 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
           try {
             const currentProject = get().currentProject;
             if (!currentProject) {
-              throw new WorkspaceStoreError('No project loaded', 'loadDirectory');
+              throw new WorkspaceStoreError(
+                "No project loaded",
+                "loadDirectory"
+              );
             }
 
             // Load directory from backend
-            const directoryListing: DirectoryListing = await invoke('list_directory', {
-              projectId: currentProject.id,
-              projectName: currentProject.name,
-              sourceFolder: currentProject.source_folder,
-              currentPath: targetPath
-            });
+            const directoryListing: DirectoryListing = await invoke(
+              "list_directory",
+              {
+                projectId: currentProject.id,
+                projectName: currentProject.name,
+                sourceFolder: currentProject.source_folder,
+                currentPath: targetPath,
+              }
+            );
 
             set((state) => {
               state.currentPath = targetPath;
               state.directoryListing = directoryListing.entries;
-              state.breadcrumbs = targetPath.split('/').filter(Boolean);
+              state.breadcrumbs = targetPath.split("/").filter(Boolean);
               state.isLoadingDirectory = false;
             });
 
@@ -256,7 +295,10 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
             // If we're not at the end of history, truncate it
             if (currentIndex < history.length - 1) {
               set((state) => {
-                state.pathHistory = state.pathHistory.slice(0, currentIndex + 1);
+                state.pathHistory = state.pathHistory.slice(
+                  0,
+                  currentIndex + 1
+                );
               });
             }
 
@@ -265,11 +307,13 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
               state.pathHistory.push(targetPath);
               state.currentHistoryIndex = state.pathHistory.length - 1;
             });
-
           } catch (error) {
-            console.error('Failed to load directory:', error);
+            console.error("Failed to load directory:", error);
             set((state) => {
-              state.directoryError = error instanceof Error ? error.message : 'Failed to load directory';
+              state.directoryError =
+                error instanceof Error
+                  ? error.message
+                  : "Failed to load directory";
               state.isLoadingDirectory = false;
             });
           }
@@ -277,13 +321,14 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
 
         navigateToFolder: async (folderName: string) => {
           const currentPath = get().currentPath;
-          const newPath = `${currentPath}/${folderName}`.replace(/\/+/g, '/');
+          const newPath = `${currentPath}/${folderName}`.replace(/\/+/g, "/");
           await get().loadDirectory(newPath);
         },
 
         navigateToParent: async () => {
           const currentPath = get().currentPath;
-          const parentPath = currentPath.split('/').slice(0, -1).join('/') || '/';
+          const parentPath =
+            currentPath.split("/").slice(0, -1).join("/") || "/";
           await get().loadDirectory(parentPath);
         },
 
@@ -343,7 +388,7 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
         selectMultipleFiles: (filePaths: string[]) => {
           set((state) => {
             state.selectedFiles.clear();
-            filePaths.forEach(path => state.selectedFiles.add(path));
+            filePaths.forEach((path) => state.selectedFiles.add(path));
           });
         },
 
@@ -364,7 +409,7 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
         },
 
         selectAll: () => {
-          const allFilePaths = get().directoryListing.map(item => item.path);
+          const allFilePaths = get().directoryListing.map((item) => item.path);
           get().selectMultipleFiles(allFilePaths);
         },
 
@@ -380,7 +425,9 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
 
           try {
             // Check if document is already open
-            const existingDoc = get().openDocuments.find(doc => doc.filePath === filePath);
+            const existingDoc = get().openDocuments.find(
+              (doc) => doc.filePath === filePath
+            );
             if (existingDoc) {
               get().setActiveDocument(existingDoc.id);
               set((state) => {
@@ -390,14 +437,16 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
             }
 
             // Create new document caddy
-            const fileName = filePath.split('/').pop() || 'Untitled';
+            const fileName = filePath.split("/").pop() || "Untitled";
             const newDocument: DocumentCaddy = {
-              id: `doc_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`,
+              id: `doc_${Date.now()}_${Math.random()
+                .toString(36)
+                .substring(2, 11)}`,
               title: fileName,
               filePath: filePath,
               isActive: true,
-              position_x: 50 + (get().openDocuments.length * 20),
-              position_y: 50 + (get().openDocuments.length * 20),
+              position_x: 50 + get().openDocuments.length * 20,
+              position_y: 50 + get().openDocuments.length * 20,
               width: 600,
               height: 400,
               z_index: get().openDocuments.length + 1,
@@ -405,18 +454,20 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
 
             set((state) => {
               // Deactivate other documents
-              state.openDocuments.forEach(doc => doc.isActive = false);
+              state.openDocuments.forEach((doc) => (doc.isActive = false));
 
               // Add new document
               state.openDocuments.push(newDocument);
               state.activeDocumentId = newDocument.id;
               state.isLoadingDocument = false;
             });
-
           } catch (error) {
-            console.error('Failed to open document:', error);
+            console.error("Failed to open document:", error);
             set((state) => {
-              state.documentError = error instanceof Error ? error.message : 'Failed to open document';
+              state.documentError =
+                error instanceof Error
+                  ? error.message
+                  : "Failed to open document";
               state.isLoadingDocument = false;
             });
           }
@@ -424,14 +475,17 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
 
         closeDocument: (documentId: string) => {
           set((state) => {
-            const index = state.openDocuments.findIndex(doc => doc.id === documentId);
+            const index = state.openDocuments.findIndex(
+              (doc) => doc.id === documentId
+            );
             if (index !== -1) {
               state.openDocuments.splice(index, 1);
 
               // If this was the active document, activate another one
               if (state.activeDocumentId === documentId) {
                 if (state.openDocuments.length > 0) {
-                  const newActiveDoc = state.openDocuments[Math.max(0, index - 1)];
+                  const newActiveDoc =
+                    state.openDocuments[Math.max(0, index - 1)];
                   state.activeDocumentId = newActiveDoc.id;
                   newActiveDoc.isActive = true;
                 } else {
@@ -444,7 +498,7 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
 
         setActiveDocument: (documentId: string) => {
           set((state) => {
-            state.openDocuments.forEach(doc => {
+            state.openDocuments.forEach((doc) => {
               doc.isActive = doc.id === documentId;
             });
             state.activeDocumentId = documentId;
@@ -453,7 +507,7 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
 
         updateDocumentPosition: (documentId: string, x: number, y: number) => {
           set((state) => {
-            const doc = state.openDocuments.find(d => d.id === documentId);
+            const doc = state.openDocuments.find((d) => d.id === documentId);
             if (doc) {
               doc.position_x = x;
               doc.position_y = y;
@@ -461,9 +515,13 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
           });
         },
 
-        updateDocumentSize: (documentId: string, width: number, height: number) => {
+        updateDocumentSize: (
+          documentId: string,
+          width: number,
+          height: number
+        ) => {
           set((state) => {
-            const doc = state.openDocuments.find(d => d.id === documentId);
+            const doc = state.openDocuments.find((d) => d.id === documentId);
             if (doc) {
               doc.width = width;
               doc.height = height;
@@ -482,19 +540,19 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
           get().refreshDirectory();
         },
 
-        setSortBy: (field: 'name' | 'size' | 'modified') => {
+        setSortBy: (field: "name" | "size" | "modified") => {
           set((state) => {
             state.sortBy = field;
           });
         },
 
-        setSortOrder: (order: 'asc' | 'desc') => {
+        setSortOrder: (order: "asc" | "desc") => {
           set((state) => {
             state.sortOrder = order;
           });
         },
 
-        setViewMode: (mode: 'list' | 'grid') => {
+        setViewMode: (mode: "list" | "grid") => {
           set((state) => {
             state.viewMode = mode;
           });
@@ -553,17 +611,17 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
         },
 
         getFileByPath: (path: string) => {
-          return get().directoryListing.find(item => item.path === path);
+          return get().directoryListing.find((item) => item.path === path);
         },
 
         isDirectory: (path: string) => {
           const item = get().getFileByPath(path);
-          return item?.item_type === 'directory';
+          return item?.item_type === "directory";
         },
 
         isFile: (path: string) => {
           const item = get().getFileByPath(path);
-          return item?.item_type === 'file';
+          return item?.item_type === "file";
         },
 
         // ====================
@@ -571,39 +629,54 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
         // ====================
 
         // Alias for WorkspacePage.tsx compatibility
-        openWorkspace: async (projectId: string, _projectName?: string, _sourceFolder?: string) => {
+        openWorkspace: async (
+          projectId: string,
+          _projectName?: string,
+          _sourceFolder?: string
+        ) => {
           return get().loadWorkspace(projectId);
         },
 
         // Alias for FileExplorer.tsx compatibility
-        get fileExplorerItems() { return get().directoryListing; },
+        get fileExplorerItems() {
+          return get().directoryListing;
+        },
         refreshFiles: () => get().refreshDirectory(),
         createDocumentCaddy: (filePath: string) => get().openDocument(filePath),
 
         // Alias for SearchPanel.tsx compatibility
         searchResults: [],
         searchFiles: async (query: string) => {
-          console.log('Search not implemented yet:', query);
+          console.log("Search not implemented yet:", query);
         },
 
         // Compatibility properties for useWorkspaceEvents.ts
         get currentWorkspace() {
           const state = get();
-          console.log('currentWorkspace getter called. currentProject:', state.currentProject ? 'EXISTS' : 'NULL');
-          return state.currentProject ? {
-            id: state.currentProject.id,
-            name: state.currentProject.name,
-            documents: Object.fromEntries(state.openDocuments.map(doc => [doc.id, doc])),
-            workspaceDimensions: {
-              width: 1200,
-              height: 800
-            },
-            layoutMode: 'freeform'
-          } : null;
+          console.log(
+            "currentWorkspace getter called. currentProject:",
+            state.currentProject ? "EXISTS" : "NULL"
+          );
+          return state.currentProject
+            ? {
+                id: state.currentProject.id,
+                name: state.currentProject.name,
+                documents: Object.fromEntries(
+                  state.openDocuments.map((doc) => [doc.id, doc])
+                ),
+                workspaceDimensions: {
+                  width: 1200,
+                  height: 800,
+                },
+                layoutMode: "freeform",
+              }
+            : null;
         },
 
         operations: {
-          get loading() { return get().isLoading; },
+          get loading() {
+            return get().isLoading;
+          },
         },
 
         // Error state compatibility
@@ -618,11 +691,11 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
         },
 
         retryLastOperation: () => {
-          console.log('Retry operation not implemented');
+          console.log("Retry operation not implemented");
         },
 
         isErrorRecoverable: (error: string) => {
-          return !error.includes('fatal') && !error.includes('permission');
+          return !error.includes("fatal") && !error.includes("permission");
         },
 
         setError: (error: string | null) => {
@@ -630,10 +703,9 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
             state.error = error;
           });
         },
-
       })),
       {
-        name: 'workspace-store',
+        name: "workspace-store",
         partialize: (state) => ({
           currentProject: state.currentProject,
           workspaceLayout: state.workspaceLayout,
@@ -645,7 +717,7 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
       }
     ),
     {
-      name: 'workspace-store',
+      name: "workspace-store",
     }
   )
 );

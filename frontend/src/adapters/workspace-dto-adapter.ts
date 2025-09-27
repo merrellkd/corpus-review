@@ -10,13 +10,13 @@ export type {
   FileSystemItem,
   DirectoryListing,
   BreadcrumbSegment,
-  ViewMode
-} from '../domains/workspace/application/dtos/workspace-dtos';
+  ViewMode,
+} from "@/features/workspace/application/dtos/workspace-dtos";
 
 export {
   formatFileSize,
-  getBreadcrumbSegments
-} from '../domains/workspace/application/dtos/workspace-dtos';
+  getBreadcrumbSegments,
+} from "@/features/workspace/application/dtos/workspace-dtos";
 
 // Simple workspace layout interface
 export interface WorkspaceLayout {
@@ -41,26 +41,44 @@ export const createDefaultLayout = (projectId: string): WorkspaceLayout => ({
   document_workspace_visible: true,
   explorer_width: 30,
   workspace_width: 70,
-  last_modified: new Date().toISOString()
+  last_modified: new Date().toISOString(),
 });
 
 export const getFileIcon = (fileName: string, itemType: string): string => {
-  if (itemType === 'directory') return '📁';
+  if (itemType === "directory") return "📁";
 
-  const extension = fileName.toLowerCase().split('.').pop();
+  const extension = fileName.toLowerCase().split(".").pop();
   const iconMap: Record<string, string> = {
-    'md': '📄', 'txt': '📄', 'pdf': '📕', 'docx': '📘', 'doc': '📘',
-    'xlsx': '📗', 'xls': '📗', 'jpg': '🖼️', 'jpeg': '🖼️', 'png': '🖼️',
-    'gif': '🖼️', 'mp4': '🎥', 'avi': '🎥', 'mov': '🎥', 'mp3': '🎵',
-    'wav': '🎵', 'zip': '📦', 'rar': '📦', '7z': '📦'
+    md: "📄",
+    txt: "📄",
+    pdf: "📕",
+    docx: "📘",
+    doc: "📘",
+    xlsx: "📗",
+    xls: "📗",
+    jpg: "🖼️",
+    jpeg: "🖼️",
+    png: "🖼️",
+    gif: "🖼️",
+    mp4: "🎥",
+    avi: "🎥",
+    mov: "🎥",
+    mp3: "🎵",
+    wav: "🎵",
+    zip: "📦",
+    rar: "📦",
+    "7z": "📦",
   };
 
-  return iconMap[extension || ''] || '📄';
+  return iconMap[extension || ""] || "📄";
 };
 
 // Import types for compatibility class
-import type { WorkspaceDto, DirectoryListing } from '../domains/workspace/application/dtos/workspace-dtos';
-import { formatFileSize as formatFileSizeUtil } from '../domains/workspace/application/dtos/workspace-dtos';
+import type {
+  WorkspaceDto,
+  DirectoryListing,
+} from "@/features/workspace/application/dtos/workspace-dtos";
+import { formatFileSize as formatFileSizeUtil } from "@/features/workspace/application/dtos/workspace-dtos";
 
 // Legacy compatibility aliases (can be removed when old code is updated)
 export class WorkspaceAdapter {

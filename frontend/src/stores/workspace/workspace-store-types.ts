@@ -4,9 +4,16 @@
  * Type definitions for the unified workspace store
  */
 
-import { WorkspaceDto, DirectoryListing } from '../../domains/workspace/application/dtos/workspace-dtos';
-import { WorkspaceAdapter, FileSystemItem, WorkspaceLayout } from '../../adapters/workspace-dto-adapter';
-import { DocumentCaddyState } from '../../domains/workspace/domain/entities/document-caddy';
+import {
+  WorkspaceDto,
+  DirectoryListing,
+} from "@/features/workspace/application/dtos/workspace-dtos";
+import {
+  WorkspaceAdapter,
+  FileSystemItem,
+  WorkspaceLayout,
+} from "../../adapters/workspace-dto-adapter";
+import { DocumentCaddyState } from "@/features/workspace/domain/entities/document-caddy";
 
 // Re-export adapter types
 export type { FileSystemItem, WorkspaceLayout };
@@ -56,7 +63,7 @@ export interface DocumentUIState {
     width: number;
     height: number;
   };
-  state: 'loading' | 'ready' | 'error';
+  state: "loading" | "ready" | "error";
   errorMessage?: string;
 }
 
@@ -89,9 +96,9 @@ export interface WorkspaceState {
 
   // UI state
   showHiddenFiles: boolean;
-  sortBy: 'name' | 'size' | 'modified';
-  sortOrder: 'asc' | 'desc';
-  viewMode: 'list' | 'grid';
+  sortBy: "name" | "size" | "modified";
+  sortOrder: "asc" | "desc";
+  viewMode: "list" | "grid";
   selectedFiles: Set<string>;
 }
 
@@ -126,13 +133,17 @@ export interface WorkspaceActions {
   closeDocument: (documentId: string) => void;
   setActiveDocument: (documentId: string) => void;
   updateDocumentPosition: (documentId: string, x: number, y: number) => void;
-  updateDocumentSize: (documentId: string, width: number, height: number) => void;
+  updateDocumentSize: (
+    documentId: string,
+    width: number,
+    height: number
+  ) => void;
 
   // View preferences
   toggleHiddenFiles: () => void;
-  setSortBy: (field: 'name' | 'size' | 'modified') => void;
-  setSortOrder: (order: 'asc' | 'desc') => void;
-  setViewMode: (mode: 'list' | 'grid') => void;
+  setSortBy: (field: "name" | "size" | "modified") => void;
+  setSortOrder: (order: "asc" | "desc") => void;
+  setViewMode: (mode: "list" | "grid") => void;
 
   // Layout management
   updateLayout: (layout: Partial<WorkspaceLayout>) => void;
@@ -150,7 +161,11 @@ export interface WorkspaceActions {
   isFile: (path: string) => boolean;
 
   // Compatibility methods (for backward compatibility with old store APIs)
-  openWorkspace: (projectId: string, projectName: string, sourceFolder: string) => Promise<void>;
+  openWorkspace: (
+    projectId: string,
+    projectName: string,
+    sourceFolder: string
+  ) => Promise<void>;
   fileExplorerItems: FileSystemItem[];
   refreshFiles: () => Promise<void>;
   createDocumentCaddy: (filePath: string) => Promise<void>;
@@ -169,9 +184,9 @@ export interface WorkspaceStore extends WorkspaceState, WorkspaceActions {}
 
 // Configuration defaults
 export const DEFAULT_WORKSPACE_CONFIG = {
-  defaultSortBy: 'name' as const,
-  defaultSortOrder: 'asc' as const,
-  defaultViewMode: 'list' as const,
+  defaultSortBy: "name" as const,
+  defaultSortOrder: "asc" as const,
+  defaultViewMode: "list" as const,
   showHiddenFiles: false,
   maxOpenDocuments: 10,
   autoSaveInterval: 30000, // 30 seconds
@@ -181,6 +196,6 @@ export const DEFAULT_WORKSPACE_CONFIG = {
 export class WorkspaceStoreError extends Error {
   constructor(message: string, public context?: string) {
     super(message);
-    this.name = 'WorkspaceStoreError';
+    this.name = "WorkspaceStoreError";
   }
 }
