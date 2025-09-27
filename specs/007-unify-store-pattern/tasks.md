@@ -4,6 +4,7 @@
 **Prerequisites**: plan.md, research.md, data-model.md, contracts/, quickstart.md
 
 ## Execution Flow (main)
+
 ```
 1. Load plan.md from feature directory
    → Extract: TypeScript, React, Zustand, Vite build system
@@ -26,20 +27,25 @@
 ```
 
 ## Format: `[ID] [P?] Description`
+
 - **[P]**: Can run in parallel (different files, no dependencies)
 - Include exact file paths in descriptions
 
 ## Path Conventions
+
 - **Web app**: `frontend/src/`, focus on stores/ directory migration
 - Paths assume frontend TypeScript structure per plan.md
 
 ## Phase 3.1: Setup
+
 - [ ] T001 Create unified store directory structure at frontend/src/stores/
 - [ ] T002 [P] Setup TypeScript validation for store interfaces
 - [ ] T003 [P] Configure linting rules for kebab-case store naming
 
 ## Phase 3.2: Tests First (TDD) ⚠️ MUST COMPLETE BEFORE 3.3
+
 **CRITICAL: These tests MUST be written and MUST FAIL before ANY implementation**
+
 - [ ] T004 [P] Contract test for store structure validation using contracts/store-structure.schema.json
 - [ ] T005 [P] Contract test for store interface compliance using contracts/store-interface.schema.json
 - [ ] T006 [P] Contract test for migration validation using contracts/migration-validation.schema.json
@@ -49,6 +55,7 @@
 - [ ] T010 [P] Integration test for file categorization store functionality preservation
 
 ## Phase 3.3: Core Implementation (ONLY after tests are failing)
+
 - [ ] T011 [P] Create project store at frontend/src/stores/project/project-store.ts
 - [ ] T012 [P] Create project store types at frontend/src/stores/project/project-store-types.ts
 - [ ] T013 [P] Create project store index at frontend/src/stores/project/index.ts
@@ -74,6 +81,7 @@
 - [ ] T033 Remove original project store at features/project-management/store.ts
 
 ## Phase 3.4: Integration
+
 - [ ] T034 Verify TypeScript compilation passes with new store structure
 - [ ] T035 Verify all store APIs preserved (no breaking changes)
 - [ ] T036 Verify kebab-case naming convention compliance
@@ -81,14 +89,17 @@
 - [ ] T038 Validate cross-store communication patterns
 
 ## Phase 3.5: Polish
+
 - [ ] T039 [P] Run quickstart.md test scenarios for migration validation
 - [ ] T040 [P] Performance validation: store access times unchanged
 - [ ] T041 [P] Bundle size analysis: ensure no increase from migration
 - [ ] T042 [P] Update any store-related documentation
 - [ ] T043 Remove any obsolete store configuration files
 - [ ] T044 Validate atomic migration completeness
+- [ ] Add documentation per requirements
 
 ## Dependencies
+
 - Setup (T001-T003) before tests and implementation
 - Tests (T004-T010) before core implementation (T011-T033)
 - Store creation (T011-T022) before import updates (T023-T029)
@@ -97,6 +108,7 @@
 - Everything before polish (T039-T044)
 
 ## Parallel Example
+
 ```
 # Launch store creation together:
 Task: "Create project store at frontend/src/stores/project/project-store.ts"
@@ -106,6 +118,7 @@ Task: "Create file categorization store at frontend/src/stores/shared/file-categ
 ```
 
 ## Notes
+
 - [P] tasks = different files/stores, no dependencies
 - Import updates must be atomic (T023-T029 in sequence)
 - Verify tests fail before implementing stores
@@ -113,18 +126,22 @@ Task: "Create file categorization store at frontend/src/stores/shared/file-categ
 - Follow kebab-case naming convention
 
 ## Task Generation Rules
-*Applied during main() execution*
+
+_Applied during main() execution_
 
 1. **From Contracts**:
+
    - store-structure.schema.json → structure validation test
    - store-interface.schema.json → interface compliance test
    - migration-validation.schema.json → migration success test
 
 2. **From Data Model**:
+
    - FeatureStore entities → individual store creation tasks [P]
    - Migration rules → import update and file removal tasks
 
 3. **From Quickstart Scenarios**:
+
    - Each test scenario → validation task [P]
    - Performance tests → bundle and runtime validation
 
@@ -133,7 +150,8 @@ Task: "Create file categorization store at frontend/src/stores/shared/file-categ
    - Store creation can be parallel, import updates must be sequential
 
 ## Validation Checklist
-*GATE: Checked by main() before returning*
+
+_GATE: Checked by main() before returning_
 
 - [x] All contracts have corresponding tests (T004-T006)
 - [x] All store entities have creation tasks (T011-T021)
