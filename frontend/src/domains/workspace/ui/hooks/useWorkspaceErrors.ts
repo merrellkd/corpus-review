@@ -42,15 +42,16 @@ export const useWorkspaceErrors = () => {
    * Check if current error is recoverable
    */
   const canRetry = useCallback(() => {
-    return isErrorRecoverable();
-  }, [isErrorRecoverable]);
+    if (!errorState?.error) return false;
+    return isErrorRecoverable(errorState.error);
+  }, [isErrorRecoverable, errorState]);
 
   /**
    * Retry the last failed operation
    */
   const handleRetry = useCallback(async () => {
     try {
-      await retryLastOperation();
+      retryLastOperation();
       return true;
     } catch (error) {
       console.error('Retry failed:', error);
@@ -195,7 +196,7 @@ export const useAsyncOperation = () => {
       const result = await operation();
       return result;
     } catch (error) {
-      setError(error, operationName, context);
+      setError(error instanceof Error ? error.message : String(error));
       return null;
     }
   }, [setError]);
@@ -235,7 +236,7 @@ export const useAsyncOperation = () => {
     }
 
     // Set error and return null
-    setError(lastError, operationName, context);
+    setError(lastError instanceof Error ? lastError.message : String(lastError));
     return null;
   }, [setError]);
 

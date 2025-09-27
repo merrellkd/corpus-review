@@ -1,0 +1,61 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Store Interface Contract",
+  "description": "Validates store implementation follows interface standards",
+  "type": "object",
+  "properties": {
+    "storeHook": {
+      "type": "object",
+      "description": "Zustand store hook requirements",
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^use[A-Z][a-zA-Z]*Store$",
+          "description": "Hook name must follow useXxxStore pattern"
+        },
+        "exports": {
+          "type": "object",
+          "properties": {
+            "state": {
+              "type": "object",
+              "description": "Store state interface"
+            },
+            "actions": {
+              "type": "object",
+              "description": "Store actions interface"
+            },
+            "selectors": {
+              "type": "object",
+              "description": "Optional store selectors"
+            }
+          },
+          "required": ["state", "actions"]
+        }
+      },
+      "required": ["name", "exports"]
+    },
+    "typeDefinitions": {
+      "type": "object",
+      "description": "TypeScript type definitions",
+      "properties": {
+        "stateInterface": {
+          "type": "string",
+          "pattern": "^[A-Z][a-zA-Z]*State$",
+          "description": "State interface name"
+        },
+        "actionsInterface": {
+          "type": "string",
+          "pattern": "^[A-Z][a-zA-Z]*Actions$",
+          "description": "Actions interface name"
+        },
+        "storeInterface": {
+          "type": "string",
+          "pattern": "^[A-Z][a-zA-Z]*Store$",
+          "description": "Complete store interface name"
+        }
+      },
+      "required": ["stateInterface", "actionsInterface", "storeInterface"]
+    }
+  },
+  "required": ["storeHook", "typeDefinitions"]
+}

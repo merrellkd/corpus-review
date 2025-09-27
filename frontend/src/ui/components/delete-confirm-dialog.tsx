@@ -6,7 +6,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { Project } from '../../domains/project';
+import { Project } from '../../features/project-management/types';
 
 // ====================
 // Types

@@ -1,0 +1,62 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Feature Directory Structure Contract",
+  "description": "Defines the required structure for feature directories after refactoring",
+  "type": "object",
+  "properties": {
+    "featureName": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*[a-z0-9]$",
+      "description": "Feature directory name in kebab-case"
+    },
+    "requiredDirectories": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["components", "hooks", "services", "types"]
+      },
+      "minItems": 4,
+      "description": "Required subdirectories in each feature"
+    },
+    "optionalDirectories": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["tests"]
+      },
+      "description": "Optional subdirectories"
+    },
+    "requiredFiles": {
+      "type": "object",
+      "properties": {
+        "store": {
+          "type": "string",
+          "pattern": "^store\\.(ts|js)$",
+          "description": "Optional feature store file"
+        }
+      }
+    },
+    "imports": {
+      "type": "object",
+      "properties": {
+        "allowedExternalPaths": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["shared/", "stores/"]
+          },
+          "description": "Allowed import paths outside the feature"
+        },
+        "prohibitedPaths": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^features/(?!shared)[^/]+/"
+          },
+          "description": "Prohibited cross-feature imports"
+        }
+      }
+    }
+  },
+  "required": ["featureName", "requiredDirectories"]
+}

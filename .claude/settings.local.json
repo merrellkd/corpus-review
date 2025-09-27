@@ -41,7 +41,8 @@
       "Bash(xargs rm:*)",
       "Bash(timeout 15s npm run dev)",
       "Read(//Users/kdm/Library/Application Support/corpus-review/**)",
-      "Bash(sqlite3:*)"
+      "Bash(sqlite3:*)",
+      "Bash(.specify/scripts/bash/check-prerequisites.sh:*)"
     ],
     "deny": [],
     "ask": []

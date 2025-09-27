@@ -13,7 +13,7 @@ import type {
   ProjectList,
   RepositoryStats,
   ValidationResult,
-} from '../../domains/project';
+} from '../../features/project-management/types';
 
 // ====================
 // Store State Types

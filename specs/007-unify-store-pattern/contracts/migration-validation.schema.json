@@ -1,0 +1,121 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Migration Validation Contract",
+  "description": "Validates successful store migration and import path updates",
+  "type": "object",
+  "properties": {
+    "migrationResults": {
+      "type": "object",
+      "description": "Results of store migration process",
+      "properties": {
+        "movedStores": {
+          "type": "array",
+          "description": "List of successfully moved stores",
+          "items": {
+            "type": "object",
+            "properties": {
+              "originalPath": {
+                "type": "string",
+                "description": "Original store file location"
+              },
+              "newPath": {
+                "type": "string",
+                "pattern": "^frontend/src/stores/[a-z]+/[a-z]+-store\\.ts$",
+                "description": "New unified store location"
+              },
+              "category": {
+                "type": "string",
+                "enum": ["feature-specific", "cross-feature", "shared"],
+                "description": "Store category classification"
+              }
+            },
+            "required": ["originalPath", "newPath", "category"]
+          },
+          "minItems": 1
+        },
+        "updatedImports": {
+          "type": "array",
+          "description": "List of files with updated import paths",
+          "items": {
+            "type": "object",
+            "properties": {
+              "filePath": {
+                "type": "string",
+                "description": "File with updated imports"
+              },
+              "importChanges": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "from": {
+                      "type": "string",
+                      "description": "Original import path"
+                    },
+                    "to": {
+                      "type": "string",
+                      "pattern": "^stores/[a-z]+",
+                      "description": "New unified import path"
+                    }
+                  },
+                  "required": ["from", "to"]
+                }
+              }
+            },
+            "required": ["filePath", "importChanges"]
+          }
+        },
+        "eliminatedDuplicates": {
+          "type": "array",
+          "description": "List of eliminated duplicate stores",
+          "items": {
+            "type": "object",
+            "properties": {
+              "duplicatePath": {
+                "type": "string",
+                "description": "Path of eliminated duplicate store"
+              },
+              "consolidatedInto": {
+                "type": "string",
+                "description": "Path where functionality was consolidated"
+              },
+              "duplicateFunctionality": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "List of duplicate functionalities eliminated"
+              }
+            },
+            "required": ["duplicatePath", "consolidatedInto", "duplicateFunctionality"]
+          }
+        }
+      },
+      "required": ["movedStores", "updatedImports", "eliminatedDuplicates"]
+    },
+    "validationChecks": {
+      "type": "object",
+      "description": "Post-migration validation results",
+      "properties": {
+        "typeScriptCompilation": {
+          "type": "boolean",
+          "description": "TypeScript compilation passes without errors"
+        },
+        "noBreakingChanges": {
+          "type": "boolean",
+          "description": "All existing store APIs preserved"
+        },
+        "atomicMigration": {
+          "type": "boolean",
+          "description": "All changes completed in single commit"
+        },
+        "namingConsistency": {
+          "type": "boolean",
+          "description": "All stores follow kebab-case naming convention"
+        }
+      },
+      "required": ["typeScriptCompilation", "noBreakingChanges", "atomicMigration", "namingConsistency"]
+    }
+  },
+  "required": ["migrationResults", "validationChecks"]
+}

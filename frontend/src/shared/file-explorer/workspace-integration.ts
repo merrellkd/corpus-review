@@ -1,8 +1,7 @@
 import { invoke } from '@tauri-apps/api/core';
 import { open } from '@tauri-apps/plugin-dialog';
 import { Position, Dimensions } from '../../domains/workspace/domain/value-objects/geometry';
-import { useWorkspaceStore } from '../../domains/workspace/ui/stores/workspace-store';
-import { useWorkspaceEventDispatcher } from '../../domains/workspace/ui/hooks/useWorkspaceEvents';
+import { useWorkspaceStore } from '../../stores/workspace';
 
 /**
  * File type definitions for supported document types
@@ -304,8 +303,7 @@ export interface AddDocumentsResult {
  * Hook for integrating file explorer with workspace
  */
 export const useFileExplorerIntegration = () => {
-  const { addDocument } = useWorkspaceStore();
-  const { dispatchDocumentAdded } = useWorkspaceEventDispatcher();
+  const { openDocument } = useWorkspaceStore();
 
   /**
    * Get file type information for a given file path
@@ -413,23 +411,15 @@ export const useFileExplorerIntegration = () => {
         const dimensions = getDefaultDimensions(filePath);
 
         // Add document to workspace
-        await addDocument(filePath, position, dimensions);
+        await openDocument(filePath);
 
-        // For now, assume success since addDocument doesn't return result object yet
+        // For now, assume success since openDocument doesn't return result object yet
         const documentId = `doc_${crypto.randomUUID()}`; // Temporary ID
         addedDocuments.push({
           documentId,
           filePath,
           title: filePath.split('/').pop() || filePath,
         });
-
-        // Dispatch event
-        dispatchDocumentAdded(
-          documentId,
-          filePath,
-          position,
-          dimensions
-        );
       } catch (error) {
         console.error(`Failed to add file ${filePath}:`, error);
         failedFiles.push({

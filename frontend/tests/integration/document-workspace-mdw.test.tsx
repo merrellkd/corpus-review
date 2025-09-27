@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { DocumentWorkspace } from '../../src/components/DocumentWorkspace';
-import { useWorkspaceStore, workspaceSelectors } from '../../src/domains/workspace/ui/stores/workspace-store';
+import { DocumentWorkspace } from '../../src/features/document-workspace/components/DocumentWorkspace';
+import { useWorkspaceStore } from '../../src/stores/workspace';
 import { LayoutModeType } from '../../src/domains/workspace/domain/value-objects/layout-mode';
 import { Position, Dimensions } from '../../src/domains/workspace/domain/value-objects/geometry';
 

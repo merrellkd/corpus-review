@@ -1,0 +1,53 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Store Structure Contract",
+  "description": "Validates the unified store directory structure and organization",
+  "type": "object",
+  "properties": {
+    "stores": {
+      "type": "object",
+      "description": "Root stores directory structure",
+      "properties": {
+        "project": {
+          "$ref": "#/definitions/featureStoreDirectory"
+        },
+        "workspace": {
+          "$ref": "#/definitions/featureStoreDirectory"
+        },
+        "ui": {
+          "$ref": "#/definitions/featureStoreDirectory"
+        },
+        "shared": {
+          "$ref": "#/definitions/featureStoreDirectory"
+        }
+      },
+      "required": ["project", "workspace", "ui"],
+      "additionalProperties": false
+    }
+  },
+  "definitions": {
+    "featureStoreDirectory": {
+      "type": "object",
+      "description": "Structure for a feature-specific store directory",
+      "properties": {
+        "storeFile": {
+          "type": "string",
+          "pattern": "^[a-z]+-store\\.ts$",
+          "description": "Main store file following kebab-case naming"
+        },
+        "typesFile": {
+          "type": "string",
+          "pattern": "^[a-z]+-store-types\\.ts$",
+          "description": "Store types file following kebab-case naming"
+        },
+        "indexFile": {
+          "type": "string",
+          "pattern": "^index\\.ts$",
+          "description": "Re-export index file"
+        }
+      },
+      "required": ["storeFile", "indexFile"],
+      "additionalProperties": false
+    }
+  }
+}

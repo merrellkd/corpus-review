@@ -1,13 +1,13 @@
 import React, { useEffect } from 'react'
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels'
-import { useWorkspaceStore } from '../stores/workspaceStore'
-import { useUnifiedPanelState } from '../stores/unifiedPanelState'
+import { useWorkspaceStore } from '../stores/workspace'
+import { useUnifiedPanelState } from '../stores/ui'
 
 // New architecture components
 import { TopToolbar } from './TopToolbar'
-import { FilesCategoriesPanel } from './FilesCategoriesPanel'
-import { SearchPanel } from './SearchPanel'
-import { DocumentWorkspace } from './DocumentWorkspace'
+import { FilesCategoriesPanel } from '../features/document-workspace/components/FilesCategoriesPanel'
+import { SearchPanel } from '../features/document-workspace/components/SearchPanel'
+import { DocumentWorkspace } from '../features/document-workspace/components/DocumentWorkspace'
 
 export interface ProjectWorkspaceProps {
   projectId: string
@@ -20,8 +20,8 @@ export const ProjectWorkspace: React.FC<ProjectWorkspaceProps> = ({ projectId, o
     workspaceLayout,
     isLoading,
     error,
-    loadProject,
-    updatePanelSizes,
+    loadWorkspace,
+    updateLayout,
   } = useWorkspaceStore()
 
   const {
@@ -32,9 +32,9 @@ export const ProjectWorkspace: React.FC<ProjectWorkspaceProps> = ({ projectId, o
   // Load project on mount
   useEffect(() => {
     if (projectId) {
-      loadProject(projectId)
+      loadWorkspace(projectId)
     }
-  }, [projectId, loadProject])
+  }, [projectId, loadWorkspace])
 
   // Handle panel resize
   const handlePanelResize = (panelType: string, sizes: number[]) => {
@@ -42,7 +42,7 @@ export const ProjectWorkspace: React.FC<ProjectWorkspaceProps> = ({ projectId, o
 
     // Convert percentage to pixel approximation (assuming 1200px total width)
     const explorerWidth = Math.round((sizes[0] / 100) * 1200)
-    updatePanelSizes(panelType, explorerWidth)
+    updateLayout({ explorer_width: explorerWidth })
   }
 
   if (isLoading) {
@@ -81,6 +81,7 @@ export const ProjectWorkspace: React.FC<ProjectWorkspaceProps> = ({ projectId, o
 
   // Determine layout class for responsive behavior
   const layoutClass = hasSidePanel ? 'two-column-layout' : 'full-width-layout'
+
 
   return (
     <div className={`h-screen bg-gray-100 ${layoutClass}`} data-testid="workspace-container">
