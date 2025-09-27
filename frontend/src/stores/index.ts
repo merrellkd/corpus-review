@@ -65,12 +65,7 @@ export type {
 } from './ui';
 
 // Shared stores
-export {
-  useFileCategorization,
-  useDragDropState,
-  useCategorization,
-  useCategoryManagement
-} from './shared';
+// No shared stores currently - file categorization has been removed
 
 // Store configuration and utilities
 export {
