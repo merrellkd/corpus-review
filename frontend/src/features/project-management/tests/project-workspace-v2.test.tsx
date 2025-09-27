@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
-import { ProjectWorkspace } from '../../../components/ProjectWorkspace'
+import { ProjectWorkspace } from '../../project'
 
 // Mock react-resizable-panels
 vi.mock('react-resizable-panels', () => ({
