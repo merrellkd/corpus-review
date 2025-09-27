@@ -1,20 +1,18 @@
 import React, { useEffect } from 'react'
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels'
-import { useWorkspaceStore } from '../stores/workspace'
-import { useUnifiedPanelState } from '../stores/ui'
+import { useWorkspaceStore } from '../../../stores/workspace'
+import { useUnifiedPanelState } from '../../../stores/ui'
 
 // New architecture components
-import { TopToolbar } from './TopToolbar'
-import { FilesCategoriesPanel } from '../features/document-workspace/components/FilesCategoriesPanel'
-import { SearchPanel } from '../features/document-workspace/components/SearchPanel'
-import { DocumentWorkspace } from '../features/document-workspace/components/DocumentWorkspace'
+import { TopToolbar } from '../../../components/TopToolbar'
+import { FilesCategoriesPanel } from '../../document-workspace/components/FilesCategoriesPanel'
+import { SearchPanel } from '../../document-workspace/components/SearchPanel'
+import { DocumentWorkspace } from '../../document-workspace/components/DocumentWorkspace'
 
-export interface ProjectWorkspaceProps {
-  projectId: string
-  onBackToProjects?: () => void
-}
+// Use simplified types from local types directory
+import type { WorkspaceProps } from '../types/workspace-types'
 
-export const ProjectWorkspace: React.FC<ProjectWorkspaceProps> = ({ projectId, onBackToProjects }) => {
+export const ProjectWorkspace: React.FC<WorkspaceProps> = ({ projectId, onBackToProjects }) => {
   const {
     currentProject,
     workspaceLayout,
@@ -81,7 +79,6 @@ export const ProjectWorkspace: React.FC<ProjectWorkspaceProps> = ({ projectId, o
 
   // Determine layout class for responsive behavior
   const layoutClass = hasSidePanel ? 'two-column-layout' : 'full-width-layout'
-
 
   return (
     <div className={`h-screen bg-gray-100 ${layoutClass}`} data-testid="workspace-container">
@@ -155,4 +152,3 @@ export const ProjectWorkspace: React.FC<ProjectWorkspaceProps> = ({ projectId, o
     </div>
   )
 }
-

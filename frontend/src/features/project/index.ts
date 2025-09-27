@@ -1,9 +1,26 @@
 /**
- * Project Domain exports - Main entry point
+ * Project Feature - Main Entry Point
+ * Clean exports following flat feature organization pattern
  */
 
-// Domain layer (entities, value objects, aggregates)
-export * from './domain';
+// Re-export main component
+export { ProjectWorkspace } from './components/ProjectWorkspace';
 
-// Infrastructure layer (repositories, DTOs, external communication)
-export * from './infrastructure';
+// Re-export project types
+export type {
+  Project,
+  ProjectMetadata,
+  CreateProjectParams,
+  UpdateProjectParams
+} from './types/project-types';
+
+// Re-export FolderPath utilities
+export { FolderPathUtil as FolderPath, createFolderPath } from './types/project-types';
+// Note: FolderPath type is exported implicitly through the utility usage
+
+// Re-export workspace types
+export type {
+  WorkspaceProps,
+  WorkspaceLayout,
+  WorkspaceLayoutState
+} from './types/workspace-types';

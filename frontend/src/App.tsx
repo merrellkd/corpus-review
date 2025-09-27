@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ProjectListPage } from './features/project-management/components/ProjectListPage';
-import { ProjectWorkspace } from './components/ProjectWorkspace';
+import { ProjectWorkspace } from './features/project';
 import { useProjectStore } from './stores/project';
 import { Project } from './features/project-management/types';
 
