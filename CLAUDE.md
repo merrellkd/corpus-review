@@ -131,9 +131,9 @@ interface WorkspaceStore {
 -  Error handling follows structured AppError pattern
 
 ## Recent Changes
+- 007-unify-store-pattern: Added TypeScript with React + Tauri (Rust backend) + Zustand (state management), React 18, Vite build system
 - 006-refactor-existing-front: Added TypeScript/React with Vite build system + React, Zustand, Tauri (for backend integration), Zod (validation)
 
 - Created workspace navigation feature specification
-- Generated data model with WorkspaceContext, FileEntry, and DirectoryListing entities
 
 **Last Updated**: 2025-09-25
